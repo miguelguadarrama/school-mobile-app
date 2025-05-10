@@ -4,6 +4,9 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { StyleSheet, View } from "react-native"
 import StatusBar from "../components/StatusBar"
 import BottomTabNavigator from "../navigation/bottomNav"
+import AuthContainer from "./AuthContainer"
+import { SWRConfig } from "swr"
+import { fetcher } from "../services/api"
 
 export default function AppLayout() {
 	const [activeStudent, setActiveStudent] = useState({
@@ -14,22 +17,34 @@ export default function AppLayout() {
 	})
 
 	return (
-		<NavigationContainer>
-			<View style={styles.container}>
-				{/* Isolated SafeAreaView for the StatusBar */}
-				<SafeAreaView style={styles.statusBarContainer} edges={["top"]}>
-					<StatusBar
-						student={activeStudent}
-						setActiveStudent={setActiveStudent}
-					/>
-				</SafeAreaView>
+		<SWRConfig
+			value={{
+				fetcher, // global fetcher function
+				dedupingInterval: 5000, // example: avoid refetching the same key within 5 seconds
+				revalidateOnFocus: true, // revalidate when app comes back into focus (good for mobile)
+				errorRetryCount: 2, // try 2 times on failure
+				shouldRetryOnError: true, // automatically retry if network error
+			}}
+		>
+			<AuthContainer>
+				<NavigationContainer>
+					<View style={styles.container}>
+						{/* Isolated SafeAreaView for the StatusBar */}
+						<SafeAreaView style={styles.statusBarContainer} edges={["top"]}>
+							<StatusBar
+								student={activeStudent}
+								setActiveStudent={setActiveStudent}
+							/>
+						</SafeAreaView>
 
-				{/* Main Content Container */}
-				<View style={styles.contentContainer}>
-					<BottomTabNavigator />
-				</View>
-			</View>
-		</NavigationContainer>
+						{/* Main Content Container */}
+						<View style={styles.contentContainer}>
+							<BottomTabNavigator />
+						</View>
+					</View>
+				</NavigationContainer>
+			</AuthContainer>
+		</SWRConfig>
 	)
 }
 

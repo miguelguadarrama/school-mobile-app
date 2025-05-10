@@ -1,4 +1,5 @@
 import { fetcher } from "./api"
+import { getToken } from "./auth"
 
 export const checkUserEmail = async (email: string) => {
   const response = await fetcher(`/users/email`, {
@@ -19,7 +20,7 @@ export const checkUserEmail = async (email: string) => {
 export const isValidPassword = (password: string) => {
   //Lower case (a-z), upper case (A-Z) and numbers (0-9)
   // minimum 8 characters
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^\s]{8,}$/
   return regex.test(password)
 }
 

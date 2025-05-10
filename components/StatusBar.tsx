@@ -8,7 +8,7 @@ import {
 	Modal,
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { useAuth } from "../contexts/AuthContext"
 
 interface Student {
 	id: number
@@ -23,6 +23,7 @@ interface StatusBarProps {
 }
 
 const StatusBar: React.FC<StatusBarProps> = ({ student, setActiveStudent }) => {
+	const { logout } = useAuth()
 	const [modalVisible, setModalVisible] = useState(false)
 
 	const toggleModal = () => {
@@ -67,7 +68,10 @@ const StatusBar: React.FC<StatusBarProps> = ({ student, setActiveStudent }) => {
 						<TouchableOpacity style={styles.profileOption}>
 							<Text>John Guadarrama</Text>
 						</TouchableOpacity>
-						<TouchableOpacity style={styles.signoutButton}>
+						<TouchableOpacity
+							style={styles.signoutButton}
+							onPress={() => logout()}
+						>
 							<Text style={styles.signoutText}>Sign Out</Text>
 						</TouchableOpacity>
 						<TouchableOpacity onPress={toggleModal} style={styles.closeButton}>
