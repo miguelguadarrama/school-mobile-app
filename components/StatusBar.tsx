@@ -77,10 +77,18 @@ const StatusBar: React.FC = () => {
 						<TouchableOpacity style={styles.editButton}>
 							<Ionicons name="create-outline" size={24} color="black" />
 						</TouchableOpacity>
-						<Text style={styles.sectionTitle}>Switch Profile</Text>
-						<TouchableOpacity style={styles.profileOption}>
-							<Text>John Guadarrama</Text>
-						</TouchableOpacity>
+
+						{students.length > 1 && (
+							<>
+								<Text style={styles.sectionTitle}>Switch Profile</Text>
+								{students.map((s) => (
+									<TouchableOpacity style={styles.profileOption}>
+										<Text>{displayName(s)}</Text>
+									</TouchableOpacity>
+								))}
+							</>
+						)}
+
 						<TouchableOpacity
 							style={styles.signoutButton}
 							onPress={() => logout()}
@@ -107,7 +115,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		paddingHorizontal: 10,
 		paddingVertical: 10,
-		backgroundColor: "#fff",
+		backgroundColor: "#F0F0F0",
 	},
 	profileContainer: {
 		flexDirection: "row",

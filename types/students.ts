@@ -10,6 +10,10 @@ export interface student {
     classrooms: {
       id: string
       name: string
+      academic_years?: {
+        id: string
+        name: string
+      }
     }
   }[]
 }

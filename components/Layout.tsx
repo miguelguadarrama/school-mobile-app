@@ -31,11 +31,6 @@ export default function AppLayout() {
 				<AppContainer>
 					<NavigationContainer>
 						<View style={styles.container}>
-							{/* Isolated SafeAreaView for the StatusBar */}
-							<SafeAreaView style={styles.statusBarContainer} edges={["top"]}>
-								<StatusBar />
-							</SafeAreaView>
-
 							{/* Main Content Container */}
 							<View style={styles.contentContainer}>
 								<BottomTabNavigator />
