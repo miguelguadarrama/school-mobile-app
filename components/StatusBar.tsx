@@ -64,7 +64,7 @@ const StatusBar: React.FC = () => {
 				</TouchableOpacity>
 			</View>
 
-			<Modal visible={modalVisible} animationType="slide" transparent={true}>
+			<Modal visible={modalVisible} animationType="fade" transparent={true}>
 				<View style={styles.modalContainer}>
 					<View style={styles.modalContent}>
 						<Image

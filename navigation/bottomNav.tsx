@@ -1,6 +1,16 @@
-import React, { useState, useRef, useCallback } from "react"
+import React, {
+	JSX,
+	useState,
+	useRef,
+	useCallback,
+	createContext,
+	useContext,
+} from "react"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import PagerView from "react-native-pager-view"
+import PagerView, {
+	PagerViewOnPageSelectedEvent,
+} from "react-native-pager-view"
+import type { NativeSyntheticEvent } from "react-native"
 import AnnouncementsScreen from "../screens/Announcements"
 import SocialScreen from "../screens/Social"
 import HomeScreen from "../screens/Home"
@@ -18,8 +28,25 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 const Tab = createBottomTabNavigator()
 const { width: screenWidth } = Dimensions.get("window")
 
+// Type definitions
+interface TabScreen {
+	name: string
+	component: React.ComponentType<any>
+}
+
+interface TabContextType {
+	currentIndex: number
+	setCurrentIndex: (index: number) => void
+	pagerRef: React.RefObject<PagerView | null> | null
+	navigateToTab: (index: number) => void
+}
+
+interface PageScrollStateChangedEvent {
+	pageScrollState: "dragging" | "idle" | "settling"
+}
+
 // Tab screens array to maintain order
-const tabScreens = [
+const tabScreens: TabScreen[] = [
 	{ name: "Announcements", component: AnnouncementsScreen },
 	{ name: "Social", component: SocialScreen },
 	{ name: "Home", component: HomeScreen },
@@ -28,21 +55,22 @@ const tabScreens = [
 ]
 
 // Context to share state between tab navigator and pager
-const TabContext = React.createContext({
+const TabContext = createContext<TabContextType>({
 	currentIndex: 2,
 	setCurrentIndex: () => {},
 	pagerRef: null,
+	navigateToTab: () => {},
 })
 
 // Custom wrapper component that handles the swipe functionality
-function SwipeableTabContent() {
-	const pagerRef = useRef(null)
-	const [currentIndex, setCurrentIndex] = useState(2) // Start with Home (index 2)
-	const isSwipingRef = useRef(false)
-	const targetIndexRef = useRef(2)
+function SwipeableTabContent(): JSX.Element {
+	const pagerRef = useRef<PagerView>(null)
+	const [currentIndex, setCurrentIndex] = useState<number>(2) // Start with Home (index 2)
+	const isSwipingRef = useRef<boolean>(false)
+	const targetIndexRef = useRef<number>(2)
 
 	// Handle page selection from PagerView with better sync
-	const onPageSelected = useCallback((event) => {
+	const onPageSelected = useCallback((event: PagerViewOnPageSelectedEvent) => {
 		const newIndex = event.nativeEvent.position
 		setCurrentIndex(newIndex)
 		targetIndexRef.current = newIndex
@@ -51,7 +79,7 @@ function SwipeableTabContent() {
 
 	// Handle when page scrolling starts
 	const onPageScrollStateChanged = useCallback(
-		(event) => {
+		(event: NativeSyntheticEvent<PageScrollStateChangedEvent>) => {
 			const state = event.nativeEvent.pageScrollState
 			if (state === "dragging") {
 				isSwipingRef.current = true
@@ -68,7 +96,7 @@ function SwipeableTabContent() {
 
 	// Handle tab button press
 	const navigateToTab = useCallback(
-		(index) => {
+		(index: number) => {
 			if (index !== currentIndex && !isSwipingRef.current) {
 				targetIndexRef.current = index
 				setCurrentIndex(index)
@@ -80,7 +108,7 @@ function SwipeableTabContent() {
 
 	// Render screens with performance optimization
 	const renderScreen = useCallback(
-		(ScreenComponent, index) => {
+		(ScreenComponent: React.ComponentType<any>, index: number) => {
 			// Render current screen and adjacent screens
 			if (Math.abs(index - currentIndex) <= 1) {
 				return <ScreenComponent />
@@ -119,18 +147,21 @@ function SwipeableTabContent() {
 }
 
 // Custom tab bar component
-function CustomTabBar() {
-	const { currentIndex, navigateToTab } = React.useContext(TabContext)
+function CustomTabBar(): JSX.Element {
+	const { currentIndex, navigateToTab } = useContext(TabContext)
 	const insets = useSafeAreaInsets()
 
-	const getIconName = (routeName, focused) => {
+	const getIconName = (
+		routeName: string,
+		focused: boolean
+	): keyof typeof Ionicons.glyphMap => {
 		switch (routeName) {
 			case "Announcements":
 				return focused ? "notifications" : "notifications-outline"
 			case "Social":
 				return focused ? "albums" : "albums-outline"
 			case "Home":
-				return focused ? "home" : "home-outline"
+				return focused ? "grid" : "grid-outline"
 			case "Messaging":
 				return focused ? "chatbubbles" : "chatbubbles-outline"
 			case "Options":
@@ -169,11 +200,19 @@ function CustomTabBar() {
 }
 
 // Wrapper for individual tab screens (if you need navigation props)
-function TabScreenWrapper({ children, index }) {
+interface TabScreenWrapperProps {
+	children: React.ReactNode
+	index: number
+}
+
+function TabScreenWrapper({
+	children,
+	index,
+}: TabScreenWrapperProps): JSX.Element {
 	return <View style={styles.screenWrapper}>{children}</View>
 }
 
-export default function BottomTabNavigator() {
+export default function BottomTabNavigator(): JSX.Element {
 	return (
 		<Tab.Navigator
 			screenOptions={{

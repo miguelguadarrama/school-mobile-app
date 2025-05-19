@@ -20,7 +20,7 @@ export default function HomeScreen() {
 			<View style={styles.container}>
 				{/* Isolated SafeAreaView for the StatusBar */}
 
-				<Text>Lily</Text>
+				<Text>{JSON.stringify(data ?? "{}")}</Text>
 			</View>
 		</>
 	)
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	statusBarContainer: {
-		backgroundColor: "#DDD",
+		backgroundColor: "#F0F0F0",
 		paddingHorizontal: 0,
 	},
 })

@@ -1,3 +1,4 @@
+import dayjs from "../../lib/dayjs"
 import React from "react"
 import {
 	View,
@@ -6,6 +7,7 @@ import {
 	Image,
 	StyleSheet,
 	RefreshControl,
+	Dimensions,
 } from "react-native"
 
 interface User {
@@ -39,29 +41,100 @@ interface BlogPostsListProps {
 }
 
 const fallbackImage = "https://placehold.co/600x400/png"
+const { width: screenWidth } = Dimensions.get("window")
 
 const BlogPostsList: React.FC<BlogPostsListProps> = ({
 	posts,
 	onRefresh = () => {},
 	isRefreshing = false,
 }) => {
+	// Component to render photo grid for multiple images
+	const PhotoGrid = ({ media }: { media: PostMedia[] }) => {
+		// Calculate grid layout based on number of images
+		const getGridLayout = (count: number) => {
+			if (count <= 6) return { rows: 2, cols: 3 }
+			return { rows: 2, cols: 3 }
+		}
+
+		const { rows, cols } = getGridLayout(media.length)
+		const imageSize = screenWidth / cols // 64 = container padding + margins
+
+		// Show only the number of images that fit perfectly in the grid
+		const maxImages = rows * cols
+		const displayMedia = media.slice(0, maxImages)
+
+		return (
+			<View style={styles.photoGrid}>
+				{Array.from({ length: rows }).map((_, rowIndex) => (
+					<View key={rowIndex} style={styles.gridRow}>
+						{Array.from({ length: cols }).map((_, colIndex) => {
+							const imageIndex = rowIndex * cols + colIndex
+							const imageData = displayMedia[imageIndex]
+
+							if (!imageData) return null
+
+							return (
+								<Image
+									key={imageData.Id}
+									source={{ uri: imageData.file_url }}
+									style={[
+										styles.gridImage,
+										{ width: imageSize, height: imageSize },
+									]}
+									onError={({ nativeEvent }) => {
+										console.warn("Image loading error:", nativeEvent.error)
+									}}
+								/>
+							)
+						})}
+					</View>
+				))}
+				{/* Show count overlay if there are more images than displayed */}
+			</View>
+		)
+	}
+
 	const renderItem = ({ item }: { item: BlogPost }) => {
-		const firstMedia =
-			item.post_media.length > 0 ? item.post_media[0].file_url : fallbackImage
+		const hasMedia = item.post_media.length > 0
+		const showGrid = item.post_media.length >= 6
 
 		return (
 			<View style={styles.postContainer}>
-				<Image
-					source={{ uri: firstMedia }}
-					style={styles.media}
-					onError={({ nativeEvent }) => {
-						console.warn("Image loading error:", nativeEvent.error)
-					}}
-				/>
-				<Text style={styles.title}>{item.title}</Text>
-				<Text style={styles.date}>
-					Posted on: {new Date(item.created_at).toLocaleDateString()}
-				</Text>
+				{hasMedia ? (
+					showGrid ? (
+						<PhotoGrid media={item.post_media} />
+					) : (
+						<Image
+							source={{ uri: item.post_media[0].file_url }}
+							style={styles.singleMedia}
+							onError={({ nativeEvent }) => {
+								console.warn("Image loading error:", nativeEvent.error)
+							}}
+						/>
+					)
+				) : (
+					<Image
+						source={{ uri: fallbackImage }}
+						style={styles.singleMedia}
+						onError={({ nativeEvent }) => {
+							console.warn("Image loading error:", nativeEvent.error)
+						}}
+					/>
+				)}
+				<View style={styles.postContent}>
+					<Text style={styles.title}>{item.title}</Text>
+
+					<Text style={styles.date}>
+						Publicado el{" "}
+						{dayjs(item.created_at).format("dddd D [de] MMMM YYYY")}
+					</Text>
+					{item.post_media.length > 1 && !showGrid && (
+						<Text style={styles.mediaCount}>
+							{item.post_media.length} photo
+							{item.post_media.length > 1 ? "s" : ""}
+						</Text>
+					)}
+				</View>
 			</View>
 		)
 	}
@@ -91,14 +164,8 @@ const styles = StyleSheet.create({
 	container: {
 		padding: 16,
 	},
-	heading: {
-		fontSize: 24,
-		fontWeight: "bold",
-		marginBottom: 16,
-	},
 	postContainer: {
 		backgroundColor: "#fff",
-		padding: 16,
 		borderRadius: 12,
 		marginBottom: 16,
 		shadowColor: "#000",
@@ -106,31 +173,61 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.1,
 		shadowRadius: 4,
 		elevation: 2,
+		overflow: "hidden",
 	},
-	media: {
+	singleMedia: {
 		width: "100%",
-		height: 150,
-		borderRadius: 12,
-		marginBottom: 8,
+		height: 200,
 		backgroundColor: "#eaeaea",
 	},
-	title: {
-		fontSize: 16,
+	photoGrid: {
+		position: "relative",
+	},
+	gridRow: {
+		flexDirection: "row",
+	},
+	gridImage: {
+		backgroundColor: "#eaeaea",
+	},
+	moreImagesOverlay: {
+		position: "absolute",
+		backgroundColor: "rgba(0, 0, 0, 0.7)",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	moreImagesText: {
+		color: "white",
+		fontSize: 18,
 		fontWeight: "bold",
-		marginBottom: 4,
+	},
+	postContent: {
+		padding: 16,
+	},
+	title: {
+		fontSize: 18,
+		fontWeight: "bold",
+		marginBottom: 8,
+		color: "#333",
 	},
 	author: {
 		fontSize: 14,
-		color: "#555",
+		color: "#666",
+		marginBottom: 4,
 	},
 	classroom: {
 		fontSize: 14,
-		color: "#555",
+		color: "#666",
+		marginBottom: 4,
 	},
 	date: {
 		fontSize: 12,
-		color: "#777",
-		marginTop: 4,
+		color: "#888",
+		marginBottom: 4,
+	},
+	mediaCount: {
+		fontSize: 12,
+		color: "#007AFF",
+		fontWeight: "500",
 	},
 })
 

@@ -30,7 +30,7 @@ export default function AnnouncementsScreen() {
 	return (
 		<>
 			<SafeAreaView edges={["top"]}>
-				<Text style={styles.heading}>Announcements</Text>
+				<Text style={styles.heading}>Anuncios</Text>
 			</SafeAreaView>
 			<BlogPostList
 				posts={data}
