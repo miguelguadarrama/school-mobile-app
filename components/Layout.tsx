@@ -7,6 +7,7 @@ import BottomTabNavigator from "../navigation/bottomNav"
 import AuthContainer from "./AuthContainer"
 import { SWRConfig } from "swr"
 import { fetcher } from "../services/api"
+import AppContainer from "./AppContainer"
 
 export default function AppLayout() {
 	const [activeStudent, setActiveStudent] = useState({
@@ -27,22 +28,21 @@ export default function AppLayout() {
 			}}
 		>
 			<AuthContainer>
-				<NavigationContainer>
-					<View style={styles.container}>
-						{/* Isolated SafeAreaView for the StatusBar */}
-						<SafeAreaView style={styles.statusBarContainer} edges={["top"]}>
-							<StatusBar
-								student={activeStudent}
-								setActiveStudent={setActiveStudent}
-							/>
-						</SafeAreaView>
+				<AppContainer>
+					<NavigationContainer>
+						<View style={styles.container}>
+							{/* Isolated SafeAreaView for the StatusBar */}
+							<SafeAreaView style={styles.statusBarContainer} edges={["top"]}>
+								<StatusBar />
+							</SafeAreaView>
 
-						{/* Main Content Container */}
-						<View style={styles.contentContainer}>
-							<BottomTabNavigator />
+							{/* Main Content Container */}
+							<View style={styles.contentContainer}>
+								<BottomTabNavigator />
+							</View>
 						</View>
-					</View>
-				</NavigationContainer>
+					</NavigationContainer>
+				</AppContainer>
 			</AuthContainer>
 		</SWRConfig>
 	)

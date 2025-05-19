@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import {
 	View,
 	Text,
@@ -9,6 +9,9 @@ import {
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { useAuth } from "../contexts/AuthContext"
+import AppContext from "../contexts/AppContext"
+import { student } from "../types/students"
+import { displayName } from "../helpers/students"
 
 interface Student {
 	id: number
@@ -17,17 +20,24 @@ interface Student {
 	photo: string
 }
 
-interface StatusBarProps {
-	student: Student
-	setActiveStudent: (student: Student) => void
-}
-
-const StatusBar: React.FC<StatusBarProps> = ({ student, setActiveStudent }) => {
+const StatusBar: React.FC = () => {
 	const { logout } = useAuth()
+	const { students } = useContext(AppContext)!
+	const [student, setStudent] = useState<student | null>(null)
 	const [modalVisible, setModalVisible] = useState(false)
+
+	useEffect(() => {
+		if (student === null && students.length) {
+			setStudent(students[0])
+		}
+	}, [students])
 
 	const toggleModal = () => {
 		setModalVisible(!modalVisible)
+	}
+
+	if (!student) {
+		return null
 	}
 
 	return (
@@ -35,12 +45,15 @@ const StatusBar: React.FC<StatusBarProps> = ({ student, setActiveStudent }) => {
 			<View style={styles.container}>
 				<TouchableOpacity onPress={toggleModal} style={styles.profileContainer}>
 					<Image
-						source={{ uri: student.photo || "https://placehold.co/150" }}
+						source={{ uri: "https://placehold.co/150" }}
 						style={styles.profileImage}
 					/>
 					<View>
-						<Text style={styles.name}>{student.name}</Text>
-						<Text style={styles.classroom}>{student.classroom}</Text>
+						<Text style={styles.name}>{displayName(student)}</Text>
+						<Text style={styles.classroom}>
+							{student.academic_year_classroom_students?.[0]?.classrooms
+								?.name || ""}
+						</Text>
 					</View>
 					<Ionicons
 						name="chevron-down"
@@ -56,11 +69,11 @@ const StatusBar: React.FC<StatusBarProps> = ({ student, setActiveStudent }) => {
 					<View style={styles.modalContent}>
 						<Image
 							source={{
-								uri: student.photo || "https://via.placeholder.com/150",
+								uri: "https://via.placeholder.com/150",
 							}}
 							style={styles.modalImage}
 						/>
-						<Text style={styles.modalName}>{student.name}</Text>
+						<Text style={styles.modalName}>{displayName(student)}</Text>
 						<TouchableOpacity style={styles.editButton}>
 							<Ionicons name="create-outline" size={24} color="black" />
 						</TouchableOpacity>
