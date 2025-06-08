@@ -1,3 +1,4 @@
+// BlogPostsList.tsx
 import dayjs from "../../lib/dayjs"
 import React from "react"
 import {
@@ -8,6 +9,7 @@ import {
 	StyleSheet,
 	RefreshControl,
 	Dimensions,
+	TouchableOpacity,
 } from "react-native"
 
 interface User {
@@ -38,6 +40,7 @@ interface BlogPostsListProps {
 	posts: BlogPost[]
 	onRefresh?: () => void
 	isRefreshing?: boolean
+	onCardPress?: (post: BlogPost) => void
 }
 
 const fallbackImage = "https://placehold.co/600x400/png"
@@ -47,6 +50,7 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 	posts,
 	onRefresh = () => {},
 	isRefreshing = false,
+	onCardPress,
 }) => {
 	// Component to render photo grid for multiple images
 	const PhotoGrid = ({ media }: { media: PostMedia[] }) => {
@@ -57,7 +61,7 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 		}
 
 		const { rows, cols } = getGridLayout(media.length)
-		const imageSize = screenWidth / cols // 64 = container padding + margins
+		const imageSize = screenWidth / cols
 
 		// Show only the number of images that fit perfectly in the grid
 		const maxImages = rows * cols
@@ -90,6 +94,23 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 					</View>
 				))}
 				{/* Show count overlay if there are more images than displayed */}
+				{media.length > maxImages && (
+					<View
+						style={[
+							styles.moreImagesOverlay,
+							{
+								width: imageSize,
+								height: imageSize,
+								right: 0,
+								bottom: 0,
+							},
+						]}
+					>
+						<Text style={styles.moreImagesText}>
+							+{media.length - maxImages}
+						</Text>
+					</View>
+				)}
 			</View>
 		)
 	}
@@ -99,7 +120,11 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 		const showGrid = item.post_media.length >= 6
 
 		return (
-			<View style={styles.postContainer}>
+			<TouchableOpacity
+				style={styles.postContainer}
+				onPress={() => onCardPress?.(item)}
+				activeOpacity={0.7}
+			>
 				{hasMedia ? (
 					showGrid ? (
 						<PhotoGrid media={item.post_media} />
@@ -123,7 +148,6 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 				)}
 				<View style={styles.postContent}>
 					<Text style={styles.title}>{item.title}</Text>
-
 					<Text style={styles.date}>
 						Publicado el{" "}
 						{dayjs(item.created_at).format("dddd D [de] MMMM YYYY")}
@@ -135,7 +159,7 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 						</Text>
 					)}
 				</View>
-			</View>
+			</TouchableOpacity>
 		)
 	}
 
@@ -149,10 +173,10 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 				<RefreshControl
 					refreshing={isRefreshing}
 					onRefresh={onRefresh}
-					colors={["#007AFF"]} // Android colors
-					tintColor="#007AFF" // iOS color
-					title="Pull to refresh" // iOS title
-					titleColor="#007AFF" // iOS title color
+					colors={["#007AFF"]}
+					tintColor="#007AFF"
+					title="Pull to refresh"
+					titleColor="#007AFF"
 				/>
 			}
 			showsVerticalScrollIndicator={false}
