@@ -1,14 +1,30 @@
 // src/screens/PasswordScreen.tsx
 import { useAuth } from "../../contexts/AuthContext"
 import { trackLogin } from "../../services/users"
-import { useRoute } from "@react-navigation/native"
+import { useRoute, useNavigation } from "@react-navigation/native"
 import React, { useState } from "react"
-import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native"
+import {
+	Alert,
+	Button,
+	StyleSheet,
+	Text,
+	TextInput,
+	View,
+	TouchableOpacity,
+} from "react-native"
 import InputPassword from "../../components/InputPassword"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import { AuthStackParamList } from "../../types/navigation"
+
+type LoginPasswordNavigationProp = NativeStackNavigationProp<
+	AuthStackParamList,
+	"LoginPassword"
+>
 
 const LoginPassword = () => {
 	const { login } = useAuth()
 	const route = useRoute()
+	const navigation = useNavigation<LoginPasswordNavigationProp>()
 	const { email, sso_account } = route.params as {
 		email: string
 		sso_account: string
@@ -38,6 +54,10 @@ const LoginPassword = () => {
 		}
 	}
 
+	const handleForgotPassword = () => {
+		navigation.navigate("LoginForgotCredentials", { email })
+	}
+
 	return (
 		<View style={styles.container}>
 			<Text style={styles.label}>Email</Text>
@@ -60,6 +80,13 @@ const LoginPassword = () => {
 				onPress={handleLogin}
 				disabled={!password || status === "BUSY"}
 			/>
+
+			<TouchableOpacity
+				onPress={handleForgotPassword}
+				style={styles.forgotPasswordContainer}
+			>
+				<Text style={styles.forgotPasswordText}>Forgot your password?</Text>
+			</TouchableOpacity>
 		</View>
 	)
 }
@@ -84,5 +111,14 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		marginBottom: 20,
 		fontSize: 16,
+	},
+	forgotPasswordContainer: {
+		marginTop: 20,
+		alignItems: "center",
+	},
+	forgotPasswordText: {
+		color: "#007AFF",
+		fontSize: 16,
+		textDecorationLine: "underline",
 	},
 })

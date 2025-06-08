@@ -7,6 +7,7 @@ import LoginPassword from "../screens/login/LoginPassword"
 import LoginVerifyEmail from "../screens/login/LoginVerifyEmail"
 import LoginNewPassword from "../screens/login/LoginNewPassword"
 import LoginNoAccountFound from "../screens/login/LoginNoAccountFound"
+import LoginForgotCredentials from "../screens/login/LoginForgotCredentials"
 
 const Stack = createNativeStackNavigator()
 
@@ -40,6 +41,11 @@ const LoginContainer = () => {
 					name="LoginNewPassword"
 					component={LoginNewPassword}
 					options={{ title: "Set New Password" }}
+				/>
+				<Stack.Screen
+					name="LoginForgotCredentials"
+					component={LoginForgotCredentials}
+					options={{ title: "Recover Account" }}
 				/>
 				<Stack.Screen
 					name="LoginNoAccountFound"

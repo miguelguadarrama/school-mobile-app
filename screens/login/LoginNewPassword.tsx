@@ -16,7 +16,10 @@ type SetNewPasswordScreenNavigationProp = NativeStackNavigationProp<
 const LoginNewPassword = () => {
 	const route = useRoute()
 	const navigation = useNavigation<SetNewPasswordScreenNavigationProp>()
-	const { email } = route.params as { email: string }
+	const { email, shouldReset } = route.params as {
+		email: string
+		shouldReset?: boolean
+	}
 
 	const [password, setPassword] = useState("")
 	const [confirmPassword, setConfirmPassword] = useState("")
@@ -47,10 +50,15 @@ const LoginNewPassword = () => {
 		try {
 			setStatus("BUSY")
 
-			const data = await registerUser(email, password)
+			const data = await registerUser(email, password, shouldReset)
 
 			if (data && data.result) {
-				Alert.alert("Success", "Your account has been created. Please log in.")
+				Alert.alert(
+					"Success",
+					shouldReset
+						? "Your password has been changed. Please log in."
+						: "Your account has been created. Please log in."
+				)
 				navigation.reset({
 					index: 0,
 					routes: [{ name: "LoginEmail" }],

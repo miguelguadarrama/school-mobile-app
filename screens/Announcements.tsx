@@ -12,7 +12,9 @@ export default function AnnouncementsScreen() {
 	const academic_year =
 		student?.academic_year_classroom_students?.[0]?.classrooms?.academic_years
 			?.id
-	const key = academic_year ? `/mobile/${academic_year}/announcements` : null
+	const key = academic_year
+		? `/mobile/posts/announcements/${academic_year}`
+		: null
 	const { data, isLoading, mutate } = useSWR(key)
 
 	// Handle refresh action

@@ -67,13 +67,13 @@ export const trackLogin = async (email: string, sso_id: string) => {
   return response
 }
 
-export const registerUser = async (email: string, password: string) => {
+export const registerUser = async (email: string, password: string, shouldReset: boolean = false) => {
   const response = await fetcher(`/users/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, shouldReset }),
   }).catch((error) => {
     if (__DEV__) {
       console.error("Error registering user:", error)

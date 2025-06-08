@@ -10,20 +10,13 @@ import { fetcher } from "../services/api"
 import AppContainer from "./AppContainer"
 
 export default function AppLayout() {
-	const [activeStudent, setActiveStudent] = useState({
-		id: 1,
-		name: "Lily Guadarrama",
-		classroom: "Busy Bees",
-		photo: "",
-	})
-
 	return (
 		<SWRConfig
 			value={{
 				fetcher, // global fetcher function
-				dedupingInterval: 60000, // example: avoid refetching the same key within 5 seconds
+				dedupingInterval: 60000, // deduplicate requests for 60 seconds
 				revalidateOnFocus: true, // revalidate when app comes back into focus (good for mobile)
-				errorRetryCount: 2, // try 2 times on failure
+				errorRetryCount: 1, // try 2 times on failure
 				shouldRetryOnError: true, // automatically retry if network error
 			}}
 		>

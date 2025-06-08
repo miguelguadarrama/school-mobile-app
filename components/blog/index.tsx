@@ -56,7 +56,7 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 	const PhotoGrid = ({ media }: { media: PostMedia[] }) => {
 		// Calculate grid layout based on number of images
 		const getGridLayout = (count: number) => {
-			if (count <= 6) return { rows: 2, cols: 3 }
+			if (count <= 3) return { rows: 1, cols: count }
 			return { rows: 2, cols: 3 }
 		}
 
