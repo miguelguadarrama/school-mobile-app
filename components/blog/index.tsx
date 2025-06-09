@@ -11,29 +11,11 @@ import {
 	Dimensions,
 	TouchableOpacity,
 } from "react-native"
+import { BlogPost, BlogPostMedia } from "../../types/post"
 
 interface User {
 	id: string
 	full_name: string
-}
-
-interface PostMedia {
-	Id: string
-	file_url: string
-	caption?: string
-}
-
-interface Classroom {
-	name: string
-}
-
-interface BlogPost {
-	id: string
-	title: string
-	created_at: string
-	post_media: PostMedia[]
-	users: User
-	classrooms: Classroom
 }
 
 interface BlogPostsListProps {
@@ -43,7 +25,7 @@ interface BlogPostsListProps {
 	onCardPress?: (post: BlogPost) => void
 }
 
-const fallbackImage = "https://placehold.co/600x400/png"
+//const fallbackImage = "https://placehold.co/600x400/png"
 const { width: screenWidth } = Dimensions.get("window")
 
 const BlogPostsList: React.FC<BlogPostsListProps> = ({
@@ -53,7 +35,7 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 	onCardPress,
 }) => {
 	// Component to render photo grid for multiple images
-	const PhotoGrid = ({ media }: { media: PostMedia[] }) => {
+	const PhotoGrid = ({ media }: { media: BlogPostMedia[] }) => {
 		// Calculate grid layout based on number of images
 		const getGridLayout = (count: number) => {
 			if (count <= 3) return { rows: 1, cols: count }
@@ -79,7 +61,7 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 
 							return (
 								<Image
-									key={imageData.Id}
+									key={imageData.id}
 									source={{ uri: imageData.file_url }}
 									style={[
 										styles.gridImage,
@@ -116,8 +98,7 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 	}
 
 	const renderItem = ({ item }: { item: BlogPost }) => {
-		const hasMedia = item.post_media.length > 0
-		const showGrid = item.post_media.length >= 6
+		const hasMedia = item.post_media && item.post_media.length > 0
 
 		return (
 			<TouchableOpacity
@@ -125,39 +106,13 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 				onPress={() => onCardPress?.(item)}
 				activeOpacity={0.7}
 			>
-				{hasMedia ? (
-					showGrid ? (
-						<PhotoGrid media={item.post_media} />
-					) : (
-						<Image
-							source={{ uri: item.post_media[0].file_url }}
-							style={styles.singleMedia}
-							onError={({ nativeEvent }) => {
-								console.warn("Image loading error:", nativeEvent.error)
-							}}
-						/>
-					)
-				) : (
-					<Image
-						source={{ uri: fallbackImage }}
-						style={styles.singleMedia}
-						onError={({ nativeEvent }) => {
-							console.warn("Image loading error:", nativeEvent.error)
-						}}
-					/>
-				)}
-				<View style={styles.postContent}>
+				{hasMedia && <PhotoGrid media={item.post_media || []} />}
+				<View style={hasMedia ? styles.postContent : styles.postContentNoImage}>
 					<Text style={styles.title}>{item.title}</Text>
 					<Text style={styles.date}>
 						Publicado el{" "}
 						{dayjs(item.created_at).format("dddd D [de] MMMM YYYY")}
 					</Text>
-					{item.post_media.length > 1 && !showGrid && (
-						<Text style={styles.mediaCount}>
-							{item.post_media.length} photo
-							{item.post_media.length > 1 ? "s" : ""}
-						</Text>
-					)}
 				</View>
 			</TouchableOpacity>
 		)
@@ -212,6 +167,8 @@ const styles = StyleSheet.create({
 	},
 	gridImage: {
 		backgroundColor: "#eaeaea",
+		maxWidth: "100%",
+		maxHeight: 200,
 	},
 	moreImagesOverlay: {
 		position: "absolute",
@@ -226,6 +183,10 @@ const styles = StyleSheet.create({
 	},
 	postContent: {
 		padding: 16,
+	},
+	postContentNoImage: {
+		padding: 20,
+		minHeight: 100,
 	},
 	title: {
 		fontSize: 18,

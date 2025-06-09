@@ -1,8 +1,8 @@
 import React, { useState } from "react"
 import { NavigationContainer } from "@react-navigation/native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { StyleSheet, View } from "react-native"
-import StatusBar from "../components/StatusBar"
+import { StatusBar, StyleSheet, View } from "react-native"
+//import StatusBar from "../components/StatusBar"
 import BottomTabNavigator from "../navigation/bottomNav"
 import AuthContainer from "./AuthContainer"
 import { SWRConfig } from "swr"
@@ -23,6 +23,7 @@ export default function AppLayout() {
 			<AuthContainer>
 				<AppContainer>
 					<NavigationContainer>
+						<StatusBar barStyle="dark-content" backgroundColor="#fff" />
 						<View style={styles.container}>
 							{/* Main Content Container */}
 							<View style={styles.contentContainer}>

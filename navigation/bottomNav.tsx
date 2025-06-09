@@ -5,6 +5,7 @@ import React, {
 	useCallback,
 	createContext,
 	useContext,
+	useEffect,
 } from "react"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import PagerView, {
@@ -12,7 +13,7 @@ import PagerView, {
 } from "react-native-pager-view"
 import type { NativeSyntheticEvent } from "react-native"
 import AnnouncementsScreen from "../screens/Announcements"
-import SocialScreen from "../screens/Social"
+import SocialScreen from "../screens/social/Stack"
 import HomeScreen from "../screens/Home"
 import MessagingScreen from "../screens/Messaging"
 import OptionsScreen from "../screens/Options"
@@ -24,6 +25,10 @@ import {
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import {
+	getFocusedRouteNameFromRoute,
+	useNavigationState,
+} from "@react-navigation/native"
 
 const Tab = createBottomTabNavigator()
 const { width: screenWidth } = Dimensions.get("window")
@@ -39,6 +44,7 @@ interface TabContextType {
 	setCurrentIndex: (index: number) => void
 	pagerRef: React.RefObject<PagerView | null> | null
 	navigateToTab: (index: number) => void
+	isPhotoViewerActive: boolean
 }
 
 interface PageScrollStateChangedEvent {
@@ -60,14 +66,46 @@ const TabContext = createContext<TabContextType>({
 	setCurrentIndex: () => {},
 	pagerRef: null,
 	navigateToTab: () => {},
+	isPhotoViewerActive: false,
 })
 
 // Custom wrapper component that handles the swipe functionality
 function SwipeableTabContent(): JSX.Element {
 	const pagerRef = useRef<PagerView>(null)
 	const [currentIndex, setCurrentIndex] = useState<number>(2) // Start with Home (index 2)
+	const [isPhotoViewerActive, setIsPhotoViewerActive] = useState<boolean>(false)
 	const isSwipingRef = useRef<boolean>(false)
 	const targetIndexRef = useRef<number>(2)
+
+	// Monitor navigation state to detect PhotoViewer
+	const navigationState = useNavigationState((state) => state)
+
+	useEffect(() => {
+		// Function to check if PhotoViewer is currently active
+		const checkPhotoViewerStatus = () => {
+			if (!navigationState) return false
+
+			// Recursively check all routes for PhotoViewer
+			const findPhotoViewer = (routes: any[]): boolean => {
+				for (const route of routes) {
+					if (route.name === "PhotoViewer") {
+						return true
+					}
+					if (route.state?.routes) {
+						if (findPhotoViewer(route.state.routes)) {
+							return true
+						}
+					}
+				}
+				return false
+			}
+
+			return findPhotoViewer(navigationState.routes || [])
+		}
+
+		const photoViewerActive = checkPhotoViewerStatus()
+		setIsPhotoViewerActive(photoViewerActive)
+	}, [navigationState])
 
 	// Handle page selection from PagerView with better sync
 	const onPageSelected = useCallback((event: PagerViewOnPageSelectedEvent) => {
@@ -97,13 +135,17 @@ function SwipeableTabContent(): JSX.Element {
 	// Handle tab button press
 	const navigateToTab = useCallback(
 		(index: number) => {
-			if (index !== currentIndex && !isSwipingRef.current) {
+			if (
+				index !== currentIndex &&
+				!isSwipingRef.current &&
+				!isPhotoViewerActive
+			) {
 				targetIndexRef.current = index
 				setCurrentIndex(index)
 				pagerRef.current?.setPage(index)
 			}
 		},
-		[currentIndex]
+		[currentIndex, isPhotoViewerActive]
 	)
 
 	// Render screens with performance optimization
@@ -120,7 +162,13 @@ function SwipeableTabContent(): JSX.Element {
 
 	return (
 		<TabContext.Provider
-			value={{ currentIndex, setCurrentIndex, pagerRef, navigateToTab }}
+			value={{
+				currentIndex,
+				setCurrentIndex,
+				pagerRef,
+				navigateToTab,
+				isPhotoViewerActive,
+			}}
 		>
 			<View style={styles.container}>
 				<PagerView
@@ -131,7 +179,7 @@ function SwipeableTabContent(): JSX.Element {
 					onPageScrollStateChanged={onPageScrollStateChanged}
 					orientation="horizontal"
 					overdrag={false}
-					scrollEnabled={true}
+					scrollEnabled={!isPhotoViewerActive} // Disable scrolling when PhotoViewer is active
 					pageMargin={0}
 				>
 					{tabScreens.map((screen, index) => (
@@ -147,8 +195,9 @@ function SwipeableTabContent(): JSX.Element {
 }
 
 // Custom tab bar component
-function CustomTabBar(): JSX.Element {
-	const { currentIndex, navigateToTab } = useContext(TabContext)
+function CustomTabBar(): JSX.Element | null {
+	const { currentIndex, navigateToTab, isPhotoViewerActive } =
+		useContext(TabContext)
 	const insets = useSafeAreaInsets()
 
 	const getIconName = (
@@ -169,6 +218,11 @@ function CustomTabBar(): JSX.Element {
 			default:
 				return "ellipse"
 		}
+	}
+
+	// Hide tab bar when PhotoViewer is active
+	if (isPhotoViewerActive) {
+		return null
 	}
 
 	return (
@@ -205,19 +259,17 @@ interface TabScreenWrapperProps {
 	index: number
 }
 
-function TabScreenWrapper({
-	children,
-	index,
-}: TabScreenWrapperProps): JSX.Element {
-	return <View style={styles.screenWrapper}>{children}</View>
-}
-
 export default function BottomTabNavigator(): JSX.Element {
 	return (
 		<Tab.Navigator
-			screenOptions={{
-				headerShown: false,
-				tabBarStyle: { display: "none" }, // Hide default tab bar
+			screenOptions={({ route }) => {
+				// Get the currently focused route name
+				const routeName = getFocusedRouteNameFromRoute(route)
+
+				return {
+					headerShown: false,
+					tabBarStyle: { display: "none" }, // Hide default tab bar
+				}
 			}}
 		>
 			<Tab.Screen

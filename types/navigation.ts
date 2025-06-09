@@ -1,3 +1,5 @@
+import { BlogPostMedia } from "./post";
+
 export type AuthStackParamList = {
   LoginEmail: undefined
   LoginPassword: { email: string; sso_account: string }
@@ -6,4 +8,17 @@ export type AuthStackParamList = {
   LoginNoAccountFound: { email: string }
   LoginForgotCredentials: { email: string }
   // Add other screens later
+}
+
+export type SocialStackParamList = {
+  Social: undefined
+  PhotoGrid: {
+    photos: BlogPostMedia[]
+    title?: string
+  }
+  PhotoViewer: {
+    photos: BlogPostMedia[]
+    initialIndex: number
+    title?: string
+  }
 }
