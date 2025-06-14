@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
 	},
 	moreImagesOverlay: {
 		position: "absolute",
-		backgroundColor: "rgba(0, 0, 0, 0.7)",
+		backgroundColor: "rgba(0, 0, 0, 0.6)",
 		justifyContent: "center",
 		alignItems: "center",
 	},

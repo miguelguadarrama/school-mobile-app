@@ -19,6 +19,7 @@
     "expo-media-library": "~17.1.7",
     "expo-secure-store": "~14.2.3",
     "expo-status-bar": "~2.2.3",
+    "lucide-react-native": "^0.515.0",
     "react": "19.0.0",
     "react-native": "0.79.3",
     "react-native-dotenv": "^3.4.11",
