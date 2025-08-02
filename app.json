@@ -27,13 +27,19 @@
       "permissions": [
         "WRITE_EXTERNAL_STORAGE",
         "READ_EXTERNAL_STORAGE"
-      ]
+      ],
+      "package": "com.leeliai.school_mobile_app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "dba14ca4-379c-4bb8-898f-e5c93de74067"
+      }
+    }
   }
 }
