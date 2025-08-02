@@ -17,3 +17,24 @@ export interface student {
     }
   }[]
 }
+
+// Type definitions
+export type EatingStatus = "none" | "little" | "normal" | "lots"
+export type MoodStatus =
+  | "happy"
+  | "cuddly"
+  | "tired"
+  | "playful"
+  | "sad"
+  | "sick"
+
+export interface DailyActivityData {
+  eating: EatingStatus
+  poop: boolean // true = had bowel movement, false = none
+  mood: MoodStatus
+}
+
+export interface DailyActivityStatusProps {
+  data: DailyActivityData
+  childName?: string
+}

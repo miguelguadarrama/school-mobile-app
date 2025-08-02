@@ -8,6 +8,7 @@ import StatusBar from "../components/StatusBar"
 import DayInfoCard from "../components/home/dayInfo"
 import AttendanceCard from "../components/home/attendance"
 import CommunicationCard from "../components/home/communication"
+import DailyActivityStatus from "../components/home/status"
 
 export default function HomeScreen() {
 	// Fetch student information from the API
@@ -48,6 +49,17 @@ export default function HomeScreen() {
 					{/* Day Information Card */}
 					<View style={styles.cardContainer}>
 						<DayInfoCard />
+					</View>
+
+					{/* Day Information Card */}
+					<View style={styles.cardContainer}>
+						<DailyActivityStatus
+							data={{
+								eating: "little",
+								mood: "happy",
+								poop: true,
+							}}
+						/>
 					</View>
 
 					{/* Communication Recap */}

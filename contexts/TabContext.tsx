@@ -1,0 +1,19 @@
+import { createContext } from "react"
+import PagerView from "react-native-pager-view"
+
+interface TabContextType {
+	currentIndex: number
+	setCurrentIndex: (index: number) => void
+	pagerRef: React.RefObject<PagerView | null> | null
+	navigateToTab: (index: number) => void
+	isPhotoViewerActive: boolean
+}
+
+// Context to share state between tab navigator and pager
+export const TabContext = createContext<TabContextType>({
+	currentIndex: 2,
+	setCurrentIndex: () => {},
+	pagerRef: null,
+	navigateToTab: () => {},
+	isPhotoViewerActive: false,
+})

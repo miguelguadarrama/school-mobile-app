@@ -29,6 +29,7 @@ import {
 	getFocusedRouteNameFromRoute,
 	useNavigationState,
 } from "@react-navigation/native"
+import { TabContext } from "../contexts/TabContext"
 
 const Tab = createBottomTabNavigator()
 const { width: screenWidth } = Dimensions.get("window")
@@ -37,14 +38,6 @@ const { width: screenWidth } = Dimensions.get("window")
 interface TabScreen {
 	name: string
 	component: React.ComponentType<any>
-}
-
-interface TabContextType {
-	currentIndex: number
-	setCurrentIndex: (index: number) => void
-	pagerRef: React.RefObject<PagerView | null> | null
-	navigateToTab: (index: number) => void
-	isPhotoViewerActive: boolean
 }
 
 interface PageScrollStateChangedEvent {
@@ -59,15 +52,6 @@ const tabScreens: TabScreen[] = [
 	{ name: "Messaging", component: MessagingScreen },
 	{ name: "Options", component: OptionsScreen },
 ]
-
-// Context to share state between tab navigator and pager
-const TabContext = createContext<TabContextType>({
-	currentIndex: 2,
-	setCurrentIndex: () => {},
-	pagerRef: null,
-	navigateToTab: () => {},
-	isPhotoViewerActive: false,
-})
 
 // Custom wrapper component that handles the swipe functionality
 function SwipeableTabContent(): JSX.Element {

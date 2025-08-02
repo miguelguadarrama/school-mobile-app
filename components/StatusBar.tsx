@@ -22,13 +22,13 @@ interface Student {
 
 const StatusBar: React.FC = () => {
 	const { logout } = useAuth()
-	const { students } = useContext(AppContext)!
-	const [student, setStudent] = useState<student | null>(null)
+	const { students, selectedStudent, setSelectedStudent } =
+		useContext(AppContext)!
 	const [modalVisible, setModalVisible] = useState(false)
 
 	useEffect(() => {
-		if (student === null && students.length) {
-			setStudent(students[0])
+		if (selectedStudent === null && students.length) {
+			setSelectedStudent(students[0])
 		}
 	}, [students])
 
@@ -36,7 +36,7 @@ const StatusBar: React.FC = () => {
 		setModalVisible(!modalVisible)
 	}
 
-	if (!student) {
+	if (!selectedStudent) {
 		return null
 	}
 
@@ -49,9 +49,9 @@ const StatusBar: React.FC = () => {
 						style={styles.profileImage}
 					/>
 					<View>
-						<Text style={styles.name}>{displayName(student)}</Text>
+						<Text style={styles.name}>{displayName(selectedStudent)}</Text>
 						<Text style={styles.classroom}>
-							{student.academic_year_classroom_students?.[0]?.classrooms
+							{selectedStudent.academic_year_classroom_students?.[0]?.classrooms
 								?.name || ""}
 						</Text>
 					</View>
@@ -73,7 +73,7 @@ const StatusBar: React.FC = () => {
 							}}
 							style={styles.modalImage}
 						/>
-						<Text style={styles.modalName}>{displayName(student)}</Text>
+						<Text style={styles.modalName}>{displayName(selectedStudent)}</Text>
 						<TouchableOpacity style={styles.editButton}>
 							<Ionicons name="create-outline" size={24} color="black" />
 						</TouchableOpacity>
@@ -82,7 +82,14 @@ const StatusBar: React.FC = () => {
 							<>
 								<Text style={styles.sectionTitle}>Switch Profile</Text>
 								{students.map((s) => (
-									<TouchableOpacity style={styles.profileOption}>
+									<TouchableOpacity
+										style={styles.profileOption}
+										key={s.id}
+										onPress={() => {
+											setSelectedStudent(s)
+											toggleModal()
+										}}
+									>
 										<Text>{displayName(s)}</Text>
 									</TouchableOpacity>
 								))}

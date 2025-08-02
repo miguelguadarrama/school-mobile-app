@@ -1,4 +1,4 @@
-import { ReactNode } from "react"
+import { ReactNode, useState } from "react"
 import AppContext from "../contexts/AppContext"
 import { useAuth } from "../contexts/AuthContext"
 import useSWR from "swr"
@@ -10,11 +10,14 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 	const { data: students, isLoading } = useSWR<student[]>(
 		loggedIn ? "/mobile/profile" : null
 	)
+	const [selectedStudent, setSelectedStudent] = useState<student | null>(null)
 	if (loggedIn && isLoading) {
 		return <LoadingScreen />
 	}
 	return (
-		<AppContext.Provider value={{ students: students || [] }}>
+		<AppContext.Provider
+			value={{ students: students || [], selectedStudent, setSelectedStudent }}
+		>
 			{children}
 		</AppContext.Provider>
 	)

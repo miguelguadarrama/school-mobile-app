@@ -1,6 +1,7 @@
 import React from "react"
 import { View, Text, StyleSheet } from "react-native"
 import AttendanceCard from "./attendance"
+import SchoolCard from "../SchoolCard"
 
 interface DayInfoCardProps {
 	// We'll add props later when we connect to real data
@@ -16,10 +17,6 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 		day: "numeric",
 	})
 
-	// Check if school is open (Monday-Friday, excluding holidays)
-	const isWeekday = now.getDay() >= 1 && now.getDay() <= 5
-	const isSchoolOpen = isWeekday // We'll enhance this with holiday calendar later
-
 	// Static weather data for now
 	const weatherData = {
 		temperature: 30,
@@ -29,7 +26,7 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 	}
 
 	return (
-		<View style={styles.card}>
+		<SchoolCard>
 			{/* Header with date and weather side by side */}
 			<View style={styles.topRow}>
 				<View style={styles.dateSection}>
@@ -50,19 +47,6 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 				</View>
 			</View>
 
-			{/* School status */}
-			<View style={styles.statusRow}>
-				<View
-					style={[
-						styles.statusIndicator,
-						{ backgroundColor: isSchoolOpen ? "#10B981" : "#EF4444" },
-					]}
-				/>
-				<Text style={styles.statusText}>
-					School is {isSchoolOpen ? "Open" : "Closed"}
-				</Text>
-			</View>
-
 			<AttendanceCard locale={locale} />
 
 			{/* Clothing recommendation */}
@@ -72,9 +56,29 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 				<Text style={styles.clothingText}>{weatherData.clothing}</Text>
 			</View>
       */}
-		</View>
+		</SchoolCard>
 	)
 }
+
+// const SchoolOpenStatus = () => {
+// 	const now = new Date()
+// 	// Check if school is open (Monday-Friday, excluding holidays)
+// 	const isWeekday = now.getDay() >= 1 && now.getDay() <= 5
+// 	const isSchoolOpen = isWeekday // We'll enhance this with holiday calendar later
+// 	return (
+// 		<View style={styles.statusRow}>
+// 			<View
+// 				style={[
+// 					styles.statusIndicator,
+// 					{ backgroundColor: isSchoolOpen ? "#10B981" : "#EF4444" },
+// 				]}
+// 			/>
+// 			<Text style={styles.statusText}>
+// 				School is {isSchoolOpen ? "Open" : "Closed"}
+// 			</Text>
+// 		</View>
+// 	)
+// }
 
 const styles = StyleSheet.create({
 	card: {

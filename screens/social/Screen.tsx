@@ -16,10 +16,10 @@ type SocialScreenNavigationProp = NativeStackNavigationProp<
 >
 
 export default function SocialScreen() {
-	const { students } = useContext(AppContext)!
+	const { selectedStudent } = useContext(AppContext)!
 	const navigation = useNavigation<SocialScreenNavigationProp>()
 
-	const student = students?.[0]
+	const student = selectedStudent || null
 	const classroom = student?.academic_year_classroom_students?.[0]?.classrooms
 	const key = classroom ? `/mobile/posts/classroom/${classroom.id}` : null
 	const { data, isLoading, mutate } = useSWR(key)

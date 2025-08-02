@@ -1,4 +1,4 @@
-import React, { useContext } from "react"
+import React, { useContext, useEffect, useMemo, useState } from "react"
 import { StyleSheet, Text } from "react-native"
 import useSWR from "swr"
 import AppContext from "../contexts/AppContext"
@@ -7,11 +7,25 @@ import BlogPostList from "../components/blog"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 export default function SocialScreen() {
-	const { students } = useContext(AppContext)!
-	const student = students?.[0]
-	const classroom = student?.academic_year_classroom_students?.[0]?.classrooms
-	const key = classroom ? `/mobile/posts/classroom/${classroom.id}` : null
+	const { selectedStudent } = useContext(AppContext)!
+	const [classroom, setClassroom] = useState<{
+		id: string
+		name: string
+	} | null>(null)
+	useEffect(() => {
+		setClassroom(
+			selectedStudent?.academic_year_classroom_students?.[0]?.classrooms as {
+				id: string
+				name: string
+			} | null
+		)
+	}, [selectedStudent])
+	const key = useMemo(
+		() => `/mobile/posts/classroom/${classroom?.id}`,
+		[classroom]
+	)
 	const { data, isLoading, mutate } = useSWR(key)
+	console.log("classroom", classroom)
 
 	// Handle refresh action
 	const handleRefresh = async () => {

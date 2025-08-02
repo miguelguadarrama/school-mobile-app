@@ -1,6 +1,7 @@
-import React from "react"
+import React, { useContext } from "react"
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native"
 import { Megaphone, Camera, MessageCircle } from "lucide-react-native"
+import { TabContext } from "../../contexts/TabContext"
 
 interface CommunicationData {
 	announcements: number
@@ -13,6 +14,7 @@ interface CommunicationBarProps {
 }
 
 export default function CommunicationBar({}: CommunicationBarProps) {
+	const { navigateToTab } = useContext(TabContext)
 	// Static data for demonstration
 	const communicationData: CommunicationData = {
 		announcements: 2,
@@ -23,6 +25,23 @@ export default function CommunicationBar({}: CommunicationBarProps) {
 	const handlePress = (type: string) => {
 		// Handle navigation to specific tab
 		console.log(`Navigate to ${type} tab`)
+		switch (type) {
+			case "announcements":
+				// Navigate to announcements screen
+				navigateToTab(0) // Assuming announcements is the first tab
+				break
+			case "social":
+				// Navigate to social posts screen
+				navigateToTab(1) // Assuming social is the second tab
+				break
+			case "messages":
+				// Navigate to messages screen
+				navigateToTab(3) // Assuming messages is the fourth tab
+				break
+			default:
+				console.warn("Unknown type:", type)
+				break
+		}
 	}
 
 	const CommunicationItem = ({

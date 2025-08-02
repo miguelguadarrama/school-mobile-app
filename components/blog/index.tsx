@@ -12,6 +12,7 @@ import {
 	TouchableOpacity,
 } from "react-native"
 import { BlogPost, BlogPostMedia } from "../../types/post"
+import SchoolCard from "../SchoolCard"
 
 interface User {
 	id: string
@@ -104,16 +105,20 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 			<TouchableOpacity
 				style={styles.postContainer}
 				onPress={() => onCardPress?.(item)}
-				activeOpacity={0.7}
+				activeOpacity={1}
 			>
-				{hasMedia && <PhotoGrid media={item.post_media || []} />}
-				<View style={hasMedia ? styles.postContent : styles.postContentNoImage}>
-					<Text style={styles.title}>{item.title}</Text>
-					<Text style={styles.date}>
-						Publicado el{" "}
-						{dayjs(item.created_at).format("dddd D [de] MMMM YYYY")}
-					</Text>
-				</View>
+				<SchoolCard>
+					{hasMedia && <PhotoGrid media={item.post_media || []} />}
+					<View
+						style={hasMedia ? styles.postContent : styles.postContentNoImage}
+					>
+						<Text style={styles.title}>{item.title}</Text>
+						<Text style={styles.date}>
+							Publicado el{" "}
+							{dayjs(item.created_at).format("dddd D [de] MMMM YYYY")}
+						</Text>
+					</View>
+				</SchoolCard>
 			</TouchableOpacity>
 		)
 	}
@@ -144,14 +149,14 @@ const styles = StyleSheet.create({
 		padding: 16,
 	},
 	postContainer: {
-		backgroundColor: "#fff",
-		borderRadius: 12,
-		marginBottom: 16,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.1,
-		shadowRadius: 4,
-		elevation: 2,
+		//backgroundColor: "#fff",
+		//borderRadius: 12,
+		marginBottom: 12,
+		// shadowColor: "#000",
+		// shadowOffset: { width: 0, height: 2 },
+		// shadowOpacity: 0.1,
+		// shadowRadius: 4,
+		// elevation: 2,
 		overflow: "hidden",
 	},
 	singleMedia: {
@@ -161,6 +166,7 @@ const styles = StyleSheet.create({
 	},
 	photoGrid: {
 		position: "relative",
+		overflow: "hidden",
 	},
 	gridRow: {
 		flexDirection: "row",
@@ -183,10 +189,12 @@ const styles = StyleSheet.create({
 	},
 	postContent: {
 		padding: 16,
+		paddingHorizontal: 0,
+		paddingBottom: 0,
 	},
 	postContentNoImage: {
-		padding: 20,
-		minHeight: 100,
+		padding: 16,
+		paddingHorizontal: 0,
 	},
 	title: {
 		fontSize: 18,
@@ -207,7 +215,6 @@ const styles = StyleSheet.create({
 	date: {
 		fontSize: 12,
 		color: "#888",
-		marginBottom: 4,
 	},
 	mediaCount: {
 		fontSize: 12,
