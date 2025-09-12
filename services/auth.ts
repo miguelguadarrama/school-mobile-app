@@ -1,12 +1,10 @@
 // services/authService.ts
 import * as SecureStore from "expo-secure-store"
 
-const {
-  EXPO_PUBLIC_AUTH0_DOMAIN,
-  EXPO_PUBLIC_AUTH0_CLIENT_ID,
-  EXPO_PUBLIC_AUTH0_AUDIENCE,
-  EXPO_PUBLIC_AUTH0_SCOPE,
-} = process.env
+const EXPO_PUBLIC_AUTH0_DOMAIN = process.env.EXPO_PUBLIC_AUTH0_DOMAIN
+const EXPO_PUBLIC_AUTH0_AUDIENCE = process.env.EXPO_PUBLIC_AUTH0_AUDIENCE
+const EXPO_PUBLIC_AUTH0_CLIENT_ID = process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID
+const EXPO_PUBLIC_AUTH0_SCOPE = process.env.EXPO_PUBLIC_AUTH0_SCOPE
 
 // Helpers to save and load tokens
 export const saveToken = async (key: string, value: string) => {

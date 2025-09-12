@@ -21,6 +21,11 @@ type LoginPasswordNavigationProp = NativeStackNavigationProp<
 	"LoginPassword"
 >
 
+const EXPO_PUBLIC_AUTH0_DOMAIN = process.env.EXPO_PUBLIC_AUTH0_DOMAIN
+const EXPO_PUBLIC_AUTH0_AUDIENCE = process.env.EXPO_PUBLIC_AUTH0_AUDIENCE
+const EXPO_PUBLIC_AUTH0_CLIENT_ID = process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID
+const EXPO_PUBLIC_AUTH0_SCOPE = process.env.EXPO_PUBLIC_AUTH0_SCOPE
+
 const LoginPassword = () => {
 	const { login } = useAuth()
 	const route = useRoute()
@@ -80,6 +85,11 @@ const LoginPassword = () => {
 				onPress={handleLogin}
 				disabled={!password || status === "BUSY"}
 			/>
+
+			<Text style={{ marginVertical: 20, textAlign: "center" }}>
+				Variables: [{EXPO_PUBLIC_AUTH0_DOMAIN}], [{EXPO_PUBLIC_AUTH0_CLIENT_ID}
+				], [{EXPO_PUBLIC_AUTH0_AUDIENCE}], [{EXPO_PUBLIC_AUTH0_SCOPE}]
+			</Text>
 
 			<TouchableOpacity
 				onPress={handleForgotPassword}

@@ -1,8 +1,6 @@
 import { getToken } from "./auth"
 
-const {
-  EXPO_PUBLIC_API_BASE_URL,
-} = process.env
+const EXPO_PUBLIC_API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL
 
 export const fetcher = async (endpoint: string, options: RequestInit = {}) => {
   const token = await getToken("access_token")
