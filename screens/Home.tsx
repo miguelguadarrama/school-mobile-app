@@ -12,7 +12,11 @@ import DailyActivityStatus from "../components/home/status"
 
 export default function HomeScreen() {
 	// Fetch student information from the API
-	const { data, isLoading, mutate } = useSWR<student[]>("/mobile/profile")
+	const { data, isLoading, mutate } = useSWR<{ students: student[] }>(
+		"/mobile/profile"
+	)
+
+	//console.log({ data: JSON.stringify(data.students) })
 
 	// Pull to refresh handler
 	const [refreshing, setRefreshing] = React.useState(false)

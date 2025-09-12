@@ -39,8 +39,8 @@ export const login = async (email: string, password: string) => {
   })
 
   if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error_description || "Login failed")
+    //const error = await response.json()
+    throw new Error("Login Fallido")
   }
 
   const data = await response.json()

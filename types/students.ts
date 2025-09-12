@@ -18,6 +18,13 @@ export interface student {
   }[]
 }
 
+export interface attendanceStatus {
+  classroom_student_id: string
+  date: string
+  status_alias: string
+  reason?: string
+}
+
 // Type definitions
 export type EatingStatus = "none" | "little" | "normal" | "lots"
 export type MoodStatus =

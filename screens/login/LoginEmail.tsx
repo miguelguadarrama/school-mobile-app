@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useState } from "react"
 import { Button, StyleSheet, Text, TextInput, View } from "react-native"
+import AppButton from "../../components/ui/button"
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -50,10 +51,10 @@ const LoginScreen = () => {
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.title}>Welcome</Text>
+			<Text style={styles.title}>Bienvenido a JAC</Text>
 
 			<TextInput
-				placeholder="Enter your email"
+				placeholder="Correo electrónico"
 				value={email}
 				onChangeText={setEmail}
 				keyboardType="email-address"
@@ -63,13 +64,14 @@ const LoginScreen = () => {
 				readOnly={status === "BUSY"}
 			/>
 
-			<Button
+			<AppButton
 				disabled={
 					status === "BUSY" || email.length === 0 || email.indexOf("@") === -1
 				}
-				title={status === "BUSY" ? "Please wait..." : "Continue"}
 				onPress={handleContinue}
-			/>
+			>
+				{status === "BUSY" ? "Por favor espera..." : "Continuar"}
+			</AppButton>
 		</View>
 	)
 }

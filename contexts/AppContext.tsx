@@ -1,9 +1,10 @@
 import { createContext } from "react"
-import { student } from "../types/students"
+import { attendanceStatus, student } from "../types/students"
 
 interface AppContextType {
 	students: student[]
 	selectedStudent: student | null
+	attendance: attendanceStatus[]
 	setSelectedStudent: (student: student | null) => void
 }
 

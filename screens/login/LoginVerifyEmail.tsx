@@ -30,12 +30,15 @@ const LoginVerifyEmail = () => {
 			if (data) {
 				setSentOTP(true)
 				Alert.alert(
-					"Verification code sent",
-					`We have sent a verification code to ${email}.`
+					"Código de verificación enviado",
+					`Hemos enviado un código de verificación a ${email}.`
 				)
 				setStatus("IDLE")
 			} else {
-				Alert.alert("Error", `Failed to send verification code to ${email}.`)
+				Alert.alert(
+					"Error",
+					`No se pudo enviar el código de verificación a ${email}.`
+				)
 				navigation.reset({
 					index: 0,
 					routes: [{ name: "LoginEmail" }],
@@ -46,7 +49,7 @@ const LoginVerifyEmail = () => {
 			if (__DEV__) {
 				console.error(error)
 			}
-			Alert.alert("Error", "Failed to send verification code.")
+			Alert.alert("Error", "No se pudo enviar el código de verificación.")
 			navigation.reset({
 				index: 0,
 				routes: [{ name: "LoginEmail" }],
@@ -64,18 +67,21 @@ const LoginVerifyEmail = () => {
 			const data = await verifyOTP(email, otpCode)
 
 			if (data && data.result) {
-				Alert.alert("Success", "Your email has been verified.")
+				Alert.alert("Éxito", "Tu correo electrónico ha sido verificado.")
 				navigation.navigate("LoginNewPassword", { email })
 				return
 			} else {
-				Alert.alert("Invalid Code", "The code you entered is incorrect.")
+				Alert.alert(
+					"Código inválido",
+					"El código que ingresaste es incorrecto."
+				)
 				setStatus("IDLE")
 			}
 		} catch (error) {
 			if (__DEV__) {
 				console.error(error)
 			}
-			Alert.alert("Error", "Failed to verify code.")
+			Alert.alert("Error", "No se pudo verificar el código.")
 			setStatus("IDLE")
 		}
 	}
@@ -89,7 +95,7 @@ const LoginVerifyEmail = () => {
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.label}>Confirm your email</Text>
+			<Text style={styles.label}>Confirma tu correo electrónico</Text>
 			<TextInput
 				value={email}
 				editable={false}
@@ -98,14 +104,14 @@ const LoginVerifyEmail = () => {
 
 			{!sentOTP ? (
 				<>
-					<Button title="Yes, send verification code" onPress={handleSendOTP} />
+					<Button title="Sí, enviar código" onPress={handleSendOTP} />
 					<View style={{ height: 20 }} />
-					<Button title="No, wrong email" onPress={handleWrongEmail} />
+					<Button title="No, correo incorrecto" onPress={handleWrongEmail} />
 				</>
 			) : (
 				<>
 					<Text style={[styles.label, { marginTop: 30 }]}>
-						Enter the 6-digit code
+						Introduce el código de 6 dígitos
 					</Text>
 					<TextInput
 						value={otpCode}
@@ -117,7 +123,7 @@ const LoginVerifyEmail = () => {
 					/>
 					<Button
 						disabled={!otpCode || otpCode.length !== 6 || status === "BUSY"}
-						title="Confirm Code"
+						title="Confirmar código"
 						onPress={handleVerifyOTP}
 					/>
 				</>

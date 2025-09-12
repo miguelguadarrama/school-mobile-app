@@ -1,15 +1,16 @@
-import React from "react"
+import React, { useContext } from "react"
 import { View, Text, StyleSheet } from "react-native"
 import {
 	LucideCheck,
 	LucideClock,
 	LucideX,
-	LucideHome,
+	LucideIcon,
 } from "lucide-react-native"
+import AppContext from "../../contexts/AppContext"
 
 interface AttendanceRecord {
 	date: string
-	status: "present" | "absent" | "late" | "early_pickup" | "holiday"
+	status?: string
 	checkInTime?: string
 	checkOutTime?: string
 	note?: string
@@ -23,6 +24,12 @@ interface AttendanceCardProps {
 export default function AttendanceCard({
 	locale = "es-VE",
 }: AttendanceCardProps) {
+	const { selectedStudent, attendance } = useContext(AppContext)!
+
+	if (!selectedStudent) {
+		return null
+	}
+
 	// Get current week dates (Monday to Friday)
 	const getCurrentWeekDates = () => {
 		const today = new Date()
@@ -45,85 +52,62 @@ export default function AttendanceCard({
 	const weekDates = getCurrentWeekDates()
 
 	// Static attendance data for demonstration
-	const attendanceData: AttendanceRecord[] = [
-		{
-			date: weekDates[0].toISOString().split("T")[0],
-			status: "holiday", // Sunday
-		},
-		{
-			date: weekDates[1].toISOString().split("T")[0],
-			status: "present",
-		},
-		{
-			date: weekDates[2].toISOString().split("T")[0],
-			status: "late",
-		},
-		{
-			date: weekDates[3].toISOString().split("T")[0],
-			status: "present",
-		},
-		{
-			date: weekDates[4].toISOString().split("T")[0],
-			status: "absent",
-		},
-		{
-			date: weekDates[5].toISOString().split("T")[0],
-			status: "present",
-		},
-		{
-			date: weekDates[6].toISOString().split("T")[0],
-			status: "holiday", // Saturday
-		},
-	]
+
+	const attendanceData: AttendanceRecord[] = Array.from(
+		{ length: 7 },
+		(_, i) => {
+			const date = weekDates[i].toISOString().split("T")[0]
+			const record = attendance.find(
+				(a) => new Date(a.date).toISOString() === new Date(date).toISOString()
+			)
+			return {
+				date,
+				status:
+					(record?.status_alias as AttendanceRecord["status"]) || "absent",
+			}
+		}
+	)
 
 	const getStatusColor = (status: AttendanceRecord["status"]) => {
 		switch (status) {
-			case "present":
+			case "a_status_present":
 				return "#10B981" // Green
-			case "late":
+			case "a_status_late":
 				return "#F59E0B" // Amber
-			case "absent":
+			case "a_status_absent":
 				return "#EF4444" // Red
-			case "early_pickup":
-				return "#3B82F6" // Blue
-			case "holiday":
-				return "#BBB" // Gray
 			default:
-				return "#6B7280"
+				return "#CCC"
 		}
 	}
 
-	const getStatusLabel = (status: AttendanceRecord["status"]) => {
-		switch (status) {
-			case "present":
-				return "Present"
-			case "late":
-				return "Late"
-			case "absent":
-				return "Absent"
-			case "early_pickup":
-				return "Early Pickup"
-			case "holiday":
-				return "Holiday"
-			default:
-				return "Unknown"
-		}
-	}
+	// const getStatusLabel = (status: AttendanceRecord["status"]) => {
+	// 	switch (status) {
+	// 		case "present":
+	// 			return "Presente"
+	// 		case "late":
+	// 			return "Tarde"
+	// 		case "absent":
+	// 			return "Ausente"
+	// 		case "early_pickup":
+	// 			return "Recogida Temprana"
+	// 		case "holiday":
+	// 			return "Día Festivo"
+	// 		default:
+	// 			return "N/A"
+	// 	}
+	// }
 
-	const getStatusIcon = (status: AttendanceRecord["status"]) => {
+	const getStatusIcon = (status?: AttendanceRecord["status"]) => {
 		switch (status) {
-			case "present":
+			case "a_status_present":
 				return LucideCheck
-			case "late":
+			case "a_status_late":
 				return LucideClock
-			case "absent":
+			case "a_status_absent":
 				return LucideX
-			case "early_pickup":
-				return LucideHome
-			case "holiday":
-				return LucideHome
 			default:
-				return LucideX
+				return null
 		}
 	}
 
@@ -158,15 +142,22 @@ export default function AttendanceCard({
 									{ backgroundColor: getStatusColor(attendance.status) },
 								]}
 							>
-								{React.createElement(getStatusIcon(attendance.status), {
-									size: 14,
-									color: "#FFFFFF",
-								})}
+								{getStatusIcon(attendance.status) !== null ? (
+									<>
+										{React.createElement(
+											getStatusIcon(attendance.status) as LucideIcon,
+											{
+												size: 14,
+												color: "#FFFFFF",
+											}
+										)}
+									</>
+								) : null}
 							</View>
-
+							{/* 
 							<Text style={styles.statusLabel}>
 								{getStatusLabel(attendance.status)}
-							</Text>
+							</Text> */}
 						</View>
 					)
 				})}
@@ -207,10 +198,11 @@ const styles = StyleSheet.create({
 		opacity: 0.6,
 	},
 	dayName: {
-		fontSize: 12,
+		fontSize: 14,
 		fontWeight: "600",
 		color: "#6B7280",
 		marginBottom: 2,
+		textTransform: "capitalize",
 	},
 	dayNumber: {
 		fontSize: 16,

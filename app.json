@@ -13,10 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "infoPlist": {
         "NSPhotoLibraryAddUsageDescription": "This app needs access to save photos to your gallery."
-      }
+      },
+      "bundleIdentifier": "com.leeliai.school-mobile-app"
     },
     "android": {
       "adaptiveIcon": {

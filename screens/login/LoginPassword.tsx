@@ -15,6 +15,7 @@ import {
 import InputPassword from "../../components/InputPassword"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { AuthStackParamList } from "../../types/navigation"
+import AppButton from "../../components/ui/button"
 
 type LoginPasswordNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -40,7 +41,7 @@ const LoginPassword = () => {
 
 	const handleLogin = async () => {
 		if (!password) {
-			Alert.alert("Error", "Please enter your password.")
+			Alert.alert("Error", "Por favor ingresa tu contraseña.")
 			return
 		}
 
@@ -51,9 +52,12 @@ const LoginPassword = () => {
 			// ✅ If successful, user is redirected automatically by auth state
 		} catch (error: any) {
 			if (__DEV__) {
-				console.error("Login error", error)
+				console.error("Error de inicio de sesión", error)
 			}
-			Alert.alert("Login Error", error.message || "Failed to login")
+			Alert.alert(
+				"Error de Inicio de Sesión",
+				error.message || "Ocurrió un error."
+			)
 		} finally {
 			setStatus("IDLE")
 		}
@@ -65,37 +69,38 @@ const LoginPassword = () => {
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.label}>Email</Text>
+			<Text style={styles.label}>Correo electrónico</Text>
 			<TextInput
 				value={email}
 				editable={false}
 				style={[styles.input, { backgroundColor: "#eee", color: "#888" }]}
 			/>
 
-			<Text style={styles.label}>Password</Text>
+			<Text style={styles.label}>Contraseña</Text>
 			<InputPassword
-				placeholder="Enter your password"
+				placeholder="Introduce tu contraseña"
 				value={password}
 				onChangeText={setPassword}
 				secureTextEntry
 			/>
 
-			<Button
-				title={status === "BUSY" ? "Logging in..." : "Login"}
-				onPress={handleLogin}
+			<AppButton
 				disabled={!password || status === "BUSY"}
-			/>
+				onPress={handleLogin}
+			>
+				{status === "BUSY" ? "Iniciando sesión..." : "Iniciar sesión"}
+			</AppButton>
 
-			<Text style={{ marginVertical: 20, textAlign: "center" }}>
+			{/* <Text style={{ marginVertical: 20, textAlign: "center" }}>
 				Variables: [{EXPO_PUBLIC_AUTH0_DOMAIN}], [{EXPO_PUBLIC_AUTH0_CLIENT_ID}
 				], [{EXPO_PUBLIC_AUTH0_AUDIENCE}], [{EXPO_PUBLIC_AUTH0_SCOPE}]
-			</Text>
+			</Text> */}
 
 			<TouchableOpacity
 				onPress={handleForgotPassword}
 				style={styles.forgotPasswordContainer}
 			>
-				<Text style={styles.forgotPasswordText}>Forgot your password?</Text>
+				<Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
 			</TouchableOpacity>
 		</View>
 	)

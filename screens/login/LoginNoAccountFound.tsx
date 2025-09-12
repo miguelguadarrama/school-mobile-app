@@ -23,7 +23,7 @@ const LoginNoAccountFound = () => {
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.title}>Account Not Found</Text>
+			<Text style={styles.title}>No se encontró su cuenta</Text>
 
 			<TextInput
 				value={email}
@@ -32,13 +32,15 @@ const LoginNoAccountFound = () => {
 			/>
 
 			<Text style={styles.message}>
-				We couldn't find an account associated with this email address.{"\n\n"}
-				Only registered guardians and parents can create accounts.{"\n\n"}
-				If you believe this is a mistake, please contact the school staff for
-				assistance.
+				No pudimos encontrar una cuenta asociada con esta dirección de correo
+				electrónico.{"\n\n"}
+				Solo los representantes registrados pueden acceder a esta aplicación.
+				{"\n\n"}
+				Si crees que esto es un error, por favor contacta al personal de la
+				escuela para ayuda.
 			</Text>
 
-			<Button title="Return to Login" onPress={handleGoBack} />
+			<Button title="Regresar a Iniciar Sesión" onPress={handleGoBack} />
 		</View>
 	)
 }

@@ -26,19 +26,19 @@ const DailyActivityStatus: React.FC<DailyActivityStatusProps> = ({ data }) => {
 			case "little":
 				return {
 					icon: "restaurant-outline" as const,
-					text: "Ate a little",
+					text: "Poco",
 					isPositive: false,
 				}
 			case "normal":
 				return {
 					icon: "restaurant" as const,
-					text: "Ate well",
+					text: "Bien",
 					isPositive: true,
 				}
 			case "lots":
 				return {
 					icon: "heart" as const,
-					text: "Ate lots!",
+					text: "Mucho",
 					isPositive: true,
 				}
 		}
@@ -49,12 +49,12 @@ const DailyActivityStatus: React.FC<DailyActivityStatusProps> = ({ data }) => {
 		return hadBowelMovement
 			? {
 					icon: "checkmark-circle" as const,
-					text: "Pooped",
+					text: "Pupú",
 					isPositive: true,
 			  }
 			: {
 					icon: "close-circle-outline" as const,
-					text: "No poop",
+					text: "No pupú",
 					isPositive: false,
 			  }
 	}
@@ -65,37 +65,37 @@ const DailyActivityStatus: React.FC<DailyActivityStatusProps> = ({ data }) => {
 			case "happy":
 				return {
 					icon: "happy-outline" as const,
-					text: "Happy",
+					text: "Feliz",
 					isPositive: true,
 				}
 			case "cuddly":
 				return {
 					icon: "heart" as const,
-					text: "Cuddly",
+					text: "Cariñoso/a",
 					isPositive: true,
 				}
 			case "tired":
 				return {
 					icon: "bed-outline" as const,
-					text: "Tired",
+					text: "Cansado/a",
 					isPositive: false,
 				}
 			case "playful":
 				return {
 					icon: "football-outline" as const,
-					text: "Playful",
+					text: "Juguetón/a",
 					isPositive: true,
 				}
 			case "sad":
 				return {
 					icon: "sad-outline" as const,
-					text: "Sad",
+					text: "Triste",
 					isPositive: false,
 				}
 			case "sick":
 				return {
 					icon: "medical-outline" as const,
-					text: "Not feeling well",
+					text: "Decaído/a",
 					isPositive: false,
 				}
 		}
