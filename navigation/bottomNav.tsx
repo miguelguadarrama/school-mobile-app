@@ -189,15 +189,15 @@ function CustomTabBar(): JSX.Element | null {
 		focused: boolean
 	): keyof typeof Ionicons.glyphMap => {
 		switch (routeName) {
-			case "Announcements":
+			case "Anuncios":
 				return focused ? "notifications" : "notifications-outline"
 			case "Social":
 				return focused ? "albums" : "albums-outline"
-			case "Home":
+			case "Inicio":
 				return focused ? "grid" : "grid-outline"
-			case "Messaging":
+			case "Mensajería":
 				return focused ? "chatbubbles" : "chatbubbles-outline"
-			case "Options":
+			case "Opciones":
 				return focused ? "settings" : "settings-outline"
 			default:
 				return "ellipse"

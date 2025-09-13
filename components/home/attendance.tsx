@@ -36,11 +36,13 @@ export default function AttendanceCard({
 	const getCurrentWeekDates = () => {
 		const today = new Date()
 		const currentDay = today.getDay() // 0 = Sunday, 1 = Monday, etc.
-		const sunday = new Date(today)
 
-		// Adjust to get Sunday of current week
-		// Subtract the current day number to get back to Sunday
+		// Find Sunday of current week
+		const sunday = new Date(today)
 		sunday.setDate(today.getDate() - currentDay)
+
+		// Ensure we're at the start of the day
+		sunday.setHours(0, 0, 0, 0)
 
 		const weekDates = []
 		for (let i = 0; i < 7; i++) {
@@ -48,6 +50,17 @@ export default function AttendanceCard({
 			date.setDate(sunday.getDate() + i)
 			weekDates.push(date)
 		}
+
+		// Helper function to format date in local timezone (YYYY-MM-DD)
+		const formatLocalDate = (date: Date) => {
+			const year = date.getFullYear()
+			const month = String(date.getMonth() + 1).padStart(2, "0")
+			const day = String(date.getDate()).padStart(2, "0")
+			return `${year}-${month}-${day}`
+		}
+
+		// Debug log to see what dates we're generating (local timezone)
+
 		return weekDates
 	}
 
@@ -56,11 +69,17 @@ export default function AttendanceCard({
 	const attendanceData: AttendanceRecord[] = Array.from(
 		{ length: 7 },
 		(_, i) => {
-			const date = weekDates[i].toISOString().split("T")[0]
+			// Format date in local timezone instead of UTC
+			const dateObj = weekDates[i]
+			const year = dateObj.getFullYear()
+			const month = String(dateObj.getMonth() + 1).padStart(2, "0")
+			const day = String(dateObj.getDate()).padStart(2, "0")
+			const date = `${year}-${month}-${day}`
+
 			const record = attendance.find(
 				(a) => date === a.date && a.status_type === "attendance_status"
 			)
-			console.log({ date, record })
+
 			return {
 				date,
 				status: record?.status_value || "",
@@ -98,9 +117,15 @@ export default function AttendanceCard({
 		<View style={styles.card}>
 			<View style={styles.weekContainer}>
 				{weekDates.map((date, index) => {
+					// Format date in local timezone
+					const year = date.getFullYear()
+					const month = String(date.getMonth() + 1).padStart(2, "0")
+					const day = String(date.getDate()).padStart(2, "0")
+					const localDateString = `${year}-${month}-${day}`
+
 					const attendance = attendanceData[index] || {
-						date: date.toISOString().split("T")[0],
-						status: "present" as const,
+						date: localDateString,
+						status: "",
 					}
 
 					const dayName = date.toLocaleDateString(locale, { weekday: "short" })
