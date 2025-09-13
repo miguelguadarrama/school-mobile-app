@@ -4,7 +4,14 @@ import { AuthStackParamList } from "../../types/navigation"
 import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useState } from "react"
-import { StatusBar, StyleSheet, Text, TextInput, View } from "react-native"
+import {
+	Image,
+	StatusBar,
+	StyleSheet,
+	Text,
+	TextInput,
+	View,
+} from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import AppButton from "../../components/ui/button"
 
@@ -43,11 +50,11 @@ const LoginScreen = () => {
 			if (__DEV__) {
 				console.error("Error checking user email", error)
 			}
+		} finally {
+			setStatus("IDLE")
 		}
 
 		navigation.navigate("LoginNoAccountFound", { email })
-
-		setStatus("IDLE")
 	}
 
 	return (
@@ -55,6 +62,10 @@ const LoginScreen = () => {
 			<StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 			<SafeAreaView style={styles.safeArea}>
 				<View style={styles.container}>
+					<Image
+						source={require("../../assets/ic_launcher-playstore.png")}
+						style={styles.logo}
+					/>
 					<Text style={styles.title}>Bienvenido a JAC</Text>
 
 					<TextInput
@@ -70,7 +81,9 @@ const LoginScreen = () => {
 
 					<AppButton
 						disabled={
-							status === "BUSY" || email.length === 0 || email.indexOf("@") === -1
+							status === "BUSY" ||
+							email.length === 0 ||
+							email.indexOf("@") === -1
 						}
 						onPress={handleContinue}
 					>
@@ -92,8 +105,14 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		justifyContent: "flex-start",
-		marginTop: "50%",
+		marginTop: "20%",
 		padding: 20,
+	},
+	logo: {
+		width: 200,
+		height: 200,
+		alignSelf: "center",
+		marginBottom: 30,
 	},
 	title: {
 		fontSize: 28,

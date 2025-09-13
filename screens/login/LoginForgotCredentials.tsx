@@ -5,6 +5,7 @@ import { useNavigation, useRoute } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useState } from "react"
 import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native"
+import AppButton from "../../components/ui/button"
 
 type VerifyEmailScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -121,11 +122,12 @@ const LoginForgotCredentials = () => {
 						style={styles.input}
 						readOnly={status === "BUSY"}
 					/>
-					<Button
+					<AppButton
 						disabled={!otpCode || otpCode.length !== 6 || status === "BUSY"}
-						title="Confirmar código"
 						onPress={handleVerifyOTP}
-					/>
+					>
+						{status === "BUSY" ? "Verificando..." : "Verificar código"}
+					</AppButton>
 				</>
 			)}
 		</View>

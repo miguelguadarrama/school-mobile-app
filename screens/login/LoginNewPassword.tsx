@@ -6,6 +6,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useEffect, useState } from "react"
 import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native"
 import InputPassword from "../../components/InputPassword"
+import AppButton from "../../components/ui/button"
 //import { createAuth0User } from "@/services/auth" // We'll define this next
 
 type SetNewPasswordScreenNavigationProp = NativeStackNavigationProp<
@@ -38,12 +39,12 @@ const LoginNewPassword = () => {
 
 	const handleCreateAccount = async () => {
 		if (!password || !confirmPassword) {
-			Alert.alert("Error", "Please fill in all fields.")
+			Alert.alert("Error", "Por favor llena todos los campos.")
 			return
 		}
 
 		if (password !== confirmPassword) {
-			Alert.alert("Error", "Passwords do not match.")
+			Alert.alert("Error", "Las contraseñas no coinciden.")
 			return
 		}
 
@@ -56,8 +57,8 @@ const LoginNewPassword = () => {
 				Alert.alert(
 					"Success",
 					shouldReset
-						? "Your password has been changed. Please log in."
-						: "Your account has been created. Please log in."
+						? "Su contraseña ha sido cambiada. Por favor inicia sesión."
+						: "Su cuenta ha sido creada. Por favor inicia sesión."
 				)
 				navigation.reset({
 					index: 0,
@@ -65,13 +66,13 @@ const LoginNewPassword = () => {
 				})
 				return
 			} else {
-				Alert.alert("Error", "Failed to create account.")
+				Alert.alert("Error", "No se pudo crear la cuenta.")
 			}
 		} catch (error: any) {
 			if (__DEV__) {
 				console.error(error)
 			}
-			Alert.alert("Error", error.message || "Failed to create account.")
+			Alert.alert("Error", error.message || "No se pudo crear la cuenta.")
 		} finally {
 			setStatus("IDLE")
 		}
@@ -87,35 +88,35 @@ const LoginNewPassword = () => {
 			/>
 
 			<Text style={styles.label}>
-				Now create a new password, it must contain the following:
+				Ahora crea una nueva contraseña, debe contener lo siguiente:
 			</Text>
 
 			<Text style={styles.passwordGuidance}>
-				• At least 8 characters{"\n"}• Lowercase (a-z){"\n"}• Uppercase (A-Z)
-				{"\n"}• Numbers (0-9)
+				• Al menos 8 caracteres{"\n"}• Minúsculas (a-z){"\n"}• Mayúsculas (A-Z)
+				{"\n"}• Números (0-9)
 			</Text>
 
-			<Text style={styles.label}>New Password</Text>
+			<Text style={styles.label}>Nueva Contraseña</Text>
 			<InputPassword
-				placeholder="Enter new password"
+				placeholder="Introduce tu nueva contraseña"
 				value={password}
 				onChangeText={setPassword}
 				secureTextEntry
 			/>
 
-			<Text style={styles.label}>Confirm Password</Text>
+			<Text style={styles.label}>Confirmar Contraseña</Text>
 			<InputPassword
-				placeholder="Re-enter new password"
+				placeholder="Repite tu nueva contraseña"
 				value={confirmPassword}
 				onChangeText={setConfirmPassword}
 				secureTextEntry
 			/>
-
-			<Button
-				title={status === "BUSY" ? "Creating..." : "Create Account"}
-				onPress={handleCreateAccount}
+			<AppButton
 				disabled={status === "BUSY" || !isValid}
-			/>
+				onPress={handleCreateAccount}
+			>
+				{status === "BUSY" ? "Creando..." : "Crear Cuenta"}
+			</AppButton>
 		</View>
 	)
 }

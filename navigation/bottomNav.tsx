@@ -46,11 +46,11 @@ interface PageScrollStateChangedEvent {
 
 // Tab screens array to maintain order
 const tabScreens: TabScreen[] = [
-	{ name: "Announcements", component: AnnouncementsScreen },
+	{ name: "Anuncios", component: AnnouncementsScreen },
 	{ name: "Social", component: SocialScreen },
-	{ name: "Home", component: HomeScreen },
-	{ name: "Messaging", component: MessagingScreen },
-	{ name: "Options", component: OptionsScreen },
+	{ name: "Inicio", component: HomeScreen },
+	{ name: "Mensajería", component: MessagingScreen },
+	{ name: "Opciones", component: OptionsScreen },
 ]
 
 // Custom wrapper component that handles the swipe functionality

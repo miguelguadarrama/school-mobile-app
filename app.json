@@ -15,9 +15,9 @@
     "ios": {
       "supportsTablet": false,
       "infoPlist": {
-        "NSPhotoLibraryAddUsageDescription": "This app needs access to save photos to your gallery."
+        "NSPhotoLibraryAddUsageDescription": "Esta aplicación necesita acceso para guardar fotos en tu galería."
       },
-      "bundleIdentifier": "com.leeliai.jac_conecta"
+      "bundleIdentifier": "com.leeliai.school_mobile_app"
     },
     "android": {
       "adaptiveIcon": {

@@ -5,13 +5,15 @@ import { useRoute, useNavigation } from "@react-navigation/native"
 import React, { useState } from "react"
 import {
 	Alert,
-	Button,
+	Image,
 	StyleSheet,
+	StatusBar,
 	Text,
 	TextInput,
 	View,
 	TouchableOpacity,
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import InputPassword from "../../components/InputPassword"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { AuthStackParamList } from "../../types/navigation"
@@ -68,41 +70,53 @@ const LoginPassword = () => {
 	}
 
 	return (
-		<View style={styles.container}>
-			<Text style={styles.label}>Correo electrónico</Text>
-			<TextInput
-				value={email}
-				editable={false}
-				style={[styles.input, { backgroundColor: "#eee", color: "#888" }]}
-			/>
+		<>
+			<StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
-			<Text style={styles.label}>Contraseña</Text>
-			<InputPassword
-				placeholder="Introduce tu contraseña"
-				value={password}
-				onChangeText={setPassword}
-				secureTextEntry
-			/>
+			<SafeAreaView style={styles.safeArea}>
+				<View style={styles.container}>
+					<Image
+						source={require("../../assets/ic_launcher-playstore.png")}
+						style={styles.logo}
+					/>
+					<Text style={styles.label}>Correo electrónico</Text>
+					<TextInput
+						value={email}
+						editable={false}
+						style={[styles.input, { backgroundColor: "#eee", color: "#888" }]}
+					/>
 
-			<AppButton
-				disabled={!password || status === "BUSY"}
-				onPress={handleLogin}
-			>
-				{status === "BUSY" ? "Iniciando sesión..." : "Iniciar sesión"}
-			</AppButton>
+					<Text style={styles.label}>Contraseña</Text>
+					<InputPassword
+						placeholder="Introduce tu contraseña"
+						value={password}
+						onChangeText={setPassword}
+						secureTextEntry
+					/>
 
-			{/* <Text style={{ marginVertical: 20, textAlign: "center" }}>
+					<AppButton
+						disabled={!password || status === "BUSY"}
+						onPress={handleLogin}
+					>
+						{status === "BUSY" ? "Iniciando sesión..." : "Iniciar sesión"}
+					</AppButton>
+
+					{/* <Text style={{ marginVertical: 20, textAlign: "center" }}>
 				Variables: [{EXPO_PUBLIC_AUTH0_DOMAIN}], [{EXPO_PUBLIC_AUTH0_CLIENT_ID}
 				], [{EXPO_PUBLIC_AUTH0_AUDIENCE}], [{EXPO_PUBLIC_AUTH0_SCOPE}]
 			</Text> */}
 
-			<TouchableOpacity
-				onPress={handleForgotPassword}
-				style={styles.forgotPasswordContainer}
-			>
-				<Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
-			</TouchableOpacity>
-		</View>
+					<TouchableOpacity
+						onPress={handleForgotPassword}
+						style={styles.forgotPasswordContainer}
+					>
+						<Text style={styles.forgotPasswordText}>
+							¿Olvidaste tu contraseña?
+						</Text>
+					</TouchableOpacity>
+				</View>
+			</SafeAreaView>
+		</>
 	)
 }
 
@@ -112,12 +126,22 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		justifyContent: "flex-start",
-		marginTop: "50%",
+		marginTop: "20%",
 		padding: 20,
+	},
+	safeArea: {
+		flex: 1,
+		backgroundColor: "#ffffff",
 	},
 	label: {
 		fontSize: 16,
 		marginBottom: 6,
+	},
+	logo: {
+		width: 150,
+		height: 150,
+		alignSelf: "center",
+		marginBottom: 30,
 	},
 	input: {
 		borderWidth: 1,
