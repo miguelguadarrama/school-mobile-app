@@ -32,15 +32,15 @@ export default function AttendanceCard({
 		return null
 	}
 
-	// Get current week dates (Monday to Friday)
+	// Get current week dates (Sunday to Saturday)
 	const getCurrentWeekDates = () => {
 		const today = new Date()
-		const currentDay = today.getDay()
+		const currentDay = today.getDay() // 0 = Sunday, 1 = Monday, etc.
 		const sunday = new Date(today)
 
 		// Adjust to get Sunday of current week
-		const diff = today.getDate() - currentDay
-		sunday.setDate(diff)
+		// Subtract the current day number to get back to Sunday
+		sunday.setDate(today.getDate() - currentDay)
 
 		const weekDates = []
 		for (let i = 0; i < 7; i++) {
@@ -60,6 +60,7 @@ export default function AttendanceCard({
 			const record = attendance.find(
 				(a) => date === a.date && a.status_type === "attendance_status"
 			)
+			console.log({ date, record })
 			return {
 				date,
 				status: record?.status_value || "",
