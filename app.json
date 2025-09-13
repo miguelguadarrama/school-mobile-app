@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "school-mobile-app",
-    "slug": "school-mobile-app",
+    "name": "JAC Conecta",
+    "slug": "jac_conecta",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,12 +17,13 @@
       "infoPlist": {
         "NSPhotoLibraryAddUsageDescription": "This app needs access to save photos to your gallery."
       },
-      "bundleIdentifier": "com.leeliai.school-mobile-app"
+      "bundleIdentifier": "com.leeliai.jac_conecta"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "monochromeImage": "./assets/monochrome-icon.png"
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
