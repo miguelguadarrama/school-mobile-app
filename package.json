@@ -7,7 +7,8 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "update": "npx expo install --check"
+    "update": "npx expo install --check",
+    "android:assets": "npx expo prebuild --platform android --clean"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
