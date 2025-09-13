@@ -35,6 +35,8 @@ export default function AnnouncementsScreen() {
 				<Text style={styles.heading}>Anuncios</Text>
 			</SafeAreaView>
 			<BlogPostList
+				emptyTitle="No hay anuncios"
+				emptySubtitle="Cuando haya nuevos anuncios de la escuela, aparecerán aquí"
 				posts={data}
 				onRefresh={handleRefresh}
 				isRefreshing={isLoading}

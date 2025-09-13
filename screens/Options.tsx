@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from "react-native"
 export default function OptionsScreen() {
 	return (
 		<View style={styles.container}>
-			<Text>Options Screen</Text>
+			<Text>Opciones (Pronto)</Text>
 		</View>
 	)
 }

@@ -45,7 +45,7 @@ export default function SocialScreen() {
 				<Text style={styles.heading}>Social</Text>
 			</SafeAreaView>
 			<BlogPostList
-				posts={data}
+				posts={data || []}
 				onRefresh={handleRefresh}
 				isRefreshing={isLoading}
 			/>

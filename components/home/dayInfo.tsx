@@ -1,7 +1,8 @@
-import React from "react"
+import React, { useContext } from "react"
 import { View, Text, StyleSheet } from "react-native"
 import AttendanceCard from "./attendance"
 import SchoolCard from "../SchoolCard"
+import AppContext from "../../contexts/AppContext"
 
 interface DayInfoCardProps {
 	// We'll add props later when we connect to real data
@@ -10,7 +11,8 @@ interface DayInfoCardProps {
 
 export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 	// Get current date information
-	const now = new Date()
+	const { selectedDate } = useContext(AppContext)!
+	const now = selectedDate || new Date()
 	const dayName = now.toLocaleDateString(locale, { weekday: "long" })
 	const monthDay = now.toLocaleDateString(locale, {
 		month: "long",

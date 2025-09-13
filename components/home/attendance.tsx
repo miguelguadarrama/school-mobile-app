@@ -7,6 +7,7 @@ import {
 	LucideIcon,
 } from "lucide-react-native"
 import AppContext from "../../contexts/AppContext"
+import { getFormattedDate } from "../../helpers/date"
 
 interface AttendanceRecord {
 	date: string
@@ -24,7 +25,8 @@ interface AttendanceCardProps {
 export default function AttendanceCard({
 	locale = "es-VE",
 }: AttendanceCardProps) {
-	const { selectedStudent, attendance } = useContext(AppContext)!
+	const { selectedStudent, attendance, selectedDate, setSelectedDate } =
+		useContext(AppContext)!
 
 	if (!selectedStudent) {
 		return null
@@ -51,60 +53,40 @@ export default function AttendanceCard({
 
 	const weekDates = getCurrentWeekDates()
 
-	// Static attendance data for demonstration
-
 	const attendanceData: AttendanceRecord[] = Array.from(
 		{ length: 7 },
 		(_, i) => {
 			const date = weekDates[i].toISOString().split("T")[0]
 			const record = attendance.find(
-				(a) => new Date(a.date).toISOString() === new Date(date).toISOString()
+				(a) => date === a.date && a.status_type === "attendance_status"
 			)
 			return {
 				date,
-				status:
-					(record?.status_alias as AttendanceRecord["status"]) || "absent",
+				status: record?.status_value || "",
 			}
 		}
 	)
 
 	const getStatusColor = (status: AttendanceRecord["status"]) => {
 		switch (status) {
-			case "a_status_present":
+			case "attendance_status_present":
 				return "#10B981" // Green
-			case "a_status_late":
+			case "attendance_status_late":
 				return "#F59E0B" // Amber
-			case "a_status_absent":
+			case "attendance_status_absent":
 				return "#EF4444" // Red
 			default:
 				return "#CCC"
 		}
 	}
 
-	// const getStatusLabel = (status: AttendanceRecord["status"]) => {
-	// 	switch (status) {
-	// 		case "present":
-	// 			return "Presente"
-	// 		case "late":
-	// 			return "Tarde"
-	// 		case "absent":
-	// 			return "Ausente"
-	// 		case "early_pickup":
-	// 			return "Recogida Temprana"
-	// 		case "holiday":
-	// 			return "Día Festivo"
-	// 		default:
-	// 			return "N/A"
-	// 	}
-	// }
-
 	const getStatusIcon = (status?: AttendanceRecord["status"]) => {
 		switch (status) {
-			case "a_status_present":
+			case "attendance_status_present":
 				return LucideCheck
-			case "a_status_late":
+			case "attendance_status_late":
 				return LucideClock
-			case "a_status_absent":
+			case "attendance_status_absent":
 				return LucideX
 			default:
 				return null
@@ -122,12 +104,13 @@ export default function AttendanceCard({
 
 					const dayName = date.toLocaleDateString(locale, { weekday: "short" })
 					const dayNum = date.getDate()
-					const isToday = date.toDateString() === new Date().toDateString()
+					const isToday = date.toDateString() === selectedDate.toDateString()
 
 					return (
 						<View
 							key={index}
 							style={[styles.dayColumn, isToday && styles.todayColumn]}
+							onTouchEnd={() => setSelectedDate(date)}
 						>
 							<Text style={[styles.dayName, isToday && styles.todayText]}>
 								{dayName}
@@ -154,10 +137,6 @@ export default function AttendanceCard({
 									</>
 								) : null}
 							</View>
-							{/* 
-							<Text style={styles.statusLabel}>
-								{getStatusLabel(attendance.status)}
-							</Text> */}
 						</View>
 					)
 				})}

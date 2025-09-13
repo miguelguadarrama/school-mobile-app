@@ -57,13 +57,7 @@ export default function HomeScreen() {
 
 					{/* Day Information Card */}
 					<View style={styles.cardContainer}>
-						<DailyActivityStatus
-							data={{
-								eating: "little",
-								mood: "happy",
-								poop: true,
-							}}
-						/>
+						<DailyActivityStatus />
 					</View>
 
 					{/* Communication Recap */}

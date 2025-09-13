@@ -17,9 +17,9 @@ export default function CommunicationBar({}: CommunicationBarProps) {
 	const { navigateToTab } = useContext(TabContext)
 	// Static data for demonstration
 	const communicationData: CommunicationData = {
-		announcements: 2,
-		socialPosts: 5,
-		messages: 1,
+		announcements: 0,
+		socialPosts: 0,
+		messages: 0,
 	}
 
 	const handlePress = (type: string) => {
@@ -81,14 +81,14 @@ export default function CommunicationBar({}: CommunicationBarProps) {
 
 			<CommunicationItem
 				IconComponent={Camera}
-				label="Social Posts"
+				label="Blog"
 				count={communicationData.socialPosts}
 				onPress={() => handlePress("social")}
 			/>
 
 			<CommunicationItem
 				IconComponent={MessageCircle}
-				label="Messages"
+				label="Mensajes"
 				count={communicationData.messages}
 				onPress={() => handlePress("messages")}
 			/>

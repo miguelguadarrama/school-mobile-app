@@ -1,13 +1,18 @@
 import { View, Text, StyleSheet } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import {
-	DailyActivityStatusProps,
 	EatingStatus,
 	MoodStatus,
+	PeeStatus,
+	PoopStatus,
 } from "../../types/students"
 import SchoolCard from "../SchoolCard"
+import { useContext } from "react"
+import AppContext from "../../contexts/AppContext"
+import { getFormattedDate, normalizeDate } from "../../helpers/date"
 
-const DailyActivityStatus: React.FC<DailyActivityStatusProps> = ({ data }) => {
+const DailyActivityStatus: React.FC = () => {
+	const { attendance, selectedStudent, selectedDate } = useContext(AppContext)!
 	// Colors for positive and negative states
 	const colors = {
 		positive: "#4caf50", // Green for good things
@@ -15,148 +20,213 @@ const DailyActivityStatus: React.FC<DailyActivityStatusProps> = ({ data }) => {
 	}
 
 	// Helper function to get eating status display
-	const getEatingStatus = (status: EatingStatus) => {
+	const getEatingStatus = (status?: EatingStatus) => {
 		switch (status) {
-			case "none":
+			case "meal_status_no":
 				return {
 					icon: "sad-outline" as const,
-					text: "Didn't eat",
+					text: "No comió",
 					isPositive: false,
 				}
-			case "little":
+			case "meal_status_little":
 				return {
 					icon: "restaurant-outline" as const,
 					text: "Poco",
 					isPositive: false,
 				}
-			case "normal":
+			case "meal_status_ok":
 				return {
 					icon: "restaurant" as const,
-					text: "Bien",
+					text: "Normal",
 					isPositive: true,
 				}
-			case "lots":
-				return {
-					icon: "heart" as const,
-					text: "Mucho",
-					isPositive: true,
-				}
+			default:
+				return null
 		}
 	}
 
 	// Helper function to get diaper status display
-	const getDiaperStatus = (hadBowelMovement: boolean) => {
-		return hadBowelMovement
+	const getDiaperStatus = (hadBowelMovement?: PoopStatus) => {
+		if (!hadBowelMovement) return null
+		return hadBowelMovement === "poop_status_yes"
 			? {
 					icon: "checkmark-circle" as const,
-					text: "Pupú",
+					text: "Heces",
 					isPositive: true,
 			  }
 			: {
 					icon: "close-circle-outline" as const,
-					text: "No pupú",
+					text: "Heces",
+					isPositive: false,
+			  }
+	}
+
+	const getPeeStatus = (hadPeeMovement?: PeeStatus) => {
+		if (!hadPeeMovement) return null
+		return hadPeeMovement === "pee_status_yes"
+			? {
+					icon: "checkmark-circle" as const,
+					text: "Orina",
+					isPositive: true,
+			  }
+			: {
+					icon: "close-circle-outline" as const,
+					text: "Orina",
 					isPositive: false,
 			  }
 	}
 
 	// Helper function to get mood status display
-	const getMoodStatus = (mood: MoodStatus) => {
+	const getMoodStatus = (mood?: MoodStatus) => {
 		switch (mood) {
-			case "happy":
+			case "mood_status_happy":
 				return {
 					icon: "happy-outline" as const,
 					text: "Feliz",
 					isPositive: true,
 				}
-			case "cuddly":
+			case "mood_status_tired":
 				return {
-					icon: "heart" as const,
-					text: "Cariñoso/a",
-					isPositive: true,
-				}
-			case "tired":
-				return {
-					icon: "bed-outline" as const,
+					icon: "sad-outline" as const,
 					text: "Cansado/a",
 					isPositive: false,
 				}
-			case "playful":
-				return {
-					icon: "football-outline" as const,
-					text: "Juguetón/a",
-					isPositive: true,
-				}
-			case "sad":
+			case "mood_status_sad":
 				return {
 					icon: "sad-outline" as const,
 					text: "Triste",
 					isPositive: false,
 				}
-			case "sick":
+			case "mood_status_sick":
 				return {
 					icon: "medical-outline" as const,
-					text: "Decaído/a",
+					text: "Enfermo/a",
 					isPositive: false,
 				}
+			default:
+				return null
 		}
 	}
 
-	const eating = getEatingStatus(data.eating)
-	const poop = getDiaperStatus(data.poop)
-	const mood = getMoodStatus(data.mood)
+	const eating = getEatingStatus(
+		(attendance.find(
+			(a) =>
+				a.classroom_student_id ===
+					selectedStudent?.academic_year_classroom_students?.[0]?.id &&
+				a.status_type === "meal_status" &&
+				a.date === getFormattedDate(selectedDate || new Date())
+		)?.status_value as EatingStatus) || undefined
+	)
+	const poop = getDiaperStatus(
+		(attendance.find(
+			(a) =>
+				a.classroom_student_id ===
+					selectedStudent?.academic_year_classroom_students?.[0]?.id &&
+				a.status_type === "poop_status" &&
+				a.date === getFormattedDate(selectedDate || new Date())
+		)?.status_value as PoopStatus) || undefined
+	)
+	const pee = getPeeStatus(
+		(attendance.find(
+			(a) =>
+				a.classroom_student_id ===
+					selectedStudent?.academic_year_classroom_students?.[0]?.id &&
+				a.status_type === "pee_status" &&
+				a.date === getFormattedDate(selectedDate || new Date())
+		)?.status_value as PeeStatus) || undefined
+	)
+	const mood = getMoodStatus(
+		(attendance.find(
+			(a) =>
+				a.classroom_student_id ===
+					selectedStudent?.academic_year_classroom_students?.[0]?.id &&
+				a.status_type === "mood_status" &&
+				a.date === getFormattedDate(selectedDate || new Date())
+		)?.status_value as MoodStatus) || undefined
+	)
+
+	if (!mood && !eating && !poop && !pee) return null
 
 	return (
 		<SchoolCard>
 			<View style={styles.statusRow}>
 				{/* Mood Status */}
-				<View style={styles.statusItem}>
-					<Ionicons
-						name={mood.icon}
-						size={32}
-						color={mood.isPositive ? colors.positive : colors.negative}
-					/>
-					<Text
-						style={[
-							styles.statusText,
-							{ color: mood.isPositive ? colors.positive : colors.negative },
-						]}
-					>
-						{mood.text}
-					</Text>
-				</View>
+				{mood ? (
+					<View style={styles.statusItem}>
+						<Ionicons
+							name={mood.icon}
+							size={32}
+							color={mood.isPositive ? colors.positive : colors.negative}
+						/>
+						<Text
+							style={[
+								styles.statusText,
+								{ color: mood.isPositive ? colors.positive : colors.negative },
+							]}
+						>
+							{mood.text}
+						</Text>
+					</View>
+				) : null}
+
 				{/* Eating Status */}
-				<View style={styles.statusItem}>
-					<Ionicons
-						name={eating.icon}
-						size={32}
-						color={eating.isPositive ? colors.positive : colors.negative}
-					/>
-					<Text
-						style={[
-							styles.statusText,
-							{ color: eating.isPositive ? colors.positive : colors.negative },
-						]}
-					>
-						{eating.text}
-					</Text>
-				</View>
+				{eating ? (
+					<View style={styles.statusItem}>
+						<Ionicons
+							name={eating.icon}
+							size={32}
+							color={eating.isPositive ? colors.positive : colors.negative}
+						/>
+						<Text
+							style={[
+								styles.statusText,
+								{
+									color: eating.isPositive ? colors.positive : colors.negative,
+								},
+							]}
+						>
+							{eating.text}
+						</Text>
+					</View>
+				) : null}
+
+				{/* Pee Status */}
+				{pee ? (
+					<View style={styles.statusItem}>
+						<Ionicons
+							name={pee.icon}
+							size={32}
+							color={pee.isPositive ? colors.positive : colors.negative}
+						/>
+						<Text
+							style={[
+								styles.statusText,
+								{ color: pee.isPositive ? colors.positive : colors.negative },
+							]}
+						>
+							{pee.text}
+						</Text>
+					</View>
+				) : null}
 
 				{/* Diaper Status */}
-				<View style={styles.statusItem}>
-					<Ionicons
-						name={poop.icon}
-						size={32}
-						color={poop.isPositive ? colors.positive : colors.negative}
-					/>
-					<Text
-						style={[
-							styles.statusText,
-							{ color: poop.isPositive ? colors.positive : colors.negative },
-						]}
-					>
-						{poop.text}
-					</Text>
-				</View>
+				{poop ? (
+					<View style={styles.statusItem}>
+						<Ionicons
+							name={poop.icon}
+							size={32}
+							color={poop.isPositive ? colors.positive : colors.negative}
+						/>
+						<Text
+							style={[
+								styles.statusText,
+								{ color: poop.isPositive ? colors.positive : colors.negative },
+							]}
+						>
+							{poop.text}
+						</Text>
+					</View>
+				) : null}
 			</View>
 		</SchoolCard>
 	)

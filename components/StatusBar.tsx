@@ -69,13 +69,14 @@ const StatusBar: React.FC = () => {
 					<View style={styles.modalContent}>
 						<Image
 							source={{
-								uri: "https://via.placeholder.com/150",
+								uri: "https://placehold.co/150",
 							}}
 							style={styles.modalImage}
 						/>
 						<Text style={styles.modalName}>{displayName(selectedStudent)}</Text>
-						<TouchableOpacity style={styles.editButton}>
-							<Ionicons name="create-outline" size={24} color="black" />
+
+						<TouchableOpacity style={styles.editButton} onPress={toggleModal}>
+							<Ionicons name="close-outline" size={24} color="black" />
 						</TouchableOpacity>
 
 						{students.length > 1 && (
@@ -100,10 +101,7 @@ const StatusBar: React.FC = () => {
 							style={styles.signoutButton}
 							onPress={() => logout()}
 						>
-							<Text style={styles.signoutText}>Sign Out</Text>
-						</TouchableOpacity>
-						<TouchableOpacity onPress={toggleModal} style={styles.closeButton}>
-							<Text>Close</Text>
+							<Text style={styles.signoutText}>Cerrar Sesión</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -161,6 +159,7 @@ const styles = StyleSheet.create({
 		height: 80,
 		borderRadius: 40,
 		marginBottom: 12,
+		backgroundColor: "#CCC",
 	},
 	modalName: {
 		fontSize: 18,

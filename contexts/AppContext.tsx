@@ -6,6 +6,8 @@ interface AppContextType {
 	selectedStudent: student | null
 	attendance: attendanceStatus[]
 	setSelectedStudent: (student: student | null) => void
+	selectedDate: Date
+	setSelectedDate: (date: Date) => void
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)

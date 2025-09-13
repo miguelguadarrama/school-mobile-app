@@ -7,6 +7,7 @@ import LoadingScreen from "./Loading"
 
 const AppContainer = ({ children }: { children: ReactNode }) => {
 	const { loggedIn } = useAuth()
+	const [selectedDate, setSelectedDate] = useState(new Date())
 	const { data, isLoading } = useSWR<{
 		students: student[]
 		attendance: attendanceStatus[]
@@ -15,7 +16,14 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 	if (loggedIn && isLoading) {
 		return <LoadingScreen />
 	}
-	console.log({ id: data?.students?.[0]?.id, attendance: data?.attendance })
+
+	const handleSetDate = (date: Date) => {
+		// prevent a date in the future
+		if (date > new Date()) return
+		setSelectedDate(date)
+	}
+
+	//console.log({ id: data?.students?.[0]?.id, attendance: data?.attendance })
 	return (
 		<AppContext.Provider
 			value={{
@@ -23,6 +31,8 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 				selectedStudent,
 				setSelectedStudent,
 				attendance: data?.attendance || [],
+				selectedDate,
+				setSelectedDate: handleSetDate,
 			}}
 		>
 			{children}

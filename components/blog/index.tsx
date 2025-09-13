@@ -11,6 +11,7 @@ import {
 	Dimensions,
 	TouchableOpacity,
 } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
 import { BlogPost, BlogPostMedia } from "../../types/post"
 import SchoolCard from "../SchoolCard"
 
@@ -20,6 +21,8 @@ interface User {
 }
 
 interface BlogPostsListProps {
+	emptyTitle?: string
+	emptySubtitle?: string
 	posts: BlogPost[]
 	onRefresh?: () => void
 	isRefreshing?: boolean
@@ -30,6 +33,8 @@ interface BlogPostsListProps {
 const { width: screenWidth } = Dimensions.get("window")
 
 const BlogPostsList: React.FC<BlogPostsListProps> = ({
+	emptyTitle = "No hay publicaciones",
+	emptySubtitle = "Cuando haya nuevas publicaciones en tu clase, aparecerán aquí",
 	posts,
 	onRefresh = () => {},
 	isRefreshing = false,
@@ -98,6 +103,16 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 		)
 	}
 
+	const EmptyState = () => (
+		<View style={styles.emptyState}>
+			<View style={styles.emptyIconContainer}>
+				<Ionicons name="chatbubbles-outline" size={64} color="#ccc" />
+			</View>
+			<Text style={styles.emptyTitle}>{emptyTitle}</Text>
+			<Text style={styles.emptySubtitle}>{emptySubtitle}</Text>
+		</View>
+	)
+
 	const renderItem = ({ item }: { item: BlogPost }) => {
 		const hasMedia = item.post_media && item.post_media.length > 0
 
@@ -128,7 +143,10 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 			data={posts}
 			renderItem={renderItem}
 			keyExtractor={(item) => item.id}
-			contentContainerStyle={styles.container}
+			contentContainerStyle={[
+				styles.container,
+				!posts || posts.length === 0 ? styles.emptyContainer : {},
+			]}
 			refreshControl={
 				<RefreshControl
 					refreshing={isRefreshing}
@@ -140,6 +158,7 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 				/>
 			}
 			showsVerticalScrollIndicator={false}
+			ListEmptyComponent={EmptyState}
 		/>
 	)
 }
@@ -147,6 +166,34 @@ const BlogPostsList: React.FC<BlogPostsListProps> = ({
 const styles = StyleSheet.create({
 	container: {
 		padding: 16,
+	},
+	emptyContainer: {
+		flexGrow: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		paddingVertical: 80,
+	},
+	emptyState: {
+		alignItems: "center",
+		paddingHorizontal: 32,
+	},
+	emptyIconContainer: {
+		marginBottom: 24,
+		opacity: 0.6,
+	},
+	emptyTitle: {
+		fontSize: 20,
+		fontWeight: "600",
+		color: "#333",
+		marginBottom: 8,
+		textAlign: "center",
+	},
+	emptySubtitle: {
+		fontSize: 16,
+		color: "#666",
+		textAlign: "center",
+		lineHeight: 22,
+		maxWidth: 280,
 	},
 	postContainer: {
 		//backgroundColor: "#fff",
