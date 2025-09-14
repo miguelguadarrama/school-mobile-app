@@ -4,7 +4,9 @@ import { AuthStackParamList } from "../../types/navigation"
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useState } from "react"
-import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native"
+import { Alert, StyleSheet, Text, View } from "react-native"
+import CustomTextInput from "../../components/ui/textInput"
+import AppButton from "../../components/ui/button"
 
 type VerifyEmailScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -96,36 +98,35 @@ const LoginVerifyEmail = () => {
 	return (
 		<View style={styles.container}>
 			<Text style={styles.label}>Confirma tu correo electrónico</Text>
-			<TextInput
-				value={email}
-				editable={false}
-				style={[styles.input, { backgroundColor: "#eee", color: "#888" }]}
-			/>
+			<CustomTextInput value={email} readOnly={false} />
 
 			{!sentOTP ? (
 				<>
-					<Button title="Sí, enviar código" onPress={handleSendOTP} />
+					<AppButton onPress={handleSendOTP}>Sí, enviar código</AppButton>
 					<View style={{ height: 20 }} />
-					<Button title="No, correo incorrecto" onPress={handleWrongEmail} />
+					<AppButton onPress={handleWrongEmail}>
+						No, correo incorrecto
+					</AppButton>
 				</>
 			) : (
 				<>
 					<Text style={[styles.label, { marginTop: 30 }]}>
 						Introduce el código de 6 dígitos
 					</Text>
-					<TextInput
+					<CustomTextInput
+						placeholder="Código de 6 dígitos"
 						value={otpCode}
-						onChangeText={setOtpCode}
+						onValueChange={setOtpCode}
 						maxLength={6}
 						keyboardType="numeric"
-						style={styles.input}
 						readOnly={status === "BUSY"}
 					/>
-					<Button
+					<AppButton
 						disabled={!otpCode || otpCode.length !== 6 || status === "BUSY"}
-						title="Confirmar código"
 						onPress={handleVerifyOTP}
-					/>
+					>
+						{status === "BUSY" ? "Verificando..." : "Verificar código"}
+					</AppButton>
 				</>
 			)}
 		</View>

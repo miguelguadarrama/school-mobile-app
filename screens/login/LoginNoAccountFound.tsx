@@ -4,6 +4,8 @@ import { useNavigation, useRoute } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React from "react"
 import { Button, StyleSheet, Text, TextInput, View } from "react-native"
+import CustomTextInput from "../../components/ui/textInput"
+import AppButton from "../../components/ui/button"
 
 type NoAccountFoundScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -25,10 +27,10 @@ const LoginNoAccountFound = () => {
 		<View style={styles.container}>
 			<Text style={styles.title}>No se encontró su cuenta</Text>
 
-			<TextInput
+			<CustomTextInput
+				placeholder="Correo electrónico"
 				value={email}
-				editable={false}
-				style={[styles.input, { backgroundColor: "#eee", color: "#888" }]}
+				readOnly
 			/>
 
 			<Text style={styles.message}>
@@ -40,7 +42,7 @@ const LoginNoAccountFound = () => {
 				escuela para ayuda.
 			</Text>
 
-			<Button title="Regresar a Iniciar Sesión" onPress={handleGoBack} />
+			<AppButton onPress={handleGoBack}>Regresar a Iniciar Sesión</AppButton>
 		</View>
 	)
 }

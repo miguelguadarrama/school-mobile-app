@@ -4,8 +4,9 @@ import { AuthStackParamList } from "../../types/navigation"
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useState } from "react"
-import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native"
+import { Alert, StyleSheet, Text, View } from "react-native"
 import AppButton from "../../components/ui/button"
+import CustomTextInput from "../../components/ui/textInput"
 
 type VerifyEmailScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -97,29 +98,37 @@ const LoginForgotCredentials = () => {
 	return (
 		<View style={styles.container}>
 			<Text style={styles.label}>Verificar correo electrónico</Text>
-			<TextInput
+			<CustomTextInput
+				placeholder="Correo electrónico"
 				value={email}
-				editable={false}
-				style={[styles.input, { backgroundColor: "#eee", color: "#888" }]}
+				readOnly
 			/>
 
 			{!sentOTP ? (
 				<>
-					<Button title="Sí, enviar código" onPress={handleSendOTP} />
+					<AppButton disabled={status === "BUSY"} onPress={handleSendOTP}>
+						Sí, enviar código
+					</AppButton>
 					<View style={{ height: 20 }} />
-					<Button title="No, correo incorrecto" onPress={handleWrongEmail} />
+					<AppButton
+						disabled={status === "BUSY"}
+						onPress={handleWrongEmail}
+						variant="secondary"
+					>
+						No, correo incorrecto
+					</AppButton>
 				</>
 			) : (
 				<>
 					<Text style={[styles.label, { marginTop: 30 }]}>
 						Introduce el código de 6 dígitos
 					</Text>
-					<TextInput
+					<CustomTextInput
+						placeholder="Código de verificación"
 						value={otpCode}
-						onChangeText={setOtpCode}
+						onValueChange={setOtpCode}
 						maxLength={6}
 						keyboardType="numeric"
-						style={styles.input}
 						readOnly={status === "BUSY"}
 					/>
 					<AppButton
@@ -145,13 +154,5 @@ const styles = StyleSheet.create({
 	label: {
 		fontSize: 18,
 		marginBottom: 6,
-	},
-	input: {
-		borderWidth: 1,
-		borderColor: "#ccc",
-		padding: 12,
-		borderRadius: 8,
-		marginBottom: 20,
-		fontSize: 16,
 	},
 })

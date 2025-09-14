@@ -4,16 +4,10 @@ import { AuthStackParamList } from "../../types/navigation"
 import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useState } from "react"
-import {
-	Image,
-	StatusBar,
-	StyleSheet,
-	Text,
-	TextInput,
-	View,
-} from "react-native"
+import { Image, StatusBar, StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import AppButton from "../../components/ui/button"
+import CustomTextInput from "../../components/ui/textInput"
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -68,14 +62,11 @@ const LoginScreen = () => {
 					/>
 					<Text style={styles.title}>Bienvenido a JAC</Text>
 
-					<TextInput
+					<CustomTextInput
 						placeholder="Correo electrónico"
 						value={email}
-						onChangeText={setEmail}
+						onValueChange={setEmail}
 						keyboardType="email-address"
-						autoCapitalize="none"
-						autoCorrect={false}
-						style={styles.input}
 						readOnly={status === "BUSY"}
 					/>
 
@@ -119,13 +110,5 @@ const styles = StyleSheet.create({
 		marginBottom: 30,
 		textAlign: "center",
 		fontWeight: "bold",
-	},
-	input: {
-		borderWidth: 1,
-		borderColor: "#ccc",
-		padding: 12,
-		borderRadius: 8,
-		marginBottom: 20,
-		fontSize: 16,
 	},
 })

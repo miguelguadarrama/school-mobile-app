@@ -4,9 +4,10 @@ import { AuthStackParamList } from "../../types/navigation"
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useEffect, useState } from "react"
-import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native"
+import { Alert, StyleSheet, Text, View } from "react-native"
 import InputPassword from "../../components/InputPassword"
 import AppButton from "../../components/ui/button"
+import CustomTextInput from "../../components/ui/textInput"
 //import { createAuth0User } from "@/services/auth" // We'll define this next
 
 type SetNewPasswordScreenNavigationProp = NativeStackNavigationProp<
@@ -81,10 +82,10 @@ const LoginNewPassword = () => {
 	return (
 		<View style={styles.container}>
 			<Text style={styles.label}>Email</Text>
-			<TextInput
+			<CustomTextInput
+				placeholder="Correo electrónico"
 				value={email}
-				editable={false}
-				style={[styles.input, { backgroundColor: "#eee", color: "#888" }]}
+				readOnly
 			/>
 
 			<Text style={styles.label}>

@@ -9,7 +9,6 @@ import {
 	StyleSheet,
 	StatusBar,
 	Text,
-	TextInput,
 	View,
 	TouchableOpacity,
 } from "react-native"
@@ -18,16 +17,17 @@ import InputPassword from "../../components/InputPassword"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { AuthStackParamList } from "../../types/navigation"
 import AppButton from "../../components/ui/button"
+import CustomTextInput from "../../components/ui/textInput"
 
 type LoginPasswordNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
 	"LoginPassword"
 >
 
-const EXPO_PUBLIC_AUTH0_DOMAIN = process.env.EXPO_PUBLIC_AUTH0_DOMAIN
-const EXPO_PUBLIC_AUTH0_AUDIENCE = process.env.EXPO_PUBLIC_AUTH0_AUDIENCE
-const EXPO_PUBLIC_AUTH0_CLIENT_ID = process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID
-const EXPO_PUBLIC_AUTH0_SCOPE = process.env.EXPO_PUBLIC_AUTH0_SCOPE
+// const EXPO_PUBLIC_AUTH0_DOMAIN = process.env.EXPO_PUBLIC_AUTH0_DOMAIN
+// const EXPO_PUBLIC_AUTH0_AUDIENCE = process.env.EXPO_PUBLIC_AUTH0_AUDIENCE
+// const EXPO_PUBLIC_AUTH0_CLIENT_ID = process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID
+// const EXPO_PUBLIC_AUTH0_SCOPE = process.env.EXPO_PUBLIC_AUTH0_SCOPE
 
 const LoginPassword = () => {
 	const { login } = useAuth()
@@ -80,10 +80,10 @@ const LoginPassword = () => {
 						style={styles.logo}
 					/>
 					<Text style={styles.label}>Correo electrónico</Text>
-					<TextInput
+					<CustomTextInput
+						placeholder="Correo electrónico"
 						value={email}
-						editable={false}
-						style={[styles.input, { backgroundColor: "#eee", color: "#888" }]}
+						readOnly
 					/>
 
 					<Text style={styles.label}>Contraseña</Text>
@@ -100,11 +100,6 @@ const LoginPassword = () => {
 					>
 						{status === "BUSY" ? "Iniciando sesión..." : "Iniciar sesión"}
 					</AppButton>
-
-					{/* <Text style={{ marginVertical: 20, textAlign: "center" }}>
-				Variables: [{EXPO_PUBLIC_AUTH0_DOMAIN}], [{EXPO_PUBLIC_AUTH0_CLIENT_ID}
-				], [{EXPO_PUBLIC_AUTH0_AUDIENCE}], [{EXPO_PUBLIC_AUTH0_SCOPE}]
-			</Text> */}
 
 					<TouchableOpacity
 						onPress={handleForgotPassword}
