@@ -1,5 +1,5 @@
 import React from "react"
-import { View, Text, StyleSheet } from "react-native"
+import { StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import BlogPostList from "../components/blog"
 import { theme } from "../helpers/theme"
@@ -12,7 +12,7 @@ export default function MessagingScreen() {
 			</SafeAreaView>
 			<BlogPostList
 				emptyTitle="No hay mensajes"
-				emptySubtitle="Cuando haya nuevos mensajes del personal, aparecerán aquí"
+				emptySubtitle="Mensajes directos del personal docente y administrativo de la institución aparecerán aquí"
 				posts={[]}
 			/>
 		</View>

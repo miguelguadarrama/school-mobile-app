@@ -63,7 +63,11 @@ export default function CommunicationBar({}: CommunicationBarProps) {
 		<TouchableOpacity style={styles.itemContainer} onPress={onPress}>
 			<View style={styles.iconContainer}>
 				<View style={styles.iconCircle}>
-					<IconComponent size={20} color="#6B7280" strokeWidth={2} />
+					<IconComponent
+						size={22}
+						color={theme.colors.primary}
+						strokeWidth={2}
+					/>
 				</View>
 				{count > 0 && (
 					<View style={styles.badge}>
@@ -86,7 +90,7 @@ export default function CommunicationBar({}: CommunicationBarProps) {
 
 			<CommunicationItem
 				IconComponent={LucideImages}
-				label="Blog"
+				label="Social"
 				count={communicationData.socialPosts}
 				onPress={() => handlePress("social")}
 			/>
@@ -106,29 +110,31 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		paddingVertical: 12,
-		paddingHorizontal: 16,
-		backgroundColor: theme.colors["light-gray"],
-		borderRadius: 12,
+		paddingVertical: theme.spacing.md,
+		paddingHorizontal: theme.spacing.lg,
+		backgroundColor: theme.colors.white,
+		borderRadius: theme.radius.lg,
 		borderWidth: 1,
 		borderColor: theme.colors.border,
+		...theme.shadow.card,
 	},
 	itemContainer: {
 		alignItems: "center",
-		paddingHorizontal: 12,
-		paddingVertical: 8,
+		paddingHorizontal: theme.spacing.sm,
+		paddingVertical: theme.spacing.xs,
+		flex: 1,
 	},
 	iconContainer: {
 		position: "relative",
 		marginBottom: 6,
 	},
 	iconCircle: {
-		width: 32,
-		height: 32,
-		borderRadius: 16,
+		width: 40,
+		height: 40,
+		borderRadius: 20,
 		justifyContent: "center",
 		alignItems: "center",
-		backgroundColor: "transparent",
+		backgroundColor: theme.colors.surface,
 	},
 	badge: {
 		position: "absolute",
@@ -150,10 +156,11 @@ const styles = StyleSheet.create({
 		fontFamily: "Nunito_400Regular",
 	},
 	label: {
-		fontSize: 11,
+		fontSize: theme.typography.size.sm,
 		fontWeight: "500",
 		color: theme.colors.text,
 		textAlign: "center",
-		fontFamily: "Nunito_400Regular",
+		fontFamily: theme.typography.family.regular,
+		marginTop: theme.spacing.xs,
 	},
 })

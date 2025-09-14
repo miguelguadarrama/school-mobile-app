@@ -1,14 +1,20 @@
 import React from "react"
-import { View, StyleSheet, ScrollView, RefreshControl } from "react-native"
-import LoadingScreen from "../components/Loading"
-import useSWR from "swr"
-import { student } from "../types/students"
+import {
+	Image,
+	RefreshControl,
+	ScrollView,
+	StyleSheet,
+	Text,
+	View,
+} from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
+import useSWR from "swr"
+import LoadingScreen from "../components/Loading"
 import StatusBar from "../components/StatusBar"
-import DayInfoCard from "../components/home/dayInfo"
 import CommunicationCard from "../components/home/communication"
-import DailyActivityStatus from "../components/home/status"
+import DayInfoCard from "../components/home/dayInfo"
 import { theme } from "../helpers/theme"
+import { student } from "../types/students"
 
 export default function HomeScreen() {
 	// Fetch student information from the API
@@ -55,14 +61,20 @@ export default function HomeScreen() {
 						/>
 					}
 				>
-					{/* Day Information Card */}
-					<View style={styles.cardContainer}>
-						<DayInfoCard />
+					{/* School Header */}
+					<View style={styles.schoolHeader}>
+						<Image
+							source={require("../assets/icon.png")}
+							style={styles.schoolLogo}
+						/>
+						<Text style={styles.schoolName}>
+							{process.env.EXPO_PUBLIC_SCHOOL_NAME}
+						</Text>
 					</View>
 
 					{/* Day Information Card */}
 					<View style={styles.cardContainer}>
-						<DailyActivityStatus />
+						<DayInfoCard />
 					</View>
 
 					{/* Communication Recap */}
@@ -102,12 +114,29 @@ const styles = StyleSheet.create({
 	},
 	scrollContent: {
 		paddingHorizontal: theme.spacing.md,
-		paddingTop: theme.spacing.lg,
+		paddingTop: theme.spacing.sm,
 	},
 	cardContainer: {
 		marginBottom: theme.spacing.lg,
 	},
 	bottomSpacing: {
 		height: theme.spacing.xl,
+	},
+	schoolHeader: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		marginBottom: theme.spacing.sm,
+		paddingHorizontal: theme.spacing.sm,
+	},
+	schoolLogo: {
+		width: 48,
+		height: 48,
+		marginRight: theme.spacing.sm,
+	},
+	schoolName: {
+		fontSize: theme.typography.size.lg,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.text,
 	},
 })

@@ -1,10 +1,10 @@
 import React, { useContext } from "react"
 import { StyleSheet, Text, View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import useSWR from "swr"
-import AppContext from "../contexts/AppContext"
 import LoadingScreen from "../components/Loading"
 import BlogPostList from "../components/blog"
-import { SafeAreaView } from "react-native-safe-area-context"
+import AppContext from "../contexts/AppContext"
 import { theme } from "../helpers/theme"
 
 export default function AnnouncementsScreen() {
@@ -37,7 +37,7 @@ export default function AnnouncementsScreen() {
 			</SafeAreaView>
 			<BlogPostList
 				emptyTitle="No hay anuncios"
-				emptySubtitle="Cuando haya nuevos anuncios de la escuela, aparecerán aquí"
+				emptySubtitle="Los anuncios que publique la institución, aparecerán aquí"
 				posts={data}
 				onRefresh={handleRefresh}
 				isRefreshing={isLoading}

@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useMemo, useState } from "react"
 import { StyleSheet, Text, View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import useSWR from "swr"
-import AppContext from "../contexts/AppContext"
 import LoadingScreen from "../components/Loading"
 import BlogPostList from "../components/blog"
-import { SafeAreaView } from "react-native-safe-area-context"
+import AppContext from "../contexts/AppContext"
 import { theme } from "../helpers/theme"
 
 export default function SocialScreen() {
@@ -45,6 +45,8 @@ export default function SocialScreen() {
 				<Text style={styles.heading}>Social</Text>
 			</SafeAreaView>
 			<BlogPostList
+				emptyTitle="No hay publicaciones"
+				emptySubtitle="Las publicaciones de tu salón de clases aparecerán aquí"
 				posts={data}
 				onRefresh={handleRefresh}
 				isRefreshing={isLoading}

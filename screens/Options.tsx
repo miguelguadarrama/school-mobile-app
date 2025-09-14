@@ -1,8 +1,8 @@
 import React from "react"
-import { View, Text, StyleSheet } from "react-native"
-import { theme } from "../helpers/theme"
+import { StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import BlogPostList from "../components/blog"
+import { theme } from "../helpers/theme"
 
 export default function OptionsScreen() {
 	return (
