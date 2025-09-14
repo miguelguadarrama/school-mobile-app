@@ -1,15 +1,15 @@
+import { Ionicons } from "@expo/vector-icons"
 import React, { useContext, useEffect, useState } from "react"
 import {
-	View,
-	Text,
 	Image,
-	TouchableOpacity,
-	StyleSheet,
 	Modal,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
 } from "react-native"
-import { Ionicons } from "@expo/vector-icons"
-import { useAuth } from "../contexts/AuthContext"
 import AppContext from "../contexts/AppContext"
+import { useAuth } from "../contexts/AuthContext"
 import { displayName } from "../helpers/students"
 import { theme } from "../helpers/theme"
 
@@ -33,12 +33,18 @@ const StatusBar: React.FC = () => {
 		return null
 	}
 
+	const gender = selectedStudent.gender_alias === "gender_male" ? "boy" : "girl"
+
 	return (
 		<>
 			<View style={styles.container}>
 				<TouchableOpacity onPress={toggleModal} style={styles.profileContainer}>
 					<Image
-						source={{ uri: "https://placehold.co/150" }}
+						source={
+							gender === "boy"
+								? require("../assets/boy-placeholder.png")
+								: require("../assets/girl-placeholder.png")
+						}
 						style={styles.profileImage}
 					/>
 					<View>
@@ -61,15 +67,21 @@ const StatusBar: React.FC = () => {
 				<View style={styles.modalContainer}>
 					<View style={styles.modalContent}>
 						<Image
-							source={{
-								uri: "https://placehold.co/150",
-							}}
+							source={
+								gender === "boy"
+									? require("../assets/boy-placeholder.png")
+									: require("../assets/girl-placeholder.png")
+							}
 							style={styles.modalImage}
 						/>
 						<Text style={styles.modalName}>{displayName(selectedStudent)}</Text>
 
 						<TouchableOpacity style={styles.editButton} onPress={toggleModal}>
-							<Ionicons name="close-outline" size={24} color={theme.colors.muted} />
+							<Ionicons
+								name="close-outline"
+								size={24}
+								color={theme.colors.muted}
+							/>
 						</TouchableOpacity>
 
 						{students.length > 1 && (
@@ -84,7 +96,9 @@ const StatusBar: React.FC = () => {
 											toggleModal()
 										}}
 									>
-										<Text style={styles.profileOptionText}>{displayName(s)}</Text>
+										<Text style={styles.profileOptionText}>
+											{displayName(s)}
+										</Text>
 									</TouchableOpacity>
 								))}
 							</>
@@ -168,7 +182,6 @@ const styles = StyleSheet.create({
 		height: 90,
 		borderRadius: 45,
 		marginBottom: theme.spacing.md,
-		backgroundColor: theme.colors.gray,
 		borderWidth: 3,
 		borderColor: theme.colors.primary,
 	},

@@ -1,24 +1,19 @@
 // BlogPostList.tsx
-import dayjs from "../../lib/dayjs"
+import { Ionicons } from "@expo/vector-icons"
 import React from "react"
 import {
-	View,
-	Text,
+	Dimensions,
 	FlatList,
 	Image,
-	StyleSheet,
 	RefreshControl,
-	Dimensions,
+	StyleSheet,
+	Text,
 	TouchableOpacity,
+	View,
 } from "react-native"
-import { Ionicons } from "@expo/vector-icons"
+import dayjs from "../../lib/dayjs"
 import { BlogPost, BlogPostMedia } from "../../types/post"
 import SchoolCard from "../SchoolCard"
-
-interface User {
-	id: string
-	full_name: string
-}
 
 interface BlogPostListProps {
 	emptyTitle?: string

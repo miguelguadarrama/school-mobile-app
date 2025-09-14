@@ -6,6 +6,7 @@ export interface student {
   first_name: string
   middle_name?: string
   second_last_name?: string
+  gender_alias: "gender_male" | "gender_female"
   academic_year_classroom_students: {
     id: string
     classrooms: {

@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import useSWR from "swr"
 import LoadingScreen from "../components/Loading"
-import BlogPostList from "../components/blog"
+import AnnouncementList from "../components/blog/announcements"
 import AppContext from "../contexts/AppContext"
 import { theme } from "../helpers/theme"
 
@@ -35,10 +35,8 @@ export default function AnnouncementsScreen() {
 			<SafeAreaView edges={["top"]} style={styles.headerContainer}>
 				<Text style={styles.heading}>Anuncios</Text>
 			</SafeAreaView>
-			<BlogPostList
-				emptyTitle="No hay anuncios"
-				emptySubtitle="Los anuncios que publique la institución, aparecerán aquí"
-				posts={data}
+			<AnnouncementList
+				announcements={data}
 				onRefresh={handleRefresh}
 				isRefreshing={isLoading}
 			/>
