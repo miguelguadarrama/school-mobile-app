@@ -1,6 +1,10 @@
+import {
+	LucideBell,
+	LucideImages,
+	LucideMessageCircle,
+} from "lucide-react-native"
 import React, { useContext } from "react"
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native"
-import { Bell, LucideImages, LucideMessageCircle } from "lucide-react-native"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { TabContext } from "../../contexts/TabContext"
 import { theme } from "../../helpers/theme"
 
@@ -74,7 +78,7 @@ export default function CommunicationBar({}: CommunicationBarProps) {
 	return (
 		<View style={styles.container}>
 			<CommunicationItem
-				IconComponent={Bell}
+				IconComponent={LucideBell}
 				label="Anuncios"
 				count={communicationData.announcements}
 				onPress={() => handlePress("announcements")}

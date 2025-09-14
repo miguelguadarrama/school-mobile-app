@@ -3,5 +3,12 @@
 		"activityBar.background": "#0d355e", // blue
 		"activityBar.foreground": "#ffffff",
 		"activityBar.inactiveForeground": "#ffffff99"
-	}
+	},
+	"editor.codeActionsOnSave": {
+		"source.organizeImports": "explicit"
+	},
+	"typescript.preferences.organizeImportsIgnoreCase": "auto",
+	"typescript.preferences.includePackageJsonAutoImports": "auto",
+	"editor.formatOnSave": true,
+	"typescript.updateImportsOnFileMove.enabled": "always"
 }
