@@ -6,7 +6,6 @@ import { student } from "../types/students"
 import { SafeAreaView } from "react-native-safe-area-context"
 import StatusBar from "../components/StatusBar"
 import DayInfoCard from "../components/home/dayInfo"
-import AttendanceCard from "../components/home/attendance"
 import CommunicationCard from "../components/home/communication"
 import DailyActivityStatus from "../components/home/status"
 import { theme } from "../helpers/theme"
@@ -48,7 +47,12 @@ export default function HomeScreen() {
 					contentContainerStyle={styles.scrollContent}
 					showsVerticalScrollIndicator={false}
 					refreshControl={
-						<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+						<RefreshControl
+							refreshing={refreshing}
+							onRefresh={onRefresh}
+							tintColor={theme.colors.primary}
+							colors={[theme.colors.primary]}
+						/>
 					}
 				>
 					{/* Day Information Card */}
@@ -90,23 +94,20 @@ const styles = StyleSheet.create({
 		backgroundColor: theme.colors.background,
 	},
 	statusBarContainer: {
-		backgroundColor: "#F0F0F0",
+		backgroundColor: theme.colors.surface,
 		paddingHorizontal: 0,
 	},
 	scrollView: {
 		flex: 1,
 	},
 	scrollContent: {
-		paddingHorizontal: 16,
-		paddingTop: 16,
+		paddingHorizontal: theme.spacing.md,
+		paddingTop: theme.spacing.lg,
 	},
 	cardContainer: {
-		marginBottom: 16,
-		// This will be consistent spacing between all dashboard cards
-		// Individual cards will handle their own styling (shadows, borders, etc.)
+		marginBottom: theme.spacing.lg,
 	},
 	bottomSpacing: {
-		height: 20,
-		// Extra space at bottom for better scroll experience
+		height: theme.spacing.xl,
 	},
 })

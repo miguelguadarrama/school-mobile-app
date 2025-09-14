@@ -1,5 +1,6 @@
 import { View, StyleSheet, ViewStyle } from "react-native"
 import React from "react"
+import { theme } from "../helpers/theme"
 
 interface CardProps {
 	children: React.ReactNode
@@ -12,19 +13,14 @@ const SchoolCard: React.FC<CardProps> = ({ children, style }) => {
 
 const styles = StyleSheet.create({
 	card: {
-		backgroundColor: "#ffffff",
-		borderRadius: 12,
-		padding: 16,
+		backgroundColor: theme.colors.white,
+		borderRadius: theme.radius.lg,
+		padding: theme.spacing.lg,
 		overflow: "hidden",
-		marginVertical: 2,
-		shadowColor: "#000", // Shadow color for iOS
-		shadowOffset: {
-			width: 0,
-			height: 1,
-		},
-		shadowOpacity: 0.1, // iOS shadow
-		shadowRadius: 2, // iOS shadow
-		elevation: 2, // For Android shadow
+		marginVertical: theme.spacing.xs / 2,
+		...theme.shadow.card,
+		borderWidth: 1,
+		borderColor: theme.colors.border,
 	},
 })
 

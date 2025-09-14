@@ -1,10 +1,20 @@
 import React from "react"
 import { View, Text, StyleSheet } from "react-native"
+import { theme } from "../helpers/theme"
+import { SafeAreaView } from "react-native-safe-area-context"
+import BlogPostsList from "../components/blog"
 
 export default function OptionsScreen() {
 	return (
 		<View style={styles.container}>
-			<Text>Opciones (Pronto)</Text>
+			<SafeAreaView edges={["top"]} style={styles.headerContainer}>
+				<Text style={styles.heading}>Opciones</Text>
+			</SafeAreaView>
+			<BlogPostsList
+				emptyTitle="Opciones"
+				emptySubtitle="Página en construcción"
+				posts={[]}
+			/>
 		</View>
 	)
 }
@@ -12,7 +22,26 @@ export default function OptionsScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
+		backgroundColor: theme.colors.background,
+	},
+	comingSoonText: {
+		fontFamily: theme.typography.family.regular,
+		fontSize: theme.typography.size.lg,
+		color: theme.colors.muted,
+		textAlign: "center",
+	},
+	headerContainer: {
+		backgroundColor: theme.colors.surface,
+		borderBottomWidth: 1,
+		borderBottomColor: theme.colors.border,
+	},
+	heading: {
+		fontFamily: theme.typography.family.bold,
+		fontSize: theme.typography.size.xl,
+		fontWeight: "bold",
+		color: theme.colors.primary,
+		marginTop: theme.spacing.md,
+		paddingHorizontal: theme.spacing.md,
+		paddingBottom: theme.spacing.sm,
 	},
 })

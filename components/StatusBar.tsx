@@ -10,15 +10,8 @@ import {
 import { Ionicons } from "@expo/vector-icons"
 import { useAuth } from "../contexts/AuthContext"
 import AppContext from "../contexts/AppContext"
-import { student } from "../types/students"
 import { displayName } from "../helpers/students"
-
-interface Student {
-	id: number
-	name: string
-	classroom: string
-	photo: string
-}
+import { theme } from "../helpers/theme"
 
 const StatusBar: React.FC = () => {
 	const { logout } = useAuth()
@@ -58,7 +51,7 @@ const StatusBar: React.FC = () => {
 					<Ionicons
 						name="chevron-down"
 						size={18}
-						color="black"
+						color={theme.colors.muted}
 						style={styles.chevronDown}
 					/>
 				</TouchableOpacity>
@@ -76,7 +69,7 @@ const StatusBar: React.FC = () => {
 						<Text style={styles.modalName}>{displayName(selectedStudent)}</Text>
 
 						<TouchableOpacity style={styles.editButton} onPress={toggleModal}>
-							<Ionicons name="close-outline" size={24} color="black" />
+							<Ionicons name="close-outline" size={24} color={theme.colors.muted} />
 						</TouchableOpacity>
 
 						{students.length > 1 && (
@@ -91,7 +84,7 @@ const StatusBar: React.FC = () => {
 											toggleModal()
 										}}
 									>
-										<Text>{displayName(s)}</Text>
+										<Text style={styles.profileOptionText}>{displayName(s)}</Text>
 									</TouchableOpacity>
 								))}
 							</>
@@ -112,90 +105,124 @@ const StatusBar: React.FC = () => {
 
 const styles = StyleSheet.create({
 	chevronDown: {
-		marginTop: 5,
-		marginLeft: 5,
+		marginTop: theme.spacing.xs / 2,
+		marginLeft: theme.spacing.xs / 2,
 	},
 	container: {
 		flexDirection: "row",
 		alignItems: "center",
-		paddingHorizontal: 10,
-		paddingVertical: 10,
-		backgroundColor: "#F0F0F0",
+		paddingHorizontal: theme.spacing.md,
+		paddingVertical: theme.spacing.sm,
+		backgroundColor: theme.colors.surface,
+		borderBottomWidth: 1,
+		borderBottomColor: theme.colors.border,
 	},
 	profileContainer: {
 		flexDirection: "row",
 		alignItems: "stretch",
+		backgroundColor: theme.colors.white,
+		paddingHorizontal: theme.spacing.sm,
+		paddingVertical: theme.spacing.xs,
+		borderRadius: theme.radius.lg,
+		...theme.shadow.soft,
+		flex: 1,
 	},
 	profileImage: {
-		width: 40,
-		height: 40,
-		borderRadius: 20,
-		marginRight: 12,
-		backgroundColor: "#CCC",
+		width: 44,
+		height: 44,
+		borderRadius: 22,
+		marginRight: theme.spacing.sm,
+		backgroundColor: theme.colors.gray,
+		borderWidth: 2,
+		borderColor: theme.colors.primary,
 	},
 	name: {
-		fontFamily: "Nunito_700Bold",
-		fontSize: 16,
+		fontFamily: theme.typography.family.bold,
+		fontSize: theme.typography.size.md,
 		fontWeight: "bold",
+		color: theme.colors.text,
 	},
 	classroom: {
-		fontFamily: "Nunito_400Regular",
-		fontSize: 14,
-		color: "#777",
+		fontFamily: theme.typography.family.regular,
+		fontSize: theme.typography.size.sm,
+		color: theme.colors.muted,
 	},
 	modalContainer: {
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
-		backgroundColor: "rgba(0, 0, 0, 0.5)",
+		backgroundColor: "rgba(0, 0, 0, 0.6)",
 	},
 	modalContent: {
-		width: 300,
-		padding: 20,
-		backgroundColor: "#fff",
-		borderRadius: 10,
+		width: 320,
+		padding: theme.spacing.xl,
+		backgroundColor: theme.colors.white,
+		borderRadius: theme.radius.xl,
 		alignItems: "center",
+		...theme.shadow.card,
+		borderWidth: 1,
+		borderColor: theme.colors.border,
 	},
 	modalImage: {
-		width: 80,
-		height: 80,
-		borderRadius: 40,
-		marginBottom: 12,
-		backgroundColor: "#CCC",
+		width: 90,
+		height: 90,
+		borderRadius: 45,
+		marginBottom: theme.spacing.md,
+		backgroundColor: theme.colors.gray,
+		borderWidth: 3,
+		borderColor: theme.colors.primary,
 	},
 	modalName: {
-		fontFamily: "Nunito_700Bold",
-		fontSize: 18,
+		fontFamily: theme.typography.family.bold,
+		fontSize: theme.typography.size.lg,
 		fontWeight: "bold",
-		marginBottom: 12,
+		marginBottom: theme.spacing.md,
+		color: theme.colors.text,
 	},
 	editButton: {
 		position: "absolute",
-		top: 10,
-		right: 10,
+		top: theme.spacing.sm,
+		right: theme.spacing.sm,
+		backgroundColor: theme.colors.surface,
+		borderRadius: theme.radius.pill,
+		padding: theme.spacing.xs / 2,
 	},
 	sectionTitle: {
-		fontFamily: "Nunito_400Regular",
-		fontSize: 16,
+		fontFamily: theme.typography.family.bold,
+		fontSize: theme.typography.size.md,
 		fontWeight: "bold",
-		marginVertical: 8,
+		marginVertical: theme.spacing.sm,
+		color: theme.colors.text,
 	},
 	profileOption: {
-		padding: 10,
+		padding: theme.spacing.sm,
+		backgroundColor: theme.colors.surface,
+		borderRadius: theme.radius.sm,
+		marginVertical: theme.spacing.xs / 2,
+		minWidth: 200,
+		alignItems: "center",
+	},
+	profileOptionText: {
+		fontFamily: theme.typography.family.regular,
+		fontSize: theme.typography.size.md,
+		color: theme.colors.text,
+		fontWeight: "500",
 	},
 	signoutButton: {
-		marginTop: 20,
-		padding: 10,
-		backgroundColor: "#ff6b6b",
-		borderRadius: 5,
+		marginTop: theme.spacing.lg,
+		paddingHorizontal: theme.spacing.lg,
+		paddingVertical: theme.spacing.sm,
+		backgroundColor: theme.colors.danger,
+		borderRadius: theme.radius.lg,
 	},
 	signoutText: {
-		fontFamily: "Nunito_700Bold",
-		color: "#fff",
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.white,
 		fontWeight: "bold",
+		fontSize: theme.typography.size.md,
 	},
 	closeButton: {
-		marginTop: 10,
+		marginTop: theme.spacing.sm,
 	},
 })
 

@@ -1,10 +1,11 @@
 import React, { useContext } from "react"
-import { StyleSheet, Text } from "react-native"
+import { StyleSheet, Text, View } from "react-native"
 import useSWR from "swr"
 import AppContext from "../contexts/AppContext"
 import LoadingScreen from "../components/Loading"
 import BlogPostList from "../components/blog"
 import { SafeAreaView } from "react-native-safe-area-context"
+import { theme } from "../helpers/theme"
 
 export default function AnnouncementsScreen() {
 	const { students } = useContext(AppContext)!
@@ -30,8 +31,8 @@ export default function AnnouncementsScreen() {
 	}
 
 	return (
-		<>
-			<SafeAreaView edges={["top"]}>
+		<View style={styles.container}>
+			<SafeAreaView edges={["top"]} style={styles.headerContainer}>
 				<Text style={styles.heading}>Anuncios</Text>
 			</SafeAreaView>
 			<BlogPostList
@@ -41,16 +42,27 @@ export default function AnnouncementsScreen() {
 				onRefresh={handleRefresh}
 				isRefreshing={isLoading}
 			/>
-		</>
+		</View>
 	)
 }
 
 const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		backgroundColor: theme.colors.background,
+	},
+	headerContainer: {
+		backgroundColor: theme.colors.surface,
+		borderBottomWidth: 1,
+		borderBottomColor: theme.colors.border,
+	},
 	heading: {
-		fontSize: 24,
+		fontFamily: theme.typography.family.bold,
+		fontSize: theme.typography.size.xl,
 		fontWeight: "bold",
-
-		marginTop: 16,
-		paddingHorizontal: 16,
+		color: theme.colors.primary,
+		marginTop: theme.spacing.md,
+		paddingHorizontal: theme.spacing.md,
+		paddingBottom: theme.spacing.sm,
 	},
 })

@@ -1,38 +1,54 @@
 export const theme = {
   colors: {
-    "light-gray": "#F5F5F5",
-    gray: "#D1D5DB", // a bit darker than F5F5F5
-    primary: "#6C8CF5",
-    secondary: "#FFB86B",
-    success: "#62D095",
-    warning: "#FFD166",
-    danger: "#FF6B6B",
-    surface: "#FFF8F1",
-    text: "#2B2B2B",
-    muted: "#63707A",
-    border: "#E8E2DA",
+    "light-gray": "#F8F9FE",
+    gray: "#E5E7EB",
+    primary: "#FF6B9D", // Playful pink
+    secondary: "#FFB347", // Warm orange
+    success: "#4ECDC4", // Mint green
+    warning: "#FFD93D", // Sunshine yellow
+    danger: "#FF8A80", // Soft coral red
+    surface: "#FFF5F8", // Light pink tint
+    text: "#2D3748", // Softer dark text
+    muted: "#718096", // Warmer muted text
+    border: "#F7FAFC", // Very light border
     white: "#FFFFFF",
-    background: "#F5F5F5", // light gray background for app
+    background: "#F0F4FF", // Soft blue-tinted background
+    accent1: "#A78BFA", // Soft purple
+    accent2: "#34D399", // Fresh green
+    accent3: "#FBBF24", // Golden yellow
+    accent4: "#60A5FA", // Sky blue
   },
   radius: {
-    sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 24,
+    sm: 12,
+    md: 18,
+    lg: 24,
+    xl: 32,
     pill: 999,
   },
   spacing: {
-    xs: 6,
-    sm: 10,
-    md: 14,
-    lg: 20,
-    xl: 28,
+    xs: 8,
+    sm: 12,
+    md: 16,
+    lg: 24,
+    xl: 32,
   },
   shadow: {
-    card: { elevation: 2 }, // iOS shadow + Android elevation if you like
+    card: {
+      elevation: 6,
+      shadowColor: "#FF6B9D",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 12,
+    },
+    soft: {
+      elevation: 3,
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+    },
   },
   typography: {
-    // hook these up to your loaded fonts
     family: { regular: "Nunito_400Regular", bold: "Nunito_700Bold" },
     size: { sm: 14, md: 16, lg: 18, xl: 22, xxl: 28 },
   },
