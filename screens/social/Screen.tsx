@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useMemo, useState } from "react"
 import { StyleSheet, Text, View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import useSWR from "swr"
-import AppContext from "../../contexts/AppContext"
 import LoadingScreen from "../../components/Loading"
 import BlogPostList from "../../components/blog"
-import { SafeAreaView } from "react-native-safe-area-context"
+import AppContext from "../../contexts/AppContext"
 import { theme } from "../../helpers/theme"
 
 export default function SocialScreen() {
@@ -25,7 +25,7 @@ export default function SocialScreen() {
 		() => `/mobile/posts/classroom/${classroom?.id}`,
 		[classroom]
 	)
-	const { data, isLoading, mutate } = useSWR(key)
+	const { data, isLoading, mutate } = useSWR(classroom?.id ? key : null)
 	console.log("classroom", classroom)
 
 	// Handle refresh action
