@@ -1,5 +1,12 @@
-import React from "react"
-import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native"
+import React, { useState } from "react"
+import {
+	FlatList,
+	RefreshControl,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native"
 import Markdown from "react-native-markdown-display"
 import { theme } from "../../helpers/theme"
 import SchoolCard from "../SchoolCard"
@@ -34,6 +41,9 @@ interface AnnouncementListProps {
 const AnnouncementCard: React.FC<{ announcement: AnnouncementPost }> = ({
 	announcement,
 }) => {
+	const [isExpanded, setIsExpanded] = useState(false)
+	const CHARACTER_LIMIT = 150
+
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString)
 		return date.toLocaleDateString("es-VE", {
@@ -42,6 +52,12 @@ const AnnouncementCard: React.FC<{ announcement: AnnouncementPost }> = ({
 			day: "numeric",
 		})
 	}
+
+	const shouldTruncate = announcement.content.length > CHARACTER_LIMIT
+	const displayContent =
+		isExpanded || !shouldTruncate
+			? announcement.content
+			: announcement.content.substring(0, CHARACTER_LIMIT) + "..."
 
 	return (
 		<SchoolCard style={styles.card}>
@@ -90,8 +106,21 @@ const AnnouncementCard: React.FC<{ announcement: AnnouncementPost }> = ({
 						},
 					}}
 				>
-					{announcement.content}
+					{displayContent}
 				</Markdown>
+
+				{/* Show expand/collapse button if content is truncated */}
+				{shouldTruncate && (
+					<TouchableOpacity
+						style={styles.expandButton}
+						onPress={() => setIsExpanded(!isExpanded)}
+						activeOpacity={0.7}
+					>
+						<Text style={styles.expandButtonText}>
+							{isExpanded ? "Leer menos" : "Leer más"}
+						</Text>
+					</TouchableOpacity>
+				)}
 			</View>
 		</SchoolCard>
 	)
@@ -163,5 +192,17 @@ const styles = StyleSheet.create({
 	},
 	contentContainer: {
 		// No padding needed as Markdown component handles its own spacing
+	},
+	expandButton: {
+		alignSelf: "flex-start",
+		marginTop: theme.spacing.sm,
+		paddingVertical: theme.spacing.xs,
+		paddingHorizontal: theme.spacing.sm,
+	},
+	expandButtonText: {
+		fontSize: theme.typography.size.sm,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.primary,
+		fontWeight: "600",
 	},
 })
