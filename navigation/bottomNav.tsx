@@ -1,37 +1,35 @@
-import React, {
-	JSX,
-	useState,
-	useRef,
-	useCallback,
-	createContext,
-	useContext,
-	useEffect,
-} from "react"
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import PagerView, {
-	PagerViewOnPageSelectedEvent,
-} from "react-native-pager-view"
-import type { NativeSyntheticEvent } from "react-native"
-import AnnouncementsScreen from "../screens/Announcements"
-import SocialScreen from "../screens/social/Stack"
-import HomeScreen from "../screens/Home"
-import MessagingScreen from "../screens/Messaging"
-import OptionsScreen from "../screens/Options"
-import {
-	StyleSheet,
-	TouchableWithoutFeedback,
-	View,
-	Dimensions,
-	Animated,
-} from "react-native"
 import { Ionicons } from "@expo/vector-icons"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import {
 	getFocusedRouteNameFromRoute,
 	useNavigationState,
 } from "@react-navigation/native"
+import React, {
+	JSX,
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "react"
+import type { NativeSyntheticEvent } from "react-native"
+import {
+	Dimensions,
+	StyleSheet,
+	TouchableWithoutFeedback,
+	View,
+} from "react-native"
+import PagerView, {
+	PagerViewOnPageSelectedEvent,
+} from "react-native-pager-view"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { TabContext } from "../contexts/TabContext"
 import { theme } from "../helpers/theme"
+import AnnouncementsScreen from "../screens/Announcements"
+import HomeScreen from "../screens/Home"
+import MessagingScreen from "../screens/Messaging"
+import OptionsScreen from "../screens/Options"
+import SocialScreen from "../screens/social/Stack"
 
 const Tab = createBottomTabNavigator()
 const { width: screenWidth } = Dimensions.get("window")
@@ -40,6 +38,7 @@ const { width: screenWidth } = Dimensions.get("window")
 interface TabScreen {
 	name: string
 	component: React.ComponentType<any>
+	disabled?: boolean
 }
 
 interface PageScrollStateChangedEvent {
@@ -52,7 +51,7 @@ const tabScreens: TabScreen[] = [
 	{ name: "Social", component: SocialScreen },
 	{ name: "Inicio", component: HomeScreen },
 	{ name: "Mensajería", component: MessagingScreen },
-	{ name: "Opciones", component: OptionsScreen },
+	{ name: "Opciones", disabled: true, component: OptionsScreen },
 ]
 
 // Custom wrapper component that handles the swipe functionality
@@ -168,11 +167,13 @@ function SwipeableTabContent(): JSX.Element {
 					scrollEnabled={!isPhotoViewerActive} // Disable scrolling when PhotoViewer is active
 					pageMargin={0}
 				>
-					{tabScreens.map((screen, index) => (
-						<View key={screen.name} style={styles.page}>
-							{renderScreen(screen.component, index)}
-						</View>
-					))}
+					{tabScreens
+						.filter((k) => !k.disabled)
+						.map((screen, index) => (
+							<View key={screen.name} style={styles.page}>
+								{renderScreen(screen.component, index)}
+							</View>
+						))}
 				</PagerView>
 				<CustomTabBar />
 			</View>
@@ -219,6 +220,7 @@ function CustomTabBar(): JSX.Element | null {
 
 					return (
 						<TouchableWithoutFeedback
+							disabled={screen.disabled}
 							key={screen.name}
 							onPress={() => navigateToTab(index)}
 							accessible={true}
