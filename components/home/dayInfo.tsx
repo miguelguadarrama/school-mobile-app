@@ -20,14 +20,6 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 		day: "numeric",
 	})
 
-	// Static weather data for now
-	// const weatherData = {
-	// 	temperature: 30,
-	// 	condition: "Nublado",
-	// 	icon: "⛅", // We'll replace with proper icons later
-	// 	clothing: "Light jacket recommended",
-	// }
-
 	return (
 		<SchoolCard>
 			{/* Header with date and weather side by side */}
@@ -36,52 +28,12 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 					<Text style={styles.dayName}>{dayName}</Text>
 					<Text style={styles.date}>{monthDay}</Text>
 				</View>
-
-				{/* <View style={styles.weatherSection}>
-					<View style={styles.weatherInfo}>
-						<Text style={styles.weatherIcon}>{weatherData.icon}</Text>
-						<View style={styles.tempContainer}>
-							<Text style={styles.temperature}>
-								{weatherData.temperature}°C
-							</Text>
-							<Text style={styles.condition}>{weatherData.condition}</Text>
-						</View>
-					</View>
-				</View> */}
 			</View>
 
 			<AttendanceCard locale={locale} />
-
-			{/* Clothing recommendation */}
-			{/* 
-			<View style={styles.clothingTip}>
-				<Text style={styles.clothingIcon}>👕</Text>
-				<Text style={styles.clothingText}>{weatherData.clothing}</Text>
-			</View>
-      */}
 		</SchoolCard>
 	)
 }
-
-// const SchoolOpenStatus = () => {
-// 	const now = new Date()
-// 	// Check if school is open (Monday-Friday, excluding holidays)
-// 	const isWeekday = now.getDay() >= 1 && now.getDay() <= 5
-// 	const isSchoolOpen = isWeekday // We'll enhance this with holiday calendar later
-// 	return (
-// 		<View style={styles.statusRow}>
-// 			<View
-// 				style={[
-// 					styles.statusIndicator,
-// 					{ backgroundColor: isSchoolOpen ? "#10B981" : "#EF4444" },
-// 				]}
-// 			/>
-// 			<Text style={styles.statusText}>
-// 				School is {isSchoolOpen ? "Open" : "Closed"}
-// 			</Text>
-// 		</View>
-// 	)
-// }
 
 const styles = StyleSheet.create({
 	topRow: {

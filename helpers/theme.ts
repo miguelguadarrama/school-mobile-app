@@ -36,7 +36,7 @@ export const theme = {
   shadow: {
     card: {
       elevation: 6,
-      shadowColor: "#FF6B9D",
+      shadowColor: "#999",
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.15,
       shadowRadius: 12,

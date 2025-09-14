@@ -1,17 +1,6 @@
 import React, { useContext } from "react"
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native"
-import {
-	Megaphone,
-	Camera,
-	MessageCircle,
-	Bell,
-	FileStack,
-	Album,
-	LucideAlbum,
-	LucideSquareStack,
-	LucideSquareActivity,
-	LucideSmile,
-} from "lucide-react-native"
+import { Bell, LucideImages, LucideMessageCircle } from "lucide-react-native"
 import { TabContext } from "../../contexts/TabContext"
 import { theme } from "../../helpers/theme"
 
@@ -92,14 +81,14 @@ export default function CommunicationBar({}: CommunicationBarProps) {
 			/>
 
 			<CommunicationItem
-				IconComponent={LucideSmile}
+				IconComponent={LucideImages}
 				label="Blog"
 				count={communicationData.socialPosts}
 				onPress={() => handlePress("social")}
 			/>
 
 			<CommunicationItem
-				IconComponent={MessageCircle}
+				IconComponent={LucideMessageCircle}
 				label="Mensajes"
 				count={communicationData.messages}
 				onPress={() => handlePress("messages")}

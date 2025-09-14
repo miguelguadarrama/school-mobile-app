@@ -193,7 +193,7 @@ function CustomTabBar(): JSX.Element | null {
 			case "Anuncios":
 				return focused ? "notifications" : "notifications-outline"
 			case "Social":
-				return focused ? "albums" : "albums-outline"
+				return focused ? "images" : "images-outline"
 			case "Inicio":
 				return focused ? "apps" : "apps-outline"
 			case "Mensajería":
@@ -229,7 +229,9 @@ function CustomTabBar(): JSX.Element | null {
 							<View style={styles.tabButton}>
 								<View
 									key={`${screen.name}-${focused}`}
-									style={focused ? styles.iconContainerFocused : styles.iconContainer}
+									style={
+										focused ? styles.iconContainerFocused : styles.iconContainer
+									}
 								>
 									<Ionicons
 										name={iconName}
