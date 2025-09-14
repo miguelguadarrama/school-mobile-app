@@ -25,7 +25,7 @@ import {
 	Animated,
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { SafeAreaView } from "react-native-safe-area-context"
 import {
 	getFocusedRouteNameFromRoute,
 	useNavigationState,
@@ -184,7 +184,6 @@ function SwipeableTabContent(): JSX.Element {
 function CustomTabBar(): JSX.Element | null {
 	const { currentIndex, navigateToTab, isPhotoViewerActive } =
 		useContext(TabContext)
-	const insets = useSafeAreaInsets()
 
 	const getIconName = (
 		routeName: string,
@@ -212,38 +211,38 @@ function CustomTabBar(): JSX.Element | null {
 	}
 
 	return (
-		<View style={[styles.tabBar, { paddingBottom: insets.bottom }]}>
-			{tabScreens.map((screen, index) => {
-				const focused = currentIndex === index
-				const iconName = getIconName(screen.name, focused)
+		<SafeAreaView edges={["bottom"]} style={styles.safeAreaContainer}>
+			<View style={styles.tabBar}>
+				{tabScreens.map((screen, index) => {
+					const focused = currentIndex === index
+					const iconName = getIconName(screen.name, focused)
 
-				return (
-					<TouchableWithoutFeedback
-						key={screen.name}
-						onPress={() => navigateToTab(index)}
-						accessible={true}
-						accessibilityLabel={`${screen.name} tab`}
-						accessibilityRole="tab"
-						accessibilityState={{ selected: focused }}
-					>
-						<View style={styles.tabButton}>
-							<View
-								style={[
-									styles.iconContainer,
-									focused && styles.iconContainerFocused,
-								]}
-							>
-								<Ionicons
-									name={iconName}
-									size={focused ? 28 : 24}
-									color={focused ? theme.colors.white : theme.colors.muted}
-								/>
+					return (
+						<TouchableWithoutFeedback
+							key={screen.name}
+							onPress={() => navigateToTab(index)}
+							accessible={true}
+							accessibilityLabel={`${screen.name} tab`}
+							accessibilityRole="tab"
+							accessibilityState={{ selected: focused }}
+						>
+							<View style={styles.tabButton}>
+								<View
+									key={`${screen.name}-${focused}`}
+									style={focused ? styles.iconContainerFocused : styles.iconContainer}
+								>
+									<Ionicons
+										name={iconName}
+										size={focused ? 28 : 24}
+										color={focused ? theme.colors.white : theme.colors.muted}
+									/>
+								</View>
 							</View>
-						</View>
-					</TouchableWithoutFeedback>
-				)
-			})}
-		</View>
+						</TouchableWithoutFeedback>
+					)
+				})}
+			</View>
+		</SafeAreaView>
 	)
 }
 
@@ -293,14 +292,17 @@ const styles = StyleSheet.create({
 	screenWrapper: {
 		flex: 1,
 	},
+	safeAreaContainer: {
+		backgroundColor: theme.colors.surface,
+		...theme.shadow.soft,
+	},
 	tabBar: {
 		flexDirection: "row",
-		height: 90,
+		height: 80,
 		backgroundColor: theme.colors.surface,
 		borderTopWidth: 0,
-		paddingTop: theme.spacing.sm,
+		paddingTop: 0,
 		paddingHorizontal: theme.spacing.xs,
-		...theme.shadow.soft,
 	},
 	tabButton: {
 		flex: 1,
@@ -317,8 +319,16 @@ const styles = StyleSheet.create({
 		backgroundColor: "transparent",
 	},
 	iconContainerFocused: {
+		justifyContent: "center",
+		alignItems: "center",
+		width: 48,
+		height: 48,
+		borderRadius: 24,
 		backgroundColor: theme.colors.primary,
-		transform: [{ scale: 1.1 }],
-		...theme.shadow.card,
+		transform: [{ scale: 1.2 }],
+		elevation: 4,
+		shadowColor: theme.colors.primary,
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.15,
 	},
 })
