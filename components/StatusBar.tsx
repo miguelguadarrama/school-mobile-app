@@ -134,10 +134,12 @@ const styles = StyleSheet.create({
 		backgroundColor: "#CCC",
 	},
 	name: {
+		fontFamily: "Nunito_700Bold",
 		fontSize: 16,
 		fontWeight: "bold",
 	},
 	classroom: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 14,
 		color: "#777",
 	},
@@ -162,6 +164,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#CCC",
 	},
 	modalName: {
+		fontFamily: "Nunito_700Bold",
 		fontSize: 18,
 		fontWeight: "bold",
 		marginBottom: 12,
@@ -172,6 +175,7 @@ const styles = StyleSheet.create({
 		right: 10,
 	},
 	sectionTitle: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 16,
 		fontWeight: "bold",
 		marginVertical: 8,
@@ -186,6 +190,7 @@ const styles = StyleSheet.create({
 		borderRadius: 5,
 	},
 	signoutText: {
+		fontFamily: "Nunito_700Bold",
 		color: "#fff",
 		fontWeight: "bold",
 	},

@@ -131,10 +131,12 @@ const styles = StyleSheet.create({
 		padding: 20,
 	},
 	label: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 16,
 		marginBottom: 6,
 	},
 	input: {
+		fontFamily: "Nunito_400Regular",
 		borderWidth: 1,
 		borderColor: "#ccc",
 		padding: 12,
@@ -144,6 +146,7 @@ const styles = StyleSheet.create({
 	},
 
 	passwordGuidance: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 14,
 		color: "#666",
 		marginBottom: 12,

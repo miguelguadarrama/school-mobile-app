@@ -244,6 +244,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 4,
 	},
 	statusText: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 13,
 		fontWeight: "600",
 		marginTop: 6,

@@ -142,10 +142,12 @@ const styles = StyleSheet.create({
 		padding: 20,
 	},
 	label: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 18,
 		marginBottom: 6,
 	},
 	input: {
+		fontFamily: "Nunito_400Regular",
 		borderWidth: 1,
 		borderColor: "#ccc",
 		padding: 12,

@@ -106,6 +106,7 @@ const styles = StyleSheet.create({
 		marginBottom: 30,
 	},
 	title: {
+		fontFamily: "Nunito_700Bold",
 		fontSize: 28,
 		marginBottom: 30,
 		textAlign: "center",

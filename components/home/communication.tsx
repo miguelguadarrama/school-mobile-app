@@ -140,11 +140,13 @@ const styles = StyleSheet.create({
 		fontSize: 9,
 		fontWeight: "700",
 		lineHeight: 10,
+		fontFamily: "Nunito_400Regular",
 	},
 	label: {
 		fontSize: 11,
 		fontWeight: "500",
 		color: "#6B7280",
 		textAlign: "center",
+		fontFamily: "Nunito_400Regular",
 	},
 })

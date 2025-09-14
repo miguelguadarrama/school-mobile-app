@@ -50,6 +50,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	buttonText: {
+		fontFamily: "Nunito_400Regular",
 		color: "white",
 		fontSize: 16,
 		fontWeight: "600",

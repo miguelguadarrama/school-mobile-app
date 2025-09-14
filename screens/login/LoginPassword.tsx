@@ -129,6 +129,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#ffffff",
 	},
 	label: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 16,
 		marginBottom: 6,
 	},
@@ -139,6 +140,7 @@ const styles = StyleSheet.create({
 		marginBottom: 30,
 	},
 	input: {
+		fontFamily: "Nunito_400Regular",
 		borderWidth: 1,
 		borderColor: "#ccc",
 		padding: 12,
@@ -151,6 +153,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	forgotPasswordText: {
+		fontFamily: "Nunito_400Regular",
 		color: "#007AFF",
 		fontSize: 16,
 		textDecorationLine: "underline",

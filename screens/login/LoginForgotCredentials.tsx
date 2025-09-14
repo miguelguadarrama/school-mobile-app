@@ -152,6 +152,7 @@ const styles = StyleSheet.create({
 		padding: 20,
 	},
 	label: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 18,
 		marginBottom: 6,
 	},

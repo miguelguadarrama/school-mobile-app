@@ -56,18 +56,21 @@ const styles = StyleSheet.create({
 		padding: 24,
 	},
 	title: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 24,
 		fontWeight: "bold",
 		marginBottom: 24,
 		textAlign: "center",
 	},
 	message: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 16,
 		color: "#555",
 		marginBottom: 40,
 		textAlign: "center",
 	},
 	input: {
+		fontFamily: "Nunito_400Regular",
 		borderWidth: 1,
 		borderColor: "#ccc",
 		padding: 12,

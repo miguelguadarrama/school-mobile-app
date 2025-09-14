@@ -48,6 +48,7 @@ const CustomTextInput = ({
 
 const styles = StyleSheet.create({
 	input: {
+		fontFamily: "Nunito_400Regular",
 		borderWidth: 1,
 		borderColor: "#ccc",
 		padding: 12,

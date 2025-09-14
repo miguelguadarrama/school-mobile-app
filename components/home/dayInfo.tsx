@@ -106,6 +106,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	dayName: {
+		fontFamily: "Nunito_400Regular",
 		textTransform: "capitalize",
 		fontSize: 24,
 		fontWeight: "700",
@@ -113,6 +114,7 @@ const styles = StyleSheet.create({
 		marginBottom: 4,
 	},
 	date: {
+		fontFamily: "Nunito_400Regular",
 		textTransform: "capitalize",
 		fontSize: 16,
 		color: "#6B7280",
@@ -133,12 +135,14 @@ const styles = StyleSheet.create({
 		alignItems: "flex-end",
 	},
 	temperature: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 18,
 		fontWeight: "700",
 		color: "#1F2937",
 		lineHeight: 20,
 	},
 	condition: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 12,
 		color: "#6B7280",
 		fontWeight: "500",
@@ -160,11 +164,13 @@ const styles = StyleSheet.create({
 		marginRight: 8,
 	},
 	statusText: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 14,
 		fontWeight: "600",
 		color: "#374151",
 	},
 	clothingTip: {
+		fontFamily: "Nunito_400Regular",
 		flexDirection: "row",
 		alignItems: "center",
 		backgroundColor: "#EBF8FF",
@@ -178,6 +184,7 @@ const styles = StyleSheet.create({
 		marginRight: 8,
 	},
 	clothingText: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 13,
 		color: "#1E40AF",
 		fontWeight: "500",

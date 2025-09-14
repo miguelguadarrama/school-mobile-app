@@ -203,6 +203,7 @@ const styles = StyleSheet.create({
 		opacity: 0.6,
 	},
 	dayName: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 14,
 		fontWeight: "600",
 		color: "#6B7280",
@@ -210,15 +211,18 @@ const styles = StyleSheet.create({
 		textTransform: "capitalize",
 	},
 	dayNumber: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 16,
 		fontWeight: "700",
 		color: "#1F2937",
 		marginBottom: 8,
 	},
 	todayText: {
+		fontFamily: "Nunito_400Regular",
 		color: "#3B82F6",
 	},
 	weekendText: {
+		fontFamily: "Nunito_400Regular",
 		color: "#9CA3AF",
 	},
 	statusContainer: {
@@ -233,6 +237,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#9CA3AF",
 	},
 	statusLabel: {
+		fontFamily: "Nunito_400Regular",
 		fontSize: 9,
 		fontWeight: "600",
 		color: "#374151",

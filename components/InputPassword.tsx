@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 12,
 	},
 	inputField: {
+		fontFamily: "Nunito_400Regular",
 		flex: 1,
 		paddingVertical: 12,
 		fontSize: 16,
