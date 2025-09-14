@@ -3,9 +3,11 @@ import { AuthStackParamList } from "../../types/navigation"
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React from "react"
-import { Button, StyleSheet, Text, TextInput, View } from "react-native"
+import { Button, StyleSheet, Text, TextInput, View, StatusBar } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import CustomTextInput from "../../components/ui/textInput"
 import AppButton from "../../components/ui/button"
+import { theme } from "../../helpers/theme"
 
 type NoAccountFoundScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -24,7 +26,10 @@ const LoginNoAccountFound = () => {
 	}
 
 	return (
-		<View style={styles.container}>
+		<>
+			<StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+			<SafeAreaView style={styles.safeArea}>
+				<View style={styles.container}>
 			<Text style={styles.title}>No se encontró su cuenta</Text>
 
 			<CustomTextInput
@@ -43,39 +48,50 @@ const LoginNoAccountFound = () => {
 			</Text>
 
 			<AppButton onPress={handleGoBack}>Regresar a Iniciar Sesión</AppButton>
-		</View>
+			</View>
+		</SafeAreaView>
+	</>
 	)
 }
 
 export default LoginNoAccountFound
 
 const styles = StyleSheet.create({
+	safeArea: {
+		flex: 1,
+		backgroundColor: theme.colors.background,
+	},
 	container: {
 		flex: 1,
 		justifyContent: "center",
-		padding: 24,
+		padding: theme.spacing.xl,
 	},
 	title: {
-		fontFamily: "Nunito_400Regular",
-		fontSize: 24,
+		fontFamily: theme.typography.family.bold,
+		fontSize: theme.typography.size.xl,
 		fontWeight: "bold",
-		marginBottom: 24,
+		marginBottom: theme.spacing.xl,
 		textAlign: "center",
+		color: theme.colors.primary,
 	},
 	message: {
-		fontFamily: "Nunito_400Regular",
-		fontSize: 16,
-		color: "#555",
-		marginBottom: 40,
+		fontFamily: theme.typography.family.regular,
+		fontSize: theme.typography.size.md,
+		color: theme.colors.muted,
+		marginBottom: theme.spacing.xl * 2,
 		textAlign: "center",
+		lineHeight: 22,
+		padding: theme.spacing.lg,
+		backgroundColor: theme.colors.surface,
+		borderRadius: theme.radius.lg,
 	},
 	input: {
-		fontFamily: "Nunito_400Regular",
+		fontFamily: theme.typography.family.regular,
 		borderWidth: 1,
-		borderColor: "#ccc",
-		padding: 12,
-		borderRadius: 8,
-		marginBottom: 20,
-		fontSize: 16,
+		borderColor: theme.colors.border,
+		padding: theme.spacing.sm,
+		borderRadius: theme.radius.sm,
+		marginBottom: theme.spacing.lg,
+		fontSize: theme.typography.size.md,
 	},
 })

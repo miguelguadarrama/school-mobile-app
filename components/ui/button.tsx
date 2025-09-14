@@ -31,29 +31,29 @@ export default AppButton
 
 const styles = StyleSheet.create({
 	buttonDisabled: {
-		backgroundColor: "#93C5FD",
-		padding: 12,
-		borderRadius: 8,
+		backgroundColor: theme.colors["primary-light"],
+		padding: theme.spacing.sm,
+		borderRadius: theme.radius.sm,
 		alignItems: "center",
 	},
 	button: {
-		//blue
 		backgroundColor: theme.colors.primary,
-		padding: 12,
-		borderRadius: 8,
+		padding: theme.spacing.sm,
+		borderRadius: theme.radius.sm,
 		alignItems: "center",
+		...theme.shadow.soft,
 	},
 	buttonSecondary: {
-		//gray
 		backgroundColor: theme.colors.secondary,
-		padding: 12,
-		borderRadius: 8,
+		padding: theme.spacing.sm,
+		borderRadius: theme.radius.sm,
 		alignItems: "center",
+		...theme.shadow.soft,
 	},
 	buttonText: {
-		fontFamily: "Nunito_400Regular",
-		color: "white",
-		fontSize: 16,
+		fontFamily: theme.typography.family.regular,
+		color: theme.colors.white,
+		fontSize: theme.typography.size.md,
 		fontWeight: "600",
 	},
 })

@@ -8,6 +8,7 @@ import { Image, StatusBar, StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import AppButton from "../../components/ui/button"
 import CustomTextInput from "../../components/ui/textInput"
+import { theme } from "../../helpers/theme"
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -53,13 +54,15 @@ const LoginScreen = () => {
 
 	return (
 		<>
-			<StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+			<StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
 			<SafeAreaView style={styles.safeArea}>
 				<View style={styles.container}>
-					<Image
-						source={require("../../assets/ic_launcher-playstore.png")}
-						style={styles.logo}
-					/>
+					<View style={styles.logoContainer}>
+						<Image
+							source={require("../../assets/ic_launcher-playstore.png")}
+							style={styles.logo}
+						/>
+					</View>
 					<Text style={styles.title}>Bienvenido a JAC</Text>
 
 					<CustomTextInput
@@ -91,25 +94,33 @@ export default LoginScreen
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: "#ffffff",
+		backgroundColor: theme.colors.background,
 	},
 	container: {
 		flex: 1,
 		justifyContent: "flex-start",
 		marginTop: "15%",
-		padding: 20,
+		padding: theme.spacing.lg,
+	},
+	logoContainer: {
+		backgroundColor: theme.colors.white,
+		borderRadius: theme.radius.xl,
+		padding: theme.spacing.lg,
+		alignSelf: "center",
+		marginBottom: theme.spacing.xl,
+		...theme.shadow.card,
 	},
 	logo: {
-		width: 200,
-		height: 200,
+		width: 160,
+		height: 160,
 		alignSelf: "center",
-		marginBottom: 30,
 	},
 	title: {
-		fontFamily: "Nunito_700Bold",
-		fontSize: 28,
-		marginBottom: 30,
+		fontFamily: theme.typography.family.bold,
+		fontSize: theme.typography.size.xxl,
+		marginBottom: theme.spacing.xl,
 		textAlign: "center",
 		fontWeight: "bold",
+		color: theme.colors.primary,
 	},
 })

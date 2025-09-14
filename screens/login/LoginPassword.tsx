@@ -18,6 +18,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { AuthStackParamList } from "../../types/navigation"
 import AppButton from "../../components/ui/button"
 import CustomTextInput from "../../components/ui/textInput"
+import { theme } from "../../helpers/theme"
 
 type LoginPasswordNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -71,14 +72,16 @@ const LoginPassword = () => {
 
 	return (
 		<>
-			<StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+			<StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
 
 			<SafeAreaView style={styles.safeArea}>
 				<View style={styles.container}>
-					<Image
-						source={require("../../assets/ic_launcher-playstore.png")}
-						style={styles.logo}
-					/>
+					<View style={styles.logoContainer}>
+						<Image
+							source={require("../../assets/ic_launcher-playstore.png")}
+							style={styles.logo}
+						/>
+					</View>
 					<Text style={styles.label}>Correo electrónico</Text>
 					<CustomTextInput
 						placeholder="Correo electrónico"
@@ -122,40 +125,49 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: "flex-start",
 		marginTop: "20%",
-		padding: 20,
+		padding: theme.spacing.lg,
 	},
 	safeArea: {
 		flex: 1,
-		backgroundColor: "#ffffff",
+		backgroundColor: theme.colors.background,
+	},
+	logoContainer: {
+		backgroundColor: theme.colors.white,
+		borderRadius: theme.radius.xl,
+		padding: theme.spacing.lg,
+		alignSelf: "center",
+		marginBottom: theme.spacing.xl,
+		...theme.shadow.card,
 	},
 	label: {
-		fontFamily: "Nunito_400Regular",
-		fontSize: 16,
-		marginBottom: 6,
+		fontFamily: theme.typography.family.regular,
+		fontSize: theme.typography.size.md,
+		marginBottom: theme.spacing.xs,
+		color: theme.colors.text,
+		fontWeight: "500",
 	},
 	logo: {
-		width: 150,
-		height: 150,
+		width: 120,
+		height: 120,
 		alignSelf: "center",
-		marginBottom: 30,
 	},
 	input: {
-		fontFamily: "Nunito_400Regular",
+		fontFamily: theme.typography.family.regular,
 		borderWidth: 1,
-		borderColor: "#ccc",
-		padding: 12,
-		borderRadius: 8,
-		marginBottom: 20,
-		fontSize: 16,
+		borderColor: theme.colors.border,
+		padding: theme.spacing.sm,
+		borderRadius: theme.radius.sm,
+		marginBottom: theme.spacing.lg,
+		fontSize: theme.typography.size.md,
 	},
 	forgotPasswordContainer: {
-		marginTop: 20,
+		marginTop: theme.spacing.lg,
 		alignItems: "center",
 	},
 	forgotPasswordText: {
-		fontFamily: "Nunito_400Regular",
-		color: "#007AFF",
-		fontSize: 16,
+		fontFamily: theme.typography.family.regular,
+		color: theme.colors.primary,
+		fontSize: theme.typography.size.md,
 		textDecorationLine: "underline",
 	},
 })

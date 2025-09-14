@@ -4,9 +4,11 @@ import { AuthStackParamList } from "../../types/navigation"
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useState } from "react"
-import { Alert, StyleSheet, Text, View } from "react-native"
+import { Alert, StyleSheet, Text, View, StatusBar } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import AppButton from "../../components/ui/button"
 import CustomTextInput from "../../components/ui/textInput"
+import { theme } from "../../helpers/theme"
 
 type VerifyEmailScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -96,8 +98,11 @@ const LoginForgotCredentials = () => {
 	}
 
 	return (
-		<View style={styles.container}>
-			<Text style={styles.label}>Verificar correo electrónico</Text>
+		<>
+			<StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+			<SafeAreaView style={styles.safeArea}>
+				<View style={styles.container}>
+					<Text style={styles.title}>Verificar correo electrónico</Text>
 			<CustomTextInput
 				placeholder="Correo electrónico"
 				value={email}
@@ -138,22 +143,38 @@ const LoginForgotCredentials = () => {
 						{status === "BUSY" ? "Verificando..." : "Verificar código"}
 					</AppButton>
 				</>
-			)}
-		</View>
+				)}
+			</View>
+		</SafeAreaView>
+	</>
 	)
 }
 
 export default LoginForgotCredentials
 
 const styles = StyleSheet.create({
+	safeArea: {
+		flex: 1,
+		backgroundColor: theme.colors.background,
+	},
 	container: {
 		flex: 1,
 		justifyContent: "center",
-		padding: 20,
+		padding: theme.spacing.lg,
+	},
+	title: {
+		fontFamily: theme.typography.family.bold,
+		fontSize: theme.typography.size.xl,
+		marginBottom: theme.spacing.lg,
+		color: theme.colors.primary,
+		textAlign: "center",
+		fontWeight: "bold",
 	},
 	label: {
-		fontFamily: "Nunito_400Regular",
-		fontSize: 18,
-		marginBottom: 6,
+		fontFamily: theme.typography.family.regular,
+		fontSize: theme.typography.size.lg,
+		marginBottom: theme.spacing.xs,
+		color: theme.colors.text,
+		fontWeight: "500",
 	},
 })

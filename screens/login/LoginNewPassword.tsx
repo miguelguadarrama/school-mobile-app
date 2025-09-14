@@ -4,11 +4,12 @@ import { AuthStackParamList } from "../../types/navigation"
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useEffect, useState } from "react"
-import { Alert, StyleSheet, Text, View } from "react-native"
+import { Alert, StyleSheet, Text, View, StatusBar } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import InputPassword from "../../components/InputPassword"
 import AppButton from "../../components/ui/button"
 import CustomTextInput from "../../components/ui/textInput"
-//import { createAuth0User } from "@/services/auth" // We'll define this next
+import { theme } from "../../helpers/theme"
 
 type SetNewPasswordScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -80,7 +81,10 @@ const LoginNewPassword = () => {
 	}
 
 	return (
-		<View style={styles.container}>
+		<>
+			<StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+			<SafeAreaView style={styles.safeArea}>
+				<View style={styles.container}>
 			<Text style={styles.label}>Email</Text>
 			<CustomTextInput
 				placeholder="Correo electrónico"
@@ -118,38 +122,48 @@ const LoginNewPassword = () => {
 			>
 				{status === "BUSY" ? "Creando..." : "Crear Cuenta"}
 			</AppButton>
-		</View>
+			</View>
+		</SafeAreaView>
+	</>
 	)
 }
 
 export default LoginNewPassword
 
 const styles = StyleSheet.create({
+	safeArea: {
+		flex: 1,
+		backgroundColor: theme.colors.background,
+	},
 	container: {
 		flex: 1,
 		justifyContent: "center",
-		padding: 20,
+		padding: theme.spacing.lg,
 	},
 	label: {
-		fontFamily: "Nunito_400Regular",
-		fontSize: 16,
-		marginBottom: 6,
+		fontFamily: theme.typography.family.regular,
+		fontSize: theme.typography.size.md,
+		marginBottom: theme.spacing.xs,
+		color: theme.colors.text,
+		fontWeight: "500",
 	},
 	input: {
-		fontFamily: "Nunito_400Regular",
+		fontFamily: theme.typography.family.regular,
 		borderWidth: 1,
-		borderColor: "#ccc",
-		padding: 12,
-		borderRadius: 8,
-		marginBottom: 20,
-		fontSize: 16,
+		borderColor: theme.colors.border,
+		padding: theme.spacing.sm,
+		borderRadius: theme.radius.sm,
+		marginBottom: theme.spacing.lg,
+		fontSize: theme.typography.size.md,
 	},
-
 	passwordGuidance: {
-		fontFamily: "Nunito_400Regular",
-		fontSize: 14,
-		color: "#666",
-		marginBottom: 12,
-		height: 100,
+		fontFamily: theme.typography.family.regular,
+		fontSize: theme.typography.size.sm,
+		color: theme.colors.muted,
+		marginBottom: theme.spacing.sm,
+		lineHeight: 20,
+		padding: theme.spacing.sm,
+		backgroundColor: theme.colors.surface,
+		borderRadius: theme.radius.sm,
 	},
 })

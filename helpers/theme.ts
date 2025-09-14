@@ -3,6 +3,7 @@ export const theme = {
     "light-gray": "#F8F9FE",
     gray: "#E5E7EB",
     primary: "#FF6B9D", // Playful pink
+    "primary-light": "#FFB3D1", // Light pink for disabled states
     secondary: "#FFB347", // Warm orange
     success: "#4ECDC4", // Mint green
     warning: "#FFD93D", // Sunshine yellow
