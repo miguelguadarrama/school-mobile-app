@@ -1,4 +1,5 @@
 import { Pressable, Text, StyleSheet } from "react-native"
+import { theme } from "../../helpers/theme"
 
 const AppButton = ({
 	children,
@@ -37,14 +38,14 @@ const styles = StyleSheet.create({
 	},
 	button: {
 		//blue
-		backgroundColor: "#3B82F6",
+		backgroundColor: theme.colors.primary,
 		padding: 12,
 		borderRadius: 8,
 		alignItems: "center",
 	},
 	buttonSecondary: {
 		//gray
-		backgroundColor: "#828893ff",
+		backgroundColor: theme.colors.secondary,
 		padding: 12,
 		borderRadius: 8,
 		alignItems: "center",

@@ -1,7 +1,19 @@
 import React, { useContext } from "react"
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native"
-import { Megaphone, Camera, MessageCircle } from "lucide-react-native"
+import {
+	Megaphone,
+	Camera,
+	MessageCircle,
+	Bell,
+	FileStack,
+	Album,
+	LucideAlbum,
+	LucideSquareStack,
+	LucideSquareActivity,
+	LucideSmile,
+} from "lucide-react-native"
 import { TabContext } from "../../contexts/TabContext"
+import { theme } from "../../helpers/theme"
 
 interface CommunicationData {
 	announcements: number
@@ -73,14 +85,14 @@ export default function CommunicationBar({}: CommunicationBarProps) {
 	return (
 		<View style={styles.container}>
 			<CommunicationItem
-				IconComponent={Megaphone}
+				IconComponent={Bell}
 				label="Anuncios"
 				count={communicationData.announcements}
 				onPress={() => handlePress("announcements")}
 			/>
 
 			<CommunicationItem
-				IconComponent={Camera}
+				IconComponent={LucideSmile}
 				label="Blog"
 				count={communicationData.socialPosts}
 				onPress={() => handlePress("social")}
@@ -103,8 +115,10 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		paddingVertical: 12,
 		paddingHorizontal: 16,
-		backgroundColor: "#F5F5F5",
+		backgroundColor: theme.colors["light-gray"],
 		borderRadius: 12,
+		borderWidth: 1,
+		borderColor: theme.colors.border,
 	},
 	itemContainer: {
 		alignItems: "center",
@@ -136,7 +150,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 4,
 	},
 	badgeText: {
-		color: "#FFFFFF",
+		color: theme.colors.white,
 		fontSize: 9,
 		fontWeight: "700",
 		lineHeight: 10,
@@ -145,7 +159,7 @@ const styles = StyleSheet.create({
 	label: {
 		fontSize: 11,
 		fontWeight: "500",
-		color: "#6B7280",
+		color: theme.colors.text,
 		textAlign: "center",
 		fontFamily: "Nunito_400Regular",
 	},

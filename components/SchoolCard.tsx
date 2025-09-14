@@ -22,9 +22,9 @@ const styles = StyleSheet.create({
 			width: 0,
 			height: 1,
 		},
-		shadowOpacity: 0.05, // iOS shadow
+		shadowOpacity: 0.1, // iOS shadow
 		shadowRadius: 2, // iOS shadow
-		elevation: 1, // For Android shadow
+		elevation: 2, // For Android shadow
 	},
 })
 

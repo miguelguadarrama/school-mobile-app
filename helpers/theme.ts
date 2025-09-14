@@ -1,5 +1,7 @@
 export const theme = {
   colors: {
+    "light-gray": "#F5F5F5",
+    gray: "#D1D5DB", // a bit darker than F5F5F5
     primary: "#6C8CF5",
     secondary: "#FFB86B",
     success: "#62D095",
@@ -10,6 +12,7 @@ export const theme = {
     muted: "#63707A",
     border: "#E8E2DA",
     white: "#FFFFFF",
+    background: "#F5F5F5", // light gray background for app
   },
   radius: {
     sm: 8,

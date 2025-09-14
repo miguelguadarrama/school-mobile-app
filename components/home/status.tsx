@@ -10,13 +10,14 @@ import SchoolCard from "../SchoolCard"
 import { useContext } from "react"
 import AppContext from "../../contexts/AppContext"
 import { getFormattedDate, normalizeDate } from "../../helpers/date"
+import { theme } from "../../helpers/theme"
 
 const DailyActivityStatus: React.FC = () => {
 	const { attendance, selectedStudent, selectedDate } = useContext(AppContext)!
 	// Colors for positive and negative states
 	const colors = {
-		positive: "#4caf50", // Green for good things
-		negative: "#9e9e9e", // Gray for less ideal things
+		positive: theme.colors.success, // Green for good things
+		negative: theme.colors.muted, // Gray for less ideal things
 	}
 
 	// Helper function to get eating status display
@@ -36,7 +37,7 @@ const DailyActivityStatus: React.FC = () => {
 				}
 			case "meal_status_ok":
 				return {
-					icon: "restaurant" as const,
+					icon: "restaurant-outline" as const,
 					text: "Normal",
 					isPositive: true,
 				}
@@ -50,7 +51,7 @@ const DailyActivityStatus: React.FC = () => {
 		if (!hadBowelMovement) return null
 		return hadBowelMovement === "poop_status_yes"
 			? {
-					icon: "checkmark-circle" as const,
+					icon: "checkmark-circle-outline" as const,
 					text: "Heces",
 					isPositive: true,
 			  }

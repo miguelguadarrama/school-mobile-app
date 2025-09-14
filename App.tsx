@@ -2,7 +2,7 @@ import { StyleSheet, View } from "react-native"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import AppLayout from "./components/Layout"
 import { AuthProvider } from "./contexts/AuthContext"
-
+import "./global.css"
 import {
 	useFonts,
 	Nunito_400Regular,

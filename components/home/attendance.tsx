@@ -7,7 +7,7 @@ import {
 	LucideIcon,
 } from "lucide-react-native"
 import AppContext from "../../contexts/AppContext"
-import { getFormattedDate } from "../../helpers/date"
+import { theme } from "../../helpers/theme"
 
 interface AttendanceRecord {
 	date: string
@@ -90,13 +90,13 @@ export default function AttendanceCard({
 	const getStatusColor = (status: AttendanceRecord["status"]) => {
 		switch (status) {
 			case "attendance_status_present":
-				return "#10B981" // Green
+				return theme.colors.success // Green
 			case "attendance_status_late":
-				return "#F59E0B" // Amber
+				return theme.colors.warning // Amber
 			case "attendance_status_absent":
-				return "#EF4444" // Red
+				return theme.colors.danger // Red
 			default:
-				return "#CCC"
+				return theme.colors.gray
 		}
 	}
 
@@ -157,7 +157,7 @@ export default function AttendanceCard({
 											getStatusIcon(attendance.status) as LucideIcon,
 											{
 												size: 14,
-												color: "#FFFFFF",
+												color: theme.colors.white,
 											}
 										)}
 									</>

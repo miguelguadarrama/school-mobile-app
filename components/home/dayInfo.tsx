@@ -20,12 +20,12 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 	})
 
 	// Static weather data for now
-	const weatherData = {
-		temperature: 30,
-		condition: "Nublado",
-		icon: "⛅", // We'll replace with proper icons later
-		clothing: "Light jacket recommended",
-	}
+	// const weatherData = {
+	// 	temperature: 30,
+	// 	condition: "Nublado",
+	// 	icon: "⛅", // We'll replace with proper icons later
+	// 	clothing: "Light jacket recommended",
+	// }
 
 	return (
 		<SchoolCard>
@@ -36,7 +36,7 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 					<Text style={styles.date}>{monthDay}</Text>
 				</View>
 
-				<View style={styles.weatherSection}>
+				{/* <View style={styles.weatherSection}>
 					<View style={styles.weatherInfo}>
 						<Text style={styles.weatherIcon}>{weatherData.icon}</Text>
 						<View style={styles.tempContainer}>
@@ -46,7 +46,7 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 							<Text style={styles.condition}>{weatherData.condition}</Text>
 						</View>
 					</View>
-				</View>
+				</View> */}
 			</View>
 
 			<AttendanceCard locale={locale} />
@@ -83,19 +83,6 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 // }
 
 const styles = StyleSheet.create({
-	card: {
-		backgroundColor: "#FFFFFF",
-		borderRadius: 12,
-		padding: 16,
-		shadowColor: "#000",
-		shadowOffset: {
-			width: 0,
-			height: 2,
-		},
-		shadowOpacity: 0.1,
-		shadowRadius: 4,
-		elevation: 3, // Android shadow
-	},
 	topRow: {
 		flexDirection: "row",
 		justifyContent: "space-between",

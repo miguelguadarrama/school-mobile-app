@@ -9,6 +9,7 @@ import DayInfoCard from "../components/home/dayInfo"
 import AttendanceCard from "../components/home/attendance"
 import CommunicationCard from "../components/home/communication"
 import DailyActivityStatus from "../components/home/status"
+import { theme } from "../helpers/theme"
 
 export default function HomeScreen() {
 	// Fetch student information from the API
@@ -86,7 +87,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#F8F9FA",
+		backgroundColor: theme.colors.background,
 	},
 	statusBarContainer: {
 		backgroundColor: "#F0F0F0",
