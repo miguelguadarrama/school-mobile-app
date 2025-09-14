@@ -1,4 +1,4 @@
-// BlogPostsList.tsx
+// BlogPostList.tsx
 import dayjs from "../../lib/dayjs"
 import React from "react"
 import {
@@ -20,7 +20,7 @@ interface User {
 	full_name: string
 }
 
-interface BlogPostsListProps {
+interface BlogPostListProps {
 	emptyTitle?: string
 	emptySubtitle?: string
 	posts: BlogPost[]
@@ -32,7 +32,7 @@ interface BlogPostsListProps {
 //const fallbackImage = "https://placehold.co/600x400/png"
 const { width: screenWidth } = Dimensions.get("window")
 
-const BlogPostsList: React.FC<BlogPostsListProps> = ({
+const BlogPostList: React.FC<BlogPostListProps> = ({
 	emptyTitle = "No hay publicaciones",
 	emptySubtitle = "Cuando haya nuevas publicaciones en tu clase, aparecerán aquí",
 	posts,
@@ -270,4 +270,4 @@ const styles = StyleSheet.create({
 	},
 })
 
-export default BlogPostsList
+export default BlogPostList

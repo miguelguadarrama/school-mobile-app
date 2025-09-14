@@ -2,7 +2,7 @@ import React from "react"
 import { View, Text, StyleSheet } from "react-native"
 import { theme } from "../helpers/theme"
 import { SafeAreaView } from "react-native-safe-area-context"
-import BlogPostsList from "../components/blog"
+import BlogPostList from "../components/blog"
 
 export default function OptionsScreen() {
 	return (
@@ -10,7 +10,7 @@ export default function OptionsScreen() {
 			<SafeAreaView edges={["top"]} style={styles.headerContainer}>
 				<Text style={styles.heading}>Opciones</Text>
 			</SafeAreaView>
-			<BlogPostsList
+			<BlogPostList
 				emptyTitle="Opciones"
 				emptySubtitle="Página en construcción"
 				posts={[]}

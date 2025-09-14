@@ -1,30 +1,32 @@
-import React, { useContext } from "react"
-import { StyleSheet, Text } from "react-native"
-import { useNavigation } from "@react-navigation/native"
-import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import React, { useContext, useEffect, useMemo, useState } from "react"
+import { StyleSheet, Text, View } from "react-native"
 import useSWR from "swr"
 import AppContext from "../../contexts/AppContext"
 import LoadingScreen from "../../components/Loading"
 import BlogPostList from "../../components/blog"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { BlogPost } from "../../types/post"
-import { SocialStackParamList } from "../../types/navigation"
-
-type SocialScreenNavigationProp = NativeStackNavigationProp<
-	SocialStackParamList,
-	"Social"
->
+import { theme } from "../../helpers/theme"
 
 export default function SocialScreen() {
 	const { selectedStudent } = useContext(AppContext)!
-	const navigation = useNavigation<SocialScreenNavigationProp>()
-
-	const student = selectedStudent || null
-	const classroom = student?.academic_year_classroom_students?.[0]?.classrooms
-	const key = classroom ? `/mobile/posts/classroom/${classroom.id}` : null
+	const [classroom, setClassroom] = useState<{
+		id: string
+		name: string
+	} | null>(null)
+	useEffect(() => {
+		setClassroom(
+			selectedStudent?.academic_year_classroom_students?.[0]?.classrooms as {
+				id: string
+				name: string
+			} | null
+		)
+	}, [selectedStudent])
+	const key = useMemo(
+		() => `/mobile/posts/classroom/${classroom?.id}`,
+		[classroom]
+	)
 	const { data, isLoading, mutate } = useSWR(key)
-
-	//console.log(JSON.stringify(data, null, 2))
+	console.log("classroom", classroom)
 
 	// Handle refresh action
 	const handleRefresh = async () => {
@@ -34,42 +36,40 @@ export default function SocialScreen() {
 		}
 	}
 
-	// Handle blog post card press
-	const handleCardPress = (post: BlogPost) => {
-		// Only navigate to PhotoGrid if the post has media
-		if (post.post_media && post.post_media.length > 0) {
-			navigation.navigate("PhotoGrid", {
-				photos: post.post_media,
-				title: post.title,
-			})
-		}
-		// If no media, you could add other actions here like showing post details
-	}
-
 	if (isLoading || !classroom) {
 		return <LoadingScreen />
 	}
-
 	return (
-		<>
-			<SafeAreaView edges={["top"]}>
+		<View style={styles.container}>
+			<SafeAreaView edges={["top"]} style={styles.headerContainer}>
 				<Text style={styles.heading}>Social</Text>
 			</SafeAreaView>
 			<BlogPostList
 				posts={data}
 				onRefresh={handleRefresh}
 				isRefreshing={isLoading}
-				onCardPress={handleCardPress}
 			/>
-		</>
+		</View>
 	)
 }
 
 const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		backgroundColor: theme.colors.background,
+	},
+	headerContainer: {
+		backgroundColor: theme.colors.surface,
+		borderBottomWidth: 1,
+		borderBottomColor: theme.colors.border,
+	},
 	heading: {
-		fontSize: 24,
+		fontFamily: theme.typography.family.bold,
+		fontSize: theme.typography.size.xl,
 		fontWeight: "bold",
-		marginTop: 16,
-		paddingHorizontal: 16,
+		color: theme.colors.primary,
+		marginTop: theme.spacing.md,
+		paddingHorizontal: theme.spacing.md,
+		paddingBottom: theme.spacing.sm,
 	},
 })
