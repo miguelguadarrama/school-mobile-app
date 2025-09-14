@@ -22,6 +22,7 @@ import {
 	TouchableWithoutFeedback,
 	View,
 	Dimensions,
+	Animated,
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -30,6 +31,7 @@ import {
 	useNavigationState,
 } from "@react-navigation/native"
 import { TabContext } from "../contexts/TabContext"
+import { theme } from "../helpers/theme"
 
 const Tab = createBottomTabNavigator()
 const { width: screenWidth } = Dimensions.get("window")
@@ -194,7 +196,7 @@ function CustomTabBar(): JSX.Element | null {
 			case "Social":
 				return focused ? "albums" : "albums-outline"
 			case "Inicio":
-				return focused ? "grid" : "grid-outline"
+				return focused ? "apps" : "apps-outline"
 			case "Mensajería":
 				return focused ? "chatbubbles" : "chatbubbles-outline"
 			case "Opciones":
@@ -213,7 +215,6 @@ function CustomTabBar(): JSX.Element | null {
 		<View style={[styles.tabBar, { paddingBottom: insets.bottom }]}>
 			{tabScreens.map((screen, index) => {
 				const focused = currentIndex === index
-				const color = focused ? "#007AFF" : "#8E8E93"
 				const iconName = getIconName(screen.name, focused)
 
 				return (
@@ -226,8 +227,17 @@ function CustomTabBar(): JSX.Element | null {
 						accessibilityState={{ selected: focused }}
 					>
 						<View style={styles.tabButton}>
-							<View style={styles.iconContainer}>
-								<Ionicons name={iconName} size={24} color={color} />
+							<View
+								style={[
+									styles.iconContainer,
+									focused && styles.iconContainerFocused,
+								]}
+							>
+								<Ionicons
+									name={iconName}
+									size={focused ? 28 : 24}
+									color={focused ? theme.colors.white : theme.colors.muted}
+								/>
 							</View>
 						</View>
 					</TouchableWithoutFeedback>
@@ -278,28 +288,37 @@ const styles = StyleSheet.create({
 	},
 	placeholderScreen: {
 		flex: 1,
-		backgroundColor: "#f5f5f5",
+		backgroundColor: theme.colors.background,
 	},
 	screenWrapper: {
 		flex: 1,
 	},
 	tabBar: {
 		flexDirection: "row",
-		height: 100,
-		backgroundColor: "#ffffff",
-		borderTopWidth: StyleSheet.hairlineWidth,
-		borderTopColor: "#e0e0e0",
-		paddingTop: 0, // Add some top padding for the icons
+		height: 90,
+		backgroundColor: theme.colors.surface,
+		borderTopWidth: 0,
+		paddingTop: theme.spacing.sm,
+		paddingHorizontal: theme.spacing.xs,
+		...theme.shadow.soft,
 	},
 	tabButton: {
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
-		paddingVertical: 0,
+		paddingVertical: theme.spacing.xs,
 	},
 	iconContainer: {
 		justifyContent: "center",
 		alignItems: "center",
-		padding: 9,
+		width: 48,
+		height: 48,
+		borderRadius: 24,
+		backgroundColor: "transparent",
+	},
+	iconContainerFocused: {
+		backgroundColor: theme.colors.primary,
+		transform: [{ scale: 1.1 }],
+		...theme.shadow.card,
 	},
 })
