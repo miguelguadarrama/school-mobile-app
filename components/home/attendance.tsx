@@ -1,11 +1,11 @@
-import React, { useContext } from "react"
-import { View, Text, StyleSheet } from "react-native"
 import {
 	LucideCheck,
 	LucideClock,
-	LucideX,
 	LucideIcon,
+	LucideX,
 } from "lucide-react-native"
+import React, { useContext } from "react"
+import { StyleSheet, Text, View } from "react-native"
 import AppContext from "../../contexts/AppContext"
 import { theme } from "../../helpers/theme"
 
@@ -128,7 +128,9 @@ export default function AttendanceCard({
 						status: "",
 					}
 
-					const dayName = date.toLocaleDateString(locale, { weekday: "short" })
+					const dayName = date
+						.toLocaleDateString(locale, { weekday: "short" })
+						.slice(0, 2)
 					const dayNum = date.getDate()
 					const isToday = date.toDateString() === selectedDate.toDateString()
 

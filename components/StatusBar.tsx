@@ -1,17 +1,11 @@
 import { Ionicons } from "@expo/vector-icons"
 import React, { useContext, useEffect, useState } from "react"
-import {
-	Image,
-	Modal,
-	StyleSheet,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native"
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import AppContext from "../contexts/AppContext"
 import { useAuth } from "../contexts/AuthContext"
 import { displayName } from "../helpers/students"
 import { theme } from "../helpers/theme"
+import StudentPhoto from "./ui/studentPhoto"
 
 const StatusBar: React.FC = () => {
 	const { logout } = useAuth()
@@ -33,20 +27,13 @@ const StatusBar: React.FC = () => {
 		return null
 	}
 
-	const gender = selectedStudent.gender_alias === "gender_male" ? "boy" : "girl"
+	//const gender = selectedStudent.gender_alias === "gender_male" ? "boy" : "girl"
 
 	return (
 		<>
 			<View style={styles.container}>
 				<TouchableOpacity onPress={toggleModal} style={styles.profileContainer}>
-					<Image
-						source={
-							gender === "boy"
-								? require("../assets/boy-placeholder.png")
-								: require("../assets/girl-placeholder.png")
-						}
-						style={styles.profileImage}
-					/>
+					<StudentPhoto student={selectedStudent} style={styles.profileImage} />
 					<View>
 						<Text style={styles.name}>{displayName(selectedStudent)}</Text>
 						<Text style={styles.classroom}>
@@ -66,14 +53,8 @@ const StatusBar: React.FC = () => {
 			<Modal visible={modalVisible} animationType="fade" transparent={true}>
 				<View style={styles.modalContainer}>
 					<View style={styles.modalContent}>
-						<Image
-							source={
-								gender === "boy"
-									? require("../assets/boy-placeholder.png")
-									: require("../assets/girl-placeholder.png")
-							}
-							style={styles.modalImage}
-						/>
+						<StudentPhoto student={selectedStudent} style={styles.modalImage} />
+
 						<Text style={styles.modalName}>{displayName(selectedStudent)}</Text>
 
 						<TouchableOpacity style={styles.editButton} onPress={toggleModal}>
