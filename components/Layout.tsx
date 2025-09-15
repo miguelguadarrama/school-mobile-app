@@ -1,13 +1,13 @@
-import React, { useState } from "react"
 import { NavigationContainer } from "@react-navigation/native"
-import { SafeAreaView } from "react-native-safe-area-context"
+import React from "react"
+//import {  } from "react-native-safe-area-context"
 import { StatusBar, StyleSheet, View } from "react-native"
 //import StatusBar from "../components/StatusBar"
-import BottomTabNavigator from "../navigation/bottomNav"
-import AuthContainer from "./AuthContainer"
 import { SWRConfig } from "swr"
+import BottomTabNavigator from "../navigation/bottomNav"
 import { fetcher } from "../services/api"
 import AppContainer from "./AppContainer"
+import AuthContainer from "./AuthContainer"
 
 export default function AppLayout() {
 	return (

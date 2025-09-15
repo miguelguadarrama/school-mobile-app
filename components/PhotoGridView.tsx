@@ -1,16 +1,16 @@
 // PhotoGridView.tsx
+import { Ionicons } from "@expo/vector-icons"
 import React from "react"
 import {
-	View,
-	Text,
-	Image,
-	StyleSheet,
-	TouchableOpacity,
-	ScrollView,
 	Dimensions,
-	SafeAreaView,
+	Image,
+	ScrollView,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
 } from "react-native"
-import { Ionicons } from "@expo/vector-icons"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 interface PostMedia {
 	Id: string

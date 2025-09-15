@@ -1,13 +1,13 @@
 // src/screens/NoAccountFoundScreen.tsx
-import { AuthStackParamList } from "../../types/navigation"
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React from "react"
-import { Button, StyleSheet, Text, TextInput, View, StatusBar } from "react-native"
+import { StatusBar, StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import CustomTextInput from "../../components/ui/textInput"
 import AppButton from "../../components/ui/button"
+import CustomTextInput from "../../components/ui/textInput"
 import { theme } from "../../helpers/theme"
+import { AuthStackParamList } from "../../types/navigation"
 
 type NoAccountFoundScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -27,30 +27,36 @@ const LoginNoAccountFound = () => {
 
 	return (
 		<>
-			<StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+			<StatusBar
+				barStyle="dark-content"
+				backgroundColor={theme.colors.background}
+			/>
 			<SafeAreaView style={styles.safeArea}>
 				<View style={styles.container}>
-			<Text style={styles.title}>No se encontró su cuenta</Text>
+					<Text style={styles.title}>No se encontró su cuenta</Text>
 
-			<CustomTextInput
-				placeholder="Correo electrónico"
-				value={email}
-				readOnly
-			/>
+					<CustomTextInput
+						placeholder="Correo electrónico"
+						value={email}
+						readOnly
+					/>
 
-			<Text style={styles.message}>
-				No pudimos encontrar una cuenta asociada con esta dirección de correo
-				electrónico.{"\n\n"}
-				Solo los representantes registrados pueden acceder a esta aplicación.
-				{"\n\n"}
-				Si crees que esto es un error, por favor contacta al personal de la
-				escuela para ayuda.
-			</Text>
+					<Text style={styles.message}>
+						No pudimos encontrar una cuenta asociada con esta dirección de
+						correo electrónico.{"\n\n"}
+						Solo los representantes registrados pueden acceder a esta
+						aplicación.
+						{"\n\n"}
+						Si crees que esto es un error, por favor contacta al personal de la
+						escuela para ayuda.
+					</Text>
 
-			<AppButton onPress={handleGoBack}>Regresar a Iniciar Sesión</AppButton>
-			</View>
-		</SafeAreaView>
-	</>
+					<AppButton onPress={handleGoBack}>
+						Regresar a Iniciar Sesión
+					</AppButton>
+				</View>
+			</SafeAreaView>
+		</>
 	)
 }
 
