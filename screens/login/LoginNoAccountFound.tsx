@@ -44,11 +44,11 @@ const LoginNoAccountFound = () => {
 					<Text style={styles.message}>
 						No pudimos encontrar una cuenta asociada con esta dirección de
 						correo electrónico.{"\n\n"}
-						Solo los representantes registrados pueden acceder a esta
-						aplicación.
+						Sólo representantes registrados con alumnos inscritos en el año
+						escolar en curso pueden acceder a esta aplicación.
 						{"\n\n"}
 						Si crees que esto es un error, por favor contacta al personal de la
-						escuela para ayuda.
+						institución para más detalles.
 					</Text>
 
 					<AppButton onPress={handleGoBack}>
