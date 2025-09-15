@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": false,
       "infoPlist": {},
-      "bundleIdentifier": "com.leeliai.school_mobile_app"
+      "bundleIdentifier": "com.leeliai.school-mobile-app"
     },
     "android": {
       "adaptiveIcon": {
