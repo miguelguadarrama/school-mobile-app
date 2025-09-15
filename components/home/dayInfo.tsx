@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons"
 import React, { useContext } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import { PixelRatio, StyleSheet, Text, View } from "react-native"
 import AppContext from "../../contexts/AppContext"
 import { getFormattedDate } from "../../helpers/date"
 import { theme } from "../../helpers/theme"
@@ -162,6 +162,15 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 
 	const hasAnyStatus = mood || eating || poop || pee
 
+	// Detect if user has large font scaling enabled
+	const fontScale = PixelRatio.getFontScale()
+	const shouldUseGridLayout = fontScale > 1.2
+
+	// Create array of status items for easier grid rendering
+	const statusItems = [mood, eating, pee, poop].filter(
+		(status): status is NonNullable<typeof status> => Boolean(status)
+	)
+
 	return (
 		<SchoolCard>
 			{/* Header with date and weather side by side */}
@@ -179,102 +188,68 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 				<>
 					<View style={styles.divider} />
 					<View style={styles.activitySection}>
-						<Text style={styles.sectionTitle}>Estado del día</Text>
-						<View style={styles.activityStatusRow}>
-							{/* Mood Status */}
-							{mood && (
-								<View style={styles.activityStatusItem}>
-									<Ionicons
-										name={mood.icon}
-										size={28}
-										color={mood.isPositive ? colors.positive : colors.negative}
-									/>
-									<Text
+						<Text style={styles.sectionTitle}>Información del día</Text>
+						{shouldUseGridLayout ? (
+							// Grid layout for large fonts (2x2)
+							<View style={styles.activityStatusGrid}>
+								{statusItems.map((status, index) => (
+									<View
+										key={index}
 										style={[
-											styles.activityStatusText,
-											{
-												color: mood.isPositive
-													? colors.positive
-													: colors.negative,
-											},
+											styles.activityStatusItem,
+											styles.activityStatusGridItem,
 										]}
 									>
-										{mood.text}
-									</Text>
-								</View>
-							)}
-
-							{/* Eating Status */}
-							{eating && (
-								<View style={styles.activityStatusItem}>
-									<Ionicons
-										name={eating.icon}
-										size={28}
-										color={
-											eating.isPositive ? colors.positive : colors.negative
-										}
-									/>
-									<Text
-										style={[
-											styles.activityStatusText,
-											{
-												color: eating.isPositive
-													? colors.positive
-													: colors.negative,
-											},
-										]}
-									>
-										{eating.text}
-									</Text>
-								</View>
-							)}
-
-							{/* Pee Status */}
-							{pee && (
-								<View style={styles.activityStatusItem}>
-									<Ionicons
-										name={pee.icon}
-										size={28}
-										color={pee.isPositive ? colors.positive : colors.negative}
-									/>
-									<Text
-										style={[
-											styles.activityStatusText,
-											{
-												color: pee.isPositive
-													? colors.positive
-													: colors.negative,
-											},
-										]}
-									>
-										{pee.text}
-									</Text>
-								</View>
-							)}
-
-							{/* Diaper Status */}
-							{poop && (
-								<View style={styles.activityStatusItem}>
-									<Ionicons
-										name={poop.icon}
-										size={28}
-										color={poop.isPositive ? colors.positive : colors.negative}
-									/>
-									<Text
-										style={[
-											styles.activityStatusText,
-											{
-												color: poop.isPositive
-													? colors.positive
-													: colors.negative,
-											},
-										]}
-									>
-										{poop.text}
-									</Text>
-								</View>
-							)}
-						</View>
+										<Ionicons
+											name={status.icon}
+											size={28}
+											color={
+												status.isPositive ? colors.positive : colors.negative
+											}
+										/>
+										<Text
+											style={[
+												styles.activityStatusText,
+												{
+													color: status.isPositive
+														? colors.positive
+														: colors.negative,
+												},
+											]}
+										>
+											{status.text}
+										</Text>
+									</View>
+								))}
+							</View>
+						) : (
+							// Original row layout for normal fonts
+							<View style={styles.activityStatusRow}>
+								{statusItems.map((status, index) => (
+									<View key={index} style={styles.activityStatusItem}>
+										<Ionicons
+											name={status.icon}
+											size={28}
+											color={
+												status.isPositive ? colors.positive : colors.negative
+											}
+										/>
+										<Text
+											style={[
+												styles.activityStatusText,
+												{
+													color: status.isPositive
+														? colors.positive
+														: colors.negative,
+												},
+											]}
+										>
+											{status.text}
+										</Text>
+									</View>
+								))}
+							</View>
+						)}
 					</View>
 				</>
 			)}
@@ -396,10 +371,22 @@ const styles = StyleSheet.create({
 		justifyContent: "space-around",
 		alignItems: "center",
 	},
+	activityStatusGrid: {
+		flexDirection: "row",
+		flexWrap: "wrap",
+		justifyContent: "space-around",
+		alignItems: "center",
+	},
 	activityStatusItem: {
 		alignItems: "center",
 		flex: 1,
 		paddingHorizontal: theme.spacing.sm,
+	},
+	activityStatusGridItem: {
+		flex: 0,
+		width: "45%",
+		marginBottom: theme.spacing.md,
+		paddingHorizontal: theme.spacing.xs,
 	},
 	activityStatusText: {
 		fontFamily: theme.typography.family.regular,
