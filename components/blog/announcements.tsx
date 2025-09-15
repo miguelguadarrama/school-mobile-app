@@ -1,3 +1,4 @@
+import Markdown from "@ronradtke/react-native-markdown-display"
 import React, { useState } from "react"
 import {
 	FlatList,
@@ -7,7 +8,6 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native"
-import Markdown from "react-native-markdown-display"
 import { theme } from "../../helpers/theme"
 import SchoolCard from "../SchoolCard"
 

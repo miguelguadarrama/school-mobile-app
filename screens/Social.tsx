@@ -22,11 +22,10 @@ export default function SocialScreen() {
 		)
 	}, [selectedStudent])
 	const key = useMemo(
-		() => `/mobile/posts/classroom/${classroom?.id}`,
+		() => (classroom?.id ? `/mobile/posts/classroom/${classroom.id}` : null),
 		[classroom]
 	)
 	const { data, isLoading, mutate } = useSWR(key)
-	console.log("classroom", classroom)
 
 	// Handle refresh action
 	const handleRefresh = async () => {

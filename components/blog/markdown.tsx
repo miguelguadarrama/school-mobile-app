@@ -1,5 +1,5 @@
+import Markdown from "@ronradtke/react-native-markdown-display"
 import { Linking, ScrollView } from "react-native"
-import Markdown from "react-native-markdown-display"
 
 export default function MdRenderer({ md }: { md: string }) {
 	return (

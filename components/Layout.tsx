@@ -1,8 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native"
 import React from "react"
-//import {  } from "react-native-safe-area-context"
 import { StatusBar, StyleSheet, View } from "react-native"
-//import StatusBar from "../components/StatusBar"
 import { SWRConfig } from "swr"
 import BottomTabNavigator from "../navigation/bottomNav"
 import { fetcher } from "../services/api"
