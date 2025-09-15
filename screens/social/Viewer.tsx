@@ -1,31 +1,28 @@
 // PhotoViewerScreen.tsx
-import React, { useState, useRef } from "react"
-import {
-	View,
-	Image,
-	StyleSheet,
-	Dimensions,
-	TouchableOpacity,
-	Alert,
-	ActivityIndicator,
-	StatusBar,
-	Text,
-	Animated,
-} from "react-native"
-import { useRoute, useNavigation } from "@react-navigation/native"
-import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import { RouteProp } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
-import * as MediaLibrary from "expo-media-library"
-import * as FileSystem from "expo-file-system"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import React, { useRef, useState } from "react"
 import {
-	PanGestureHandler,
+	ActivityIndicator,
+	Alert,
+	Animated,
+	Dimensions,
+	Image,
+	StatusBar,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native"
+import {
 	GestureHandlerRootView,
-	State,
+	PanGestureHandler,
 	PanGestureHandlerGestureEvent,
 	PanGestureHandlerStateChangeEvent,
+	State,
 } from "react-native-gesture-handler"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { BlogPostMedia } from "../../types/post"
 
 export type SocialStackParamList = {
@@ -55,7 +52,7 @@ const PhotoViewerScreen = () => {
 
 	const { photos, initialIndex } = route.params
 	const [currentIndex, setCurrentIndex] = useState(initialIndex)
-	const [isDownloading, setIsDownloading] = useState(false)
+	const [isSharing, setIsSharing] = useState(false)
 	const [imageLoading, setImageLoading] = useState(true)
 
 	const translateX = useRef(new Animated.Value(0)).current
@@ -178,47 +175,17 @@ const PhotoViewerScreen = () => {
 
 	const handleGoBack = () => navigation.goBack()
 
-	const downloadImage = async () => {
+	const shareImage = async () => {
 		try {
-			setIsDownloading(true)
-			const permissionResult = await MediaLibrary.getPermissionsAsync()
-			let finalStatus = permissionResult.status
+			setIsSharing(true)
 
-			if (finalStatus !== "granted") {
-				const requestResult = await MediaLibrary.requestPermissionsAsync()
-				finalStatus = requestResult.status
-			}
-
-			if (finalStatus !== "granted") {
-				Alert.alert(
-					"Permission Required",
-					"To save photos, please allow access to your photo library in Settings.",
-					[{ text: "Cancel" }, { text: "OK" }]
-				)
-				return
-			}
-
-			const fileExtension = currentPhoto.file_url.split(".").pop() || "jpg"
-			const fileName = `photo_${Date.now()}.${fileExtension}`
-			const downloadResult = await FileSystem.downloadAsync(
-				currentPhoto.file_url,
-				FileSystem.documentDirectory + fileName
-			)
-
-			if (downloadResult.status === 200) {
-				const asset = await MediaLibrary.createAssetAsync(downloadResult.uri)
-				try {
-					await MediaLibrary.createAlbumAsync("Downloaded Photos", asset, false)
-				} catch (_) {}
-				Alert.alert("Success!", "Photo saved to your gallery")
-			} else {
-				throw new Error("Download failed")
-			}
+			//const fileExtension = currentPhoto.file_url.split(".").pop() || "jpg"
+			//const fileName = `photo_${Date.now()}.${fileExtension}`
 		} catch (error) {
-			console.error("Error downloading image:", error)
-			Alert.alert("Download Failed", "Unable to save photo. Please try again.")
+			console.error("Error sharing image:", error)
+			Alert.alert("Error", "No se pudo compartir la foto. Inténtalo de nuevo.")
 		} finally {
-			setIsDownloading(false)
+			setIsSharing(false)
 		}
 	}
 
@@ -245,15 +212,15 @@ const PhotoViewerScreen = () => {
 					</Text>
 				</View>
 				<TouchableOpacity
-					style={styles.downloadButton}
-					onPress={downloadImage}
-					disabled={isDownloading}
+					style={styles.shareButton}
+					onPress={shareImage}
+					disabled={isSharing}
 					activeOpacity={0.7}
 				>
-					{isDownloading ? (
+					{isSharing ? (
 						<ActivityIndicator size="small" color="#fff" />
 					) : (
-						<Ionicons name="download-outline" size={24} color="#fff" />
+						<Ionicons name="share-outline" size={24} color="#fff" />
 					)}
 				</TouchableOpacity>
 			</SafeAreaView>
@@ -346,7 +313,7 @@ const styles = StyleSheet.create({
 	backButton: { padding: 8, marginLeft: -8 },
 	centerInfo: { flex: 1, alignItems: "center" },
 	photoCounter: { color: "#fff", fontSize: 16, fontWeight: "500" },
-	downloadButton: { padding: 8, marginRight: -8 },
+	shareButton: { padding: 8, marginRight: -8 },
 	imageContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
 	loadingContainer: {
 		position: "absolute",

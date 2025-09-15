@@ -14,9 +14,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "infoPlist": {
-        "NSPhotoLibraryAddUsageDescription": "Esta aplicación necesita acceso para guardar fotos en tu galería."
-      },
+      "infoPlist": {},
       "bundleIdentifier": "com.leeliai.school_mobile_app"
     },
     "android": {
@@ -26,10 +24,7 @@
         "monochromeImage": "./assets/monochrome-icon.png"
       },
       "edgeToEdgeEnabled": true,
-      "permissions": [
-        "WRITE_EXTERNAL_STORAGE",
-        "READ_EXTERNAL_STORAGE"
-      ],
+      "permissions": [],
       "package": "com.leeliai.school_mobile_app"
     },
     "web": {
