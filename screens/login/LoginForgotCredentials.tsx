@@ -1,14 +1,15 @@
 // src/screens/VerifyEmailScreen.tsx
-import { triggerOTP, verifyOTP } from "../../services/users"
-import { AuthStackParamList } from "../../types/navigation"
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useState } from "react"
-import { Alert, StyleSheet, Text, View, StatusBar } from "react-native"
+import { Alert, StatusBar, StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import AppButton from "../../components/ui/button"
+import KeyboardAvoidingWrapper from "../../components/ui/KeyboardAvoidingWrapper"
 import CustomTextInput from "../../components/ui/textInput"
 import { theme } from "../../helpers/theme"
+import { triggerOTP, verifyOTP } from "../../services/users"
+import { AuthStackParamList } from "../../types/navigation"
 
 type VerifyEmailScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -99,54 +100,61 @@ const LoginForgotCredentials = () => {
 
 	return (
 		<>
-			<StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
-			<SafeAreaView style={styles.safeArea}>
-				<View style={styles.container}>
-					<Text style={styles.title}>Verificar correo electrónico</Text>
-			<CustomTextInput
-				placeholder="Correo electrónico"
-				value={email}
-				readOnly
+			<StatusBar
+				barStyle="dark-content"
+				backgroundColor={theme.colors.background}
 			/>
+			<SafeAreaView style={styles.safeArea}>
+				<KeyboardAvoidingWrapper>
+					<View style={styles.container}>
+						<Text style={styles.title}>Verificar correo electrónico</Text>
+						<CustomTextInput
+							placeholder="Correo electrónico"
+							value={email}
+							readOnly
+						/>
 
-			{!sentOTP ? (
-				<>
-					<AppButton disabled={status === "BUSY"} onPress={handleSendOTP}>
-						Sí, enviar código
-					</AppButton>
-					<View style={{ height: 20 }} />
-					<AppButton
-						disabled={status === "BUSY"}
-						onPress={handleWrongEmail}
-						variant="secondary"
-					>
-						No, correo incorrecto
-					</AppButton>
-				</>
-			) : (
-				<>
-					<Text style={[styles.label, { marginTop: 30 }]}>
-						Introduce el código de 6 dígitos
-					</Text>
-					<CustomTextInput
-						placeholder="Código de verificación"
-						value={otpCode}
-						onValueChange={setOtpCode}
-						maxLength={6}
-						keyboardType="numeric"
-						readOnly={status === "BUSY"}
-					/>
-					<AppButton
-						disabled={!otpCode || otpCode.length !== 6 || status === "BUSY"}
-						onPress={handleVerifyOTP}
-					>
-						{status === "BUSY" ? "Verificando..." : "Verificar código"}
-					</AppButton>
-				</>
-				)}
-			</View>
-		</SafeAreaView>
-	</>
+						{!sentOTP ? (
+							<>
+								<AppButton disabled={status === "BUSY"} onPress={handleSendOTP}>
+									Sí, enviar código
+								</AppButton>
+								<View style={{ height: 20 }} />
+								<AppButton
+									disabled={status === "BUSY"}
+									onPress={handleWrongEmail}
+									variant="secondary"
+								>
+									No, correo incorrecto
+								</AppButton>
+							</>
+						) : (
+							<>
+								<Text style={[styles.label, { marginTop: 30 }]}>
+									Introduce el código de 6 dígitos
+								</Text>
+								<CustomTextInput
+									placeholder="Código de verificación"
+									value={otpCode}
+									onValueChange={setOtpCode}
+									maxLength={6}
+									keyboardType="numeric"
+									readOnly={status === "BUSY"}
+								/>
+								<AppButton
+									disabled={
+										!otpCode || otpCode.length !== 6 || status === "BUSY"
+									}
+									onPress={handleVerifyOTP}
+								>
+									{status === "BUSY" ? "Verificando..." : "Verificar código"}
+								</AppButton>
+							</>
+						)}
+					</View>
+				</KeyboardAvoidingWrapper>
+			</SafeAreaView>
+		</>
 	)
 }
 

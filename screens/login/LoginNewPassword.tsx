@@ -9,6 +9,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import InputPassword from "../../components/InputPassword"
 import AppButton from "../../components/ui/button"
 import CustomTextInput from "../../components/ui/textInput"
+import KeyboardAvoidingWrapper from "../../components/ui/KeyboardAvoidingWrapper"
 import { theme } from "../../helpers/theme"
 
 type SetNewPasswordScreenNavigationProp = NativeStackNavigationProp<
@@ -84,7 +85,8 @@ const LoginNewPassword = () => {
 		<>
 			<StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
 			<SafeAreaView style={styles.safeArea}>
-				<View style={styles.container}>
+				<KeyboardAvoidingWrapper>
+					<View style={styles.container}>
 			<Text style={styles.label}>Email</Text>
 			<CustomTextInput
 				placeholder="Correo electrónico"
@@ -122,8 +124,9 @@ const LoginNewPassword = () => {
 			>
 				{status === "BUSY" ? "Creando..." : "Crear Cuenta"}
 			</AppButton>
-			</View>
-		</SafeAreaView>
+					</View>
+				</KeyboardAvoidingWrapper>
+			</SafeAreaView>
 	</>
 	)
 }
