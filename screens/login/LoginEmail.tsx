@@ -4,7 +4,7 @@ import { AuthStackParamList } from "../../types/navigation"
 import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useState } from "react"
-import { Image, StatusBar, StyleSheet, Text, View } from "react-native"
+import { Alert, Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import AppButton from "../../components/ui/button"
 import CustomTextInput from "../../components/ui/textInput"
@@ -52,16 +52,26 @@ const LoginScreen = () => {
 		navigation.navigate("LoginNoAccountFound", { email })
 	}
 
+	const handleLogoPress = () => {
+		Alert.alert(
+			"JAC Conecta",
+			`Versión: 1.0.0\nBuild: ${__DEV__ ? 'Desarrollo' : 'Producción'}`,
+			[{ text: "OK" }]
+		)
+	}
+
 	return (
 		<>
 			<StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
 			<SafeAreaView style={styles.safeArea}>
 				<View style={styles.container}>
 					<View style={styles.logoContainer}>
-						<Image
-							source={require("../../assets/ic_launcher-playstore.png")}
-							style={styles.logo}
-						/>
+						<TouchableOpacity onPress={handleLogoPress}>
+							<Image
+								source={require("../../assets/ic_launcher-playstore.png")}
+								style={styles.logo}
+							/>
+						</TouchableOpacity>
 					</View>
 					<Text style={styles.title}>Bienvenido a JAC</Text>
 
