@@ -1,15 +1,23 @@
 // src/screens/LoginScreen.tsx
-import { checkUserEmail } from "../../services/users"
-import { AuthStackParamList } from "../../types/navigation"
 import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useState } from "react"
-import { Alert, Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import {
+	Alert,
+	Image,
+	StatusBar,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import AppButton from "../../components/ui/button"
-import CustomTextInput from "../../components/ui/textInput"
 import KeyboardAvoidingWrapper from "../../components/ui/KeyboardAvoidingWrapper"
+import CustomTextInput from "../../components/ui/textInput"
 import { theme } from "../../helpers/theme"
+import { checkUserEmail } from "../../services/users"
+import { AuthStackParamList } from "../../types/navigation"
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -56,14 +64,26 @@ const LoginScreen = () => {
 	const handleLogoPress = () => {
 		Alert.alert(
 			"JAC Conecta",
-			`Versión: 1.0.0\nBuild: ${__DEV__ ? 'Desarrollo' : 'Producción'}`,
+			`Versión: 1.0.0\nBuild: ${
+				__DEV__ ? "Desarrollo" : "Producción"
+			}\n\nCode: ${(process.env.EXPO_PUBLIC_API_BASE_URL || "").length}/${
+				(process.env.EXPO_PUBLIC_API_BASE_URL || "").length > 0
+					? (process.env.EXPO_PUBLIC_API_BASE_URL || "")
+							.split("")
+							.slice(8, 16)
+							.join("")
+					: "N/A"
+			}`,
 			[{ text: "OK" }]
 		)
 	}
 
 	return (
 		<>
-			<StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+			<StatusBar
+				barStyle="dark-content"
+				backgroundColor={theme.colors.background}
+			/>
 			<SafeAreaView style={styles.safeArea}>
 				<KeyboardAvoidingWrapper>
 					<View style={styles.container}>
