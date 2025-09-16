@@ -64,16 +64,7 @@ const LoginScreen = () => {
 	const handleLogoPress = () => {
 		Alert.alert(
 			"JAC Conecta",
-			`Versión: 1.0.0\nBuild: ${
-				__DEV__ ? "Desarrollo" : "Producción"
-			}\n\nCode: ${(process.env.EXPO_PUBLIC_API_BASE_URL || "").length}/${
-				(process.env.EXPO_PUBLIC_API_BASE_URL || "").length > 0
-					? (process.env.EXPO_PUBLIC_API_BASE_URL || "")
-							.split("")
-							.slice(8, 16)
-							.join("")
-					: "N/A"
-			}`,
+			`Versión: 1.0.0\nBuild: ${__DEV__ ? "Desarrollo" : "Producción"}`,
 			[{ text: "OK" }]
 		)
 	}
