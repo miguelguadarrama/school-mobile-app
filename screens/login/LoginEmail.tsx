@@ -8,6 +8,7 @@ import { Alert, Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } fro
 import { SafeAreaView } from "react-native-safe-area-context"
 import AppButton from "../../components/ui/button"
 import CustomTextInput from "../../components/ui/textInput"
+import KeyboardAvoidingWrapper from "../../components/ui/KeyboardAvoidingWrapper"
 import { theme } from "../../helpers/theme"
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
@@ -64,36 +65,38 @@ const LoginScreen = () => {
 		<>
 			<StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
 			<SafeAreaView style={styles.safeArea}>
-				<View style={styles.container}>
-					<View style={styles.logoContainer}>
-						<TouchableOpacity onPress={handleLogoPress}>
-							<Image
-								source={require("../../assets/ic_launcher-playstore.png")}
-								style={styles.logo}
-							/>
-						</TouchableOpacity>
+				<KeyboardAvoidingWrapper>
+					<View style={styles.container}>
+						<View style={styles.logoContainer}>
+							<TouchableOpacity onPress={handleLogoPress}>
+								<Image
+									source={require("../../assets/ic_launcher-playstore.png")}
+									style={styles.logo}
+								/>
+							</TouchableOpacity>
+						</View>
+						<Text style={styles.title}>Bienvenido a JAC</Text>
+
+						<CustomTextInput
+							placeholder="Correo electrónico"
+							value={email}
+							onValueChange={setEmail}
+							keyboardType="email-address"
+							readOnly={status === "BUSY"}
+						/>
+
+						<AppButton
+							disabled={
+								status === "BUSY" ||
+								email.length === 0 ||
+								email.indexOf("@") === -1
+							}
+							onPress={handleContinue}
+						>
+							{status === "BUSY" ? "Por favor espera..." : "Continuar"}
+						</AppButton>
 					</View>
-					<Text style={styles.title}>Bienvenido a JAC</Text>
-
-					<CustomTextInput
-						placeholder="Correo electrónico"
-						value={email}
-						onValueChange={setEmail}
-						keyboardType="email-address"
-						readOnly={status === "BUSY"}
-					/>
-
-					<AppButton
-						disabled={
-							status === "BUSY" ||
-							email.length === 0 ||
-							email.indexOf("@") === -1
-						}
-						onPress={handleContinue}
-					>
-						{status === "BUSY" ? "Por favor espera..." : "Continuar"}
-					</AppButton>
-				</View>
+				</KeyboardAvoidingWrapper>
 			</SafeAreaView>
 		</>
 	)

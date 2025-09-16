@@ -1,24 +1,26 @@
 // src/screens/PasswordScreen.tsx
-import { useAuth } from "../../contexts/AuthContext"
-import { trackLogin } from "../../services/users"
-import { useRoute, useNavigation } from "@react-navigation/native"
+import { useNavigation, useRoute } from "@react-navigation/native"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useState } from "react"
 import {
 	Alert,
 	Image,
-	StyleSheet,
+	Platform,
 	StatusBar,
+	StyleSheet,
 	Text,
-	View,
 	TouchableOpacity,
+	View,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import InputPassword from "../../components/InputPassword"
-import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import { AuthStackParamList } from "../../types/navigation"
 import AppButton from "../../components/ui/button"
+import KeyboardAvoidingWrapper from "../../components/ui/KeyboardAvoidingWrapper"
 import CustomTextInput from "../../components/ui/textInput"
+import { useAuth } from "../../contexts/AuthContext"
 import { theme } from "../../helpers/theme"
+import { trackLogin } from "../../services/users"
+import { AuthStackParamList } from "../../types/navigation"
 
 type LoginPasswordNavigationProp = NativeStackNavigationProp<
 	AuthStackParamList,
@@ -72,47 +74,55 @@ const LoginPassword = () => {
 
 	return (
 		<>
-			<StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+			<StatusBar
+				barStyle="dark-content"
+				backgroundColor={theme.colors.background}
+			/>
 
 			<SafeAreaView style={styles.safeArea}>
-				<View style={styles.container}>
-					<View style={styles.logoContainer}>
-						<Image
-							source={require("../../assets/ic_launcher-playstore.png")}
-							style={styles.logo}
+				<KeyboardAvoidingWrapper
+					behavior={Platform.OS === "ios" ? "position" : "height"}
+					keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 10}
+				>
+					<View style={styles.container}>
+						<View style={styles.logoContainer}>
+							<Image
+								source={require("../../assets/ic_launcher-playstore.png")}
+								style={styles.logo}
+							/>
+						</View>
+						<Text style={styles.label}>Correo electrónico</Text>
+						<CustomTextInput
+							placeholder="Correo electrónico"
+							value={email}
+							readOnly
 						/>
+
+						<Text style={styles.label}>Contraseña</Text>
+						<InputPassword
+							placeholder="Introduce tu contraseña"
+							value={password}
+							onChangeText={setPassword}
+							secureTextEntry
+						/>
+
+						<AppButton
+							disabled={!password || status === "BUSY"}
+							onPress={handleLogin}
+						>
+							{status === "BUSY" ? "Iniciando sesión..." : "Iniciar sesión"}
+						</AppButton>
+
+						<TouchableOpacity
+							onPress={handleForgotPassword}
+							style={styles.forgotPasswordContainer}
+						>
+							<Text style={styles.forgotPasswordText}>
+								¿Olvidaste tu contraseña?
+							</Text>
+						</TouchableOpacity>
 					</View>
-					<Text style={styles.label}>Correo electrónico</Text>
-					<CustomTextInput
-						placeholder="Correo electrónico"
-						value={email}
-						readOnly
-					/>
-
-					<Text style={styles.label}>Contraseña</Text>
-					<InputPassword
-						placeholder="Introduce tu contraseña"
-						value={password}
-						onChangeText={setPassword}
-						secureTextEntry
-					/>
-
-					<AppButton
-						disabled={!password || status === "BUSY"}
-						onPress={handleLogin}
-					>
-						{status === "BUSY" ? "Iniciando sesión..." : "Iniciar sesión"}
-					</AppButton>
-
-					<TouchableOpacity
-						onPress={handleForgotPassword}
-						style={styles.forgotPasswordContainer}
-					>
-						<Text style={styles.forgotPasswordText}>
-							¿Olvidaste tu contraseña?
-						</Text>
-					</TouchableOpacity>
-				</View>
+				</KeyboardAvoidingWrapper>
 			</SafeAreaView>
 		</>
 	)
@@ -124,7 +134,7 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		justifyContent: "flex-start",
-		marginTop: "20%",
+		marginTop: "30%",
 		padding: theme.spacing.lg,
 	},
 	safeArea: {
