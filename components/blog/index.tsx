@@ -1,5 +1,7 @@
 // BlogPostList.tsx
 import { Ionicons } from "@expo/vector-icons"
+import { useNavigation } from "@react-navigation/native"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React from "react"
 import {
 	Dimensions,
@@ -13,7 +15,13 @@ import {
 } from "react-native"
 import dayjs from "../../lib/dayjs"
 import { BlogPost, BlogPostMedia } from "../../types/post"
+import { SocialStackParamList } from "../../types/navigation"
 import SchoolCard from "../SchoolCard"
+
+type BlogPostListNavigationProp = NativeStackNavigationProp<
+	SocialStackParamList,
+	"Social"
+>
 
 interface BlogPostListProps {
 	emptyTitle?: string
@@ -35,8 +43,10 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 	isRefreshing = false,
 	onCardPress,
 }) => {
+	const navigation = useNavigation<BlogPostListNavigationProp>()
+
 	// Component to render photo grid for multiple images
-	const PhotoGrid = ({ media }: { media: BlogPostMedia[] }) => {
+	const PhotoGrid = ({ media, postTitle }: { media: BlogPostMedia[]; postTitle: string }) => {
 		// Calculate grid layout based on number of images
 		const getGridLayout = (count: number) => {
 			if (count <= 3) return { rows: 1, cols: count }
@@ -50,8 +60,15 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 		const maxImages = rows * cols
 		const displayMedia = media.slice(0, maxImages)
 
+		const handleImagePress = () => {
+			navigation.navigate("PhotoGrid", {
+				photos: media,
+				title: postTitle,
+			})
+		}
+
 		return (
-			<View style={styles.photoGrid}>
+			<TouchableOpacity style={styles.photoGrid} onPress={handleImagePress} activeOpacity={0.9}>
 				{Array.from({ length: rows }).map((_, rowIndex) => (
 					<View key={rowIndex} style={styles.gridRow}>
 						{Array.from({ length: cols }).map((_, colIndex) => {
@@ -94,7 +111,7 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 						</Text>
 					</View>
 				)}
-			</View>
+			</TouchableOpacity>
 		)
 	}
 
@@ -118,7 +135,7 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 				activeOpacity={1}
 			>
 				<SchoolCard>
-					{hasMedia && <PhotoGrid media={item.post_media || []} />}
+					{hasMedia && <PhotoGrid media={item.post_media || []} postTitle={item.title} />}
 					<View
 						style={hasMedia ? styles.postContent : styles.postContentNoImage}
 					>
