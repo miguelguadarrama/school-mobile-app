@@ -2,6 +2,13 @@ import { getToken, refreshAccessToken } from "./auth"
 
 const EXPO_PUBLIC_API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL
 
+// Callback to handle authentication failures
+let onAuthFailure: (() => void) | null = null
+
+export const setAuthFailureCallback = (callback: () => void) => {
+  onAuthFailure = callback
+}
+
 export const fetcher = async (endpoint: string, options: RequestInit = {}) => {
   const makeRequest = async (retryCount = 0): Promise<any> => {
     const token = await getToken("access_token")
@@ -45,7 +52,11 @@ export const fetcher = async (endpoint: string, options: RequestInit = {}) => {
         return makeRequest(1) // Retry once with new token
       } else {
         if (__DEV__) {
-          console.log("Token refresh failed")
+          console.log("Token refresh failed, triggering logout")
+        }
+        // Trigger logout if available
+        if (onAuthFailure) {
+          onAuthFailure()
         }
         throw new Error("Authentication failed - please log in again")
       }

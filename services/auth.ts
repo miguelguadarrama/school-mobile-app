@@ -57,7 +57,12 @@ export const login = async (email: string, password: string) => {
 // Refresh access token using refresh token
 export const refreshAccessToken = async (): Promise<boolean> => {
   const refreshToken = await getToken("refresh_token")
-  if (!refreshToken) return false
+  if (!refreshToken) {
+    if (__DEV__) {
+      console.log("No refresh token available")
+    }
+    return false
+  }
 
   const body = {
     grant_type: "refresh_token",
@@ -73,6 +78,9 @@ export const refreshAccessToken = async (): Promise<boolean> => {
     })
 
     if (!response.ok) {
+      if (__DEV__) {
+        console.log("Refresh token request failed:", response.status, response.statusText)
+      }
       return false
     }
 
@@ -89,8 +97,14 @@ export const refreshAccessToken = async (): Promise<boolean> => {
       await saveToken("refresh_token", data.refresh_token)
     }
 
+    if (__DEV__) {
+      console.log("Token refresh successful")
+    }
     return true
   } catch (error) {
+    if (__DEV__) {
+      console.log("Token refresh error:", error)
+    }
     return false
   }
 }
@@ -110,6 +124,15 @@ export const isAuthenticated = async (): Promise<boolean> => {
 
   // Token is expired, try to refresh it
   const refreshSuccess = await refreshAccessToken()
+
+  // If refresh failed, clear all tokens to prevent future issues
+  if (!refreshSuccess) {
+    await deleteToken("access_token")
+    await deleteToken("id_token")
+    await deleteToken("refresh_token")
+    await deleteToken("expires_at")
+  }
+
   return refreshSuccess
 }
 

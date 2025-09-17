@@ -5,6 +5,7 @@ import {
 	getSession,
 	isAuthenticated,
 } from "../services/auth"
+import { setAuthFailureCallback } from "../services/api"
 import React, { createContext, useContext, useEffect, useState } from "react"
 
 interface AuthContextType {
@@ -48,6 +49,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		setUser(null)
 		setLoggedIn(false)
 	}
+
+	// Set up auth failure callback when component mounts
+	useEffect(() => {
+		setAuthFailureCallback(() => {
+			logout()
+		})
+	}, [])
 
 	return (
 		<AuthContext.Provider value={{ loggedIn, user, login, logout, loading }}>
