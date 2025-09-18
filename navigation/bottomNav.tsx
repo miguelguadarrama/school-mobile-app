@@ -62,18 +62,18 @@ function SwipeableTabContent(): JSX.Element {
 	const isSwipingRef = useRef<boolean>(false)
 	const targetIndexRef = useRef<number>(2)
 
-	// Monitor navigation state to detect PhotoViewer
+	// Monitor navigation state to detect PhotoViewer or PhotoGrid
 	const navigationState = useNavigationState((state) => state)
 
 	useEffect(() => {
-		// Function to check if PhotoViewer is currently active
+		// Function to check if PhotoViewer or PhotoGrid is currently active
 		const checkPhotoViewerStatus = () => {
 			if (!navigationState) return false
 
-			// Recursively check all routes for PhotoViewer
+			// Recursively check all routes for PhotoViewer or PhotoGrid
 			const findPhotoViewer = (routes: any[]): boolean => {
 				for (const route of routes) {
-					if (route.name === "PhotoViewer") {
+					if (route.name === "PhotoViewer" || route.name === "PhotoGrid") {
 						return true
 					}
 					if (route.state?.routes) {
