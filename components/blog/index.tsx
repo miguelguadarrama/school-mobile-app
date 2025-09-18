@@ -17,6 +17,7 @@ import dayjs from "../../lib/dayjs"
 import { BlogPost, BlogPostMedia } from "../../types/post"
 import { SocialStackParamList } from "../../types/navigation"
 import SchoolCard from "../SchoolCard"
+import PhotoSlider from "./PhotoSlider"
 
 type BlogPostListNavigationProp = NativeStackNavigationProp<
 	SocialStackParamList,
@@ -45,75 +46,6 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 }) => {
 	const navigation = useNavigation<BlogPostListNavigationProp>()
 
-	// Component to render photo grid for multiple images
-	const PhotoGrid = ({ media, postTitle }: { media: BlogPostMedia[]; postTitle: string }) => {
-		// Calculate grid layout based on number of images
-		const getGridLayout = (count: number) => {
-			if (count <= 3) return { rows: 1, cols: count }
-			return { rows: 2, cols: 3 }
-		}
-
-		const { rows, cols } = getGridLayout(media.length)
-		const imageSize = screenWidth / cols
-
-		// Show only the number of images that fit perfectly in the grid
-		const maxImages = rows * cols
-		const displayMedia = media.slice(0, maxImages)
-
-		const handleImagePress = () => {
-			navigation.navigate("PhotoGrid", {
-				photos: media,
-				title: postTitle,
-			})
-		}
-
-		return (
-			<TouchableOpacity style={styles.photoGrid} onPress={handleImagePress} activeOpacity={0.9}>
-				{Array.from({ length: rows }).map((_, rowIndex) => (
-					<View key={rowIndex} style={styles.gridRow}>
-						{Array.from({ length: cols }).map((_, colIndex) => {
-							const imageIndex = rowIndex * cols + colIndex
-							const imageData = displayMedia[imageIndex]
-
-							if (!imageData) return null
-
-							return (
-								<Image
-									key={imageData.id}
-									source={{ uri: imageData.file_url }}
-									style={[
-										styles.gridImage,
-										{ width: imageSize, height: imageSize },
-									]}
-									onError={({ nativeEvent }) => {
-										console.warn("Image loading error:", nativeEvent.error)
-									}}
-								/>
-							)
-						})}
-					</View>
-				))}
-				{/* Show count overlay if there are more images than displayed */}
-				{media.length > maxImages && (
-					<View
-						style={[
-							styles.moreImagesOverlay,
-							{
-								width: imageSize,
-								height: imageSize,
-								right: 0,
-								bottom: 0,
-							},
-						]}
-					>
-						<Text style={styles.moreImagesText}>
-							+{media.length - maxImages}
-						</Text>
-					</View>
-				)}
-			</TouchableOpacity>
-		)
-	}
 
 	const EmptyState = () => (
 		<View style={styles.emptyState}>
@@ -135,7 +67,18 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 				activeOpacity={1}
 			>
 				<SchoolCard>
-					{hasMedia && <PhotoGrid media={item.post_media || []} postTitle={item.title} />}
+					{hasMedia && (
+						<PhotoSlider
+							media={item.post_media || []}
+							postTitle={item.title}
+							onPress={() => {
+								navigation.navigate("PhotoGrid", {
+									photos: item.post_media || [],
+									title: item.title,
+								})
+							}}
+						/>
+					)}
 					<View
 						style={hasMedia ? styles.postContent : styles.postContentNoImage}
 					>
@@ -217,34 +160,6 @@ const styles = StyleSheet.create({
 		// shadowRadius: 4,
 		// elevation: 2,
 		overflow: "hidden",
-	},
-	singleMedia: {
-		width: "100%",
-		height: 200,
-		backgroundColor: "#eaeaea",
-	},
-	photoGrid: {
-		position: "relative",
-		overflow: "hidden",
-	},
-	gridRow: {
-		flexDirection: "row",
-	},
-	gridImage: {
-		backgroundColor: "#eaeaea",
-		maxWidth: "100%",
-		maxHeight: 200,
-	},
-	moreImagesOverlay: {
-		position: "absolute",
-		backgroundColor: "rgba(0, 0, 0, 0.6)",
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	moreImagesText: {
-		color: "white",
-		fontSize: 18,
-		fontWeight: "bold",
 	},
 	postContent: {
 		padding: 16,
