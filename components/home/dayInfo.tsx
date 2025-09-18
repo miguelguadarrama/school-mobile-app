@@ -28,10 +28,12 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 		day: "numeric",
 	})
 
-	// Colors for positive and negative states
+	// Colors for positive, negative, neutral, and missing states
 	const colors = {
 		positive: theme.colors.success, // Green for good things
-		negative: theme.colors.muted, // Gray for less ideal things
+		negative: "#EF4444", // Red for negative things
+		neutral: "#F59E0B", // Yellow/orange for in-between states
+		missing: theme.colors.muted, // Gray for missing data
 	}
 
 	// Helper function to get eating status display
@@ -39,56 +41,96 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 		switch (status) {
 			case "meal_status_no":
 				return {
-					icon: "sad-outline" as const,
+					icon: "close-circle-outline" as const,
 					text: "No comió",
 					isPositive: false,
+					isNeutral: false,
+					isMissing: false,
 				}
 			case "meal_status_little":
 				return {
-					icon: "restaurant-outline" as const,
+					icon: "radio-button-on-outline" as const,
 					text: "Poco",
 					isPositive: false,
+					isNeutral: true,
+					isMissing: false,
 				}
 			case "meal_status_ok":
 				return {
-					icon: "restaurant-outline" as const,
-					text: "Normal",
+					icon: "checkmark-circle-outline" as const,
+					text: "Comida",
 					isPositive: true,
+					isNeutral: false,
+					isMissing: false,
 				}
 			default:
-				return null
+				return {
+					icon: "ellipse-outline" as const,
+					text: "Comida",
+					isPositive: false,
+					isNeutral: false,
+					isMissing: true,
+				}
 		}
 	}
 
 	// Helper function to get diaper status display
 	const getDiaperStatus = (hadBowelMovement?: PoopStatus) => {
-		if (!hadBowelMovement) return null
-		return hadBowelMovement === "poop_status_yes"
-			? {
+		switch (hadBowelMovement) {
+			case "poop_status_yes":
+				return {
 					icon: "checkmark-circle-outline" as const,
 					text: "Heces",
 					isPositive: true,
-			  }
-			: {
+					isNeutral: false,
+					isMissing: false,
+				}
+			case "poop_status_no":
+				return {
 					icon: "close-circle-outline" as const,
 					text: "Heces",
 					isPositive: false,
-			  }
+					isNeutral: false,
+					isMissing: false,
+				}
+			default:
+				return {
+					icon: "ellipse-outline" as const,
+					text: "Heces",
+					isPositive: false,
+					isNeutral: false,
+					isMissing: true,
+				}
+		}
 	}
 
 	const getPeeStatus = (hadPeeMovement?: PeeStatus) => {
-		if (!hadPeeMovement) return null
-		return hadPeeMovement === "pee_status_yes"
-			? {
+		switch (hadPeeMovement) {
+			case "pee_status_yes":
+				return {
 					icon: "checkmark-circle-outline" as const,
 					text: "Orina",
 					isPositive: true,
-			  }
-			: {
+					isNeutral: false,
+					isMissing: false,
+				}
+			case "pee_status_no":
+				return {
 					icon: "close-circle-outline" as const,
 					text: "Orina",
 					isPositive: false,
-			  }
+					isNeutral: false,
+					isMissing: false,
+				}
+			default:
+				return {
+					icon: "ellipse-outline" as const,
+					text: "Orina",
+					isPositive: false,
+					isNeutral: false,
+					isMissing: true,
+				}
+		}
 	}
 
 	// Helper function to get mood status display
@@ -99,27 +141,41 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 					icon: "happy-outline" as const,
 					text: "Feliz",
 					isPositive: true,
+					isNeutral: false,
+					isMissing: false,
 				}
 			case "mood_status_tired":
 				return {
 					icon: "sad-outline" as const,
 					text: "Cansado/a",
 					isPositive: false,
+					isNeutral: true,
+					isMissing: false,
 				}
 			case "mood_status_sad":
 				return {
 					icon: "sad-outline" as const,
 					text: "Triste",
 					isPositive: false,
+					isNeutral: false,
+					isMissing: false,
 				}
 			case "mood_status_sick":
 				return {
 					icon: "medical-outline" as const,
 					text: "Enfermo/a",
 					isPositive: false,
+					isNeutral: false,
+					isMissing: false,
 				}
 			default:
-				return null
+				return {
+					icon: "ellipse-outline" as const,
+					text: "Estado",
+					isPositive: false,
+					isNeutral: false,
+					isMissing: true,
+				}
 		}
 	}
 
@@ -160,16 +216,12 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 		)?.status_value as MoodStatus) || undefined
 	)
 
-	const hasAnyStatus = mood || eating || poop || pee
-
 	// Detect if user has large font scaling enabled
 	const fontScale = PixelRatio.getFontScale()
 	const shouldUseGridLayout = fontScale > 1.2
 
-	// Create array of status items for easier grid rendering
-	const statusItems = [mood, eating, pee, poop].filter(
-		(status): status is NonNullable<typeof status> => Boolean(status)
-	)
+	// Create array of status items - all items are always present now
+	const statusItems = [mood, eating, pee, poop]
 
 	return (
 		<SchoolCard>
@@ -184,75 +236,91 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 			<AttendanceCard locale={locale} />
 
 			{/* Divider and Activity Status */}
-			{hasAnyStatus && (
-				<>
-					<View style={styles.divider} />
-					<View style={styles.activitySection}>
-						<Text style={styles.sectionTitle}>Información del día</Text>
-						{shouldUseGridLayout ? (
-							// Grid layout for large fonts (2x2)
-							<View style={styles.activityStatusGrid}>
-								{statusItems.map((status, index) => (
-									<View
-										key={index}
-										style={[
-											styles.activityStatusItem,
-											styles.activityStatusGridItem,
-										]}
-									>
-										<Ionicons
-											name={status.icon}
-											size={28}
-											color={
-												status.isPositive ? colors.positive : colors.negative
-											}
-										/>
-										<Text
-											style={[
-												styles.activityStatusText,
-												{
-													color: status.isPositive
-														? colors.positive
-														: colors.negative,
-												},
-											]}
-										>
-											{status.text}
-										</Text>
-									</View>
-								))}
+			<View style={styles.divider} />
+			<View style={styles.activitySection}>
+				<Text style={styles.sectionTitle}>Información del día</Text>
+				{shouldUseGridLayout ? (
+					// Grid layout for large fonts (2x2)
+					<View style={styles.activityStatusGrid}>
+						{statusItems.map((status, index) => (
+							<View
+								key={index}
+								style={[
+									styles.activityStatusItem,
+									styles.activityStatusGridItem,
+								]}
+							>
+								<Ionicons
+									name={status.icon}
+									size={28}
+									color={
+										status.isMissing
+											? colors.missing
+											: status.isNeutral
+											? colors.neutral
+											: status.isPositive
+											? colors.positive
+											: colors.negative
+									}
+								/>
+								<Text
+									style={[
+										styles.activityStatusText,
+										{
+											color: status.isMissing
+												? colors.missing
+												: status.isNeutral
+												? colors.neutral
+												: status.isPositive
+												? colors.positive
+												: colors.negative,
+										},
+									]}
+								>
+									{status.text}
+								</Text>
 							</View>
-						) : (
-							// Original row layout for normal fonts
-							<View style={styles.activityStatusRow}>
-								{statusItems.map((status, index) => (
-									<View key={index} style={styles.activityStatusItem}>
-										<Ionicons
-											name={status.icon}
-											size={28}
-											color={
-												status.isPositive ? colors.positive : colors.negative
-											}
-										/>
-										<Text
-											style={[
-												styles.activityStatusText,
-												{
-													color: status.isPositive
-														? colors.positive
-														: colors.negative,
-												},
-											]}
-										>
-											{status.text}
-										</Text>
-									</View>
-								))}
-							</View>
-						)}
+						))}
 					</View>
-				</>
-			)}
+				) : (
+					// Original row layout for normal fonts
+					<View style={styles.activityStatusRow}>
+						{statusItems.map((status, index) => (
+							<View key={index} style={styles.activityStatusItem}>
+								<Ionicons
+									name={status.icon}
+									size={28}
+									color={
+										status.isMissing
+											? colors.missing
+											: status.isNeutral
+											? colors.neutral
+											: status.isPositive
+											? colors.positive
+											: colors.negative
+									}
+								/>
+								<Text
+									style={[
+										styles.activityStatusText,
+										{
+											color: status.isMissing
+												? colors.missing
+												: status.isNeutral
+												? colors.neutral
+												: status.isPositive
+												? colors.positive
+												: colors.negative,
+										},
+									]}
+								>
+									{status.text}
+								</Text>
+							</View>
+						))}
+					</View>
+				)}
+			</View>
 		</SchoolCard>
 	)
 }
