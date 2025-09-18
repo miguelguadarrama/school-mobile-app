@@ -7,6 +7,7 @@ import {
 	View,
 } from "react-native"
 import { BlogPostMedia } from "../../types/post"
+import { theme } from "../../helpers/theme"
 
 interface PhotoSliderProps {
 	media: BlogPostMedia[]
@@ -100,7 +101,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ media, onPress }) => {
 						style={[
 							styles.indicator,
 							{
-								backgroundColor: index === currentIndex ? '#007AFF' : 'rgba(255, 255, 255, 0.5)',
+								backgroundColor: index === currentIndex ? theme.colors.primary : 'rgba(255, 255, 255, 0.4)',
 							},
 						]}
 					/>
@@ -147,10 +148,17 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	indicator: {
-		width: 8,
-		height: 8,
-		borderRadius: 4,
-		marginHorizontal: 4,
+		width: 12,
+		height: 12,
+		borderRadius: 6,
+		marginHorizontal: 6,
+		borderWidth: 2,
+		borderColor: 'rgba(255, 255, 255, 0.8)',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.3,
+		shadowRadius: 2,
+		elevation: 2,
 	},
 })
 
