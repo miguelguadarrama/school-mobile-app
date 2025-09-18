@@ -73,7 +73,7 @@ export default function ContactBar({}: ContactBarProps) {
 
 	return (
 		<View style={styles.outerContainer}>
-			<Text style={styles.title}>Contacta a la Institución</Text>
+			<Text style={styles.title}>Contacto</Text>
 			<View style={styles.container}>
 				<ContactItem
 					iconName="call-outline"
@@ -100,10 +100,12 @@ const styles = StyleSheet.create({
 		...theme.shadow.card,
 	},
 	title: {
-		fontSize: theme.typography.size.sm,
-		color: theme.colors.primary,
+		fontSize: theme.typography.size.md,
+		fontWeight: "bold",
+		color: theme.colors.text,
 		textAlign: "center",
 		paddingTop: theme.spacing.md,
+		paddingBottom: theme.spacing.sm,
 		fontFamily: theme.typography.family.bold,
 	},
 	container: {

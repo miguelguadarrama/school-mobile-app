@@ -23,7 +23,9 @@
         "EXPO_PUBLIC_SCHOOL_NAME": "Juego, Aprendo y Crezco",
         "EXPO_PUBLIC_FEATURE_FLAGS": "beta",
         "EXPO_PUBLIC_STORAGE_URL": "https://jacappstorage.blob.core.windows.net",
-        "EXPO_PUBLIC_API_BASE_URL": "https://jac-website-djg4g9h6crbmbvgf.westeurope-01.azurewebsites.net/api"
+        "EXPO_PUBLIC_API_BASE_URL": "https://jac-website-djg4g9h6crbmbvgf.westeurope-01.azurewebsites.net/api",
+        "EXPO_PUBLIC_SCHOOL_EMAIL": "juegoaprendoycrezco@gmail.com",
+        "EXPO_PUBLIC_SCHOOL_PHONE": "+582692471782"
       }
     },
     "production": {
@@ -40,7 +42,9 @@
         "EXPO_PUBLIC_SCHOOL_NAME": "Juego, Aprendo y Crezco",
         "EXPO_PUBLIC_FEATURE_FLAGS": "production",
         "EXPO_PUBLIC_STORAGE_URL": "https://jacappstorage.blob.core.windows.net",
-        "EXPO_PUBLIC_API_BASE_URL": "https://jac-website-djg4g9h6crbmbvgf.westeurope-01.azurewebsites.net/api"
+        "EXPO_PUBLIC_API_BASE_URL": "https://jac-website-djg4g9h6crbmbvgf.westeurope-01.azurewebsites.net/api",
+        "EXPO_PUBLIC_SCHOOL_EMAIL": "juegoaprendoycrezco@gmail.com",
+        "EXPO_PUBLIC_SCHOOL_PHONE": "+582692471782"
       }
     }
   },
