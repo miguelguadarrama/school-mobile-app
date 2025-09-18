@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons"
 import React, { useContext } from "react"
-import { PixelRatio, StyleSheet, Text, View } from "react-native"
+import { StyleSheet, Text, View } from "react-native"
 import AppContext from "../../contexts/AppContext"
 import { getFormattedDate } from "../../helpers/date"
 import { theme } from "../../helpers/theme"
@@ -26,6 +26,7 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 	const monthDay = now.toLocaleDateString(locale, {
 		month: "long",
 		day: "numeric",
+		year: "numeric",
 	})
 
 	// Colors for positive, negative, neutral, and missing states
@@ -216,10 +217,6 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 		)?.status_value as MoodStatus) || undefined
 	)
 
-	// Detect if user has large font scaling enabled
-	const fontScale = PixelRatio.getFontScale()
-	const shouldUseGridLayout = fontScale > 1.2
-
 	// Create array of status items - all items are always present now
 	const statusItems = [mood, eating, pee, poop]
 
@@ -239,87 +236,48 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 			<View style={styles.divider} />
 			<View style={styles.activitySection}>
 				<Text style={styles.sectionTitle}>Información del día</Text>
-				{shouldUseGridLayout ? (
-					// Grid layout for large fonts (2x2)
-					<View style={styles.activityStatusGrid}>
-						{statusItems.map((status, index) => (
-							<View
-								key={index}
+				{/* Always use 2x2 grid layout */}
+				<View style={styles.activityStatusGrid}>
+					{statusItems.map((status, index) => (
+						<View
+							key={index}
+							style={[
+								styles.activityStatusItem,
+								styles.activityStatusGridItem,
+							]}
+						>
+							<Ionicons
+								name={status.icon}
+								size={28}
+								color={
+									status.isMissing
+										? colors.missing
+										: status.isNeutral
+										? colors.neutral
+										: status.isPositive
+										? colors.positive
+										: colors.negative
+								}
+							/>
+							<Text
 								style={[
-									styles.activityStatusItem,
-									styles.activityStatusGridItem,
+									styles.activityStatusText,
+									{
+										color: status.isMissing
+											? colors.missing
+											: status.isNeutral
+											? colors.neutral
+											: status.isPositive
+											? colors.positive
+											: colors.negative,
+									},
 								]}
 							>
-								<Ionicons
-									name={status.icon}
-									size={28}
-									color={
-										status.isMissing
-											? colors.missing
-											: status.isNeutral
-											? colors.neutral
-											: status.isPositive
-											? colors.positive
-											: colors.negative
-									}
-								/>
-								<Text
-									style={[
-										styles.activityStatusText,
-										{
-											color: status.isMissing
-												? colors.missing
-												: status.isNeutral
-												? colors.neutral
-												: status.isPositive
-												? colors.positive
-												: colors.negative,
-										},
-									]}
-								>
-									{status.text}
-								</Text>
-							</View>
-						))}
-					</View>
-				) : (
-					// Original row layout for normal fonts
-					<View style={styles.activityStatusRow}>
-						{statusItems.map((status, index) => (
-							<View key={index} style={styles.activityStatusItem}>
-								<Ionicons
-									name={status.icon}
-									size={28}
-									color={
-										status.isMissing
-											? colors.missing
-											: status.isNeutral
-											? colors.neutral
-											: status.isPositive
-											? colors.positive
-											: colors.negative
-									}
-								/>
-								<Text
-									style={[
-										styles.activityStatusText,
-										{
-											color: status.isMissing
-												? colors.missing
-												: status.isNeutral
-												? colors.neutral
-												: status.isPositive
-												? colors.positive
-												: colors.negative,
-										},
-									]}
-								>
-									{status.text}
-								</Text>
-							</View>
-						))}
-					</View>
-				)}
+								{status.text}
+							</Text>
+						</View>
+					))}
+				</View>
 			</View>
 		</SchoolCard>
 	)
@@ -433,11 +391,6 @@ const styles = StyleSheet.create({
 		color: theme.colors.text,
 		marginBottom: theme.spacing.sm,
 		textAlign: "center",
-	},
-	activityStatusRow: {
-		flexDirection: "row",
-		justifyContent: "space-around",
-		alignItems: "center",
 	},
 	activityStatusGrid: {
 		flexDirection: "row",
