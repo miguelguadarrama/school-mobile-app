@@ -1,17 +1,23 @@
 import { Ionicons } from "@expo/vector-icons"
-import React, { useContext, useEffect, useRef, useState } from "react"
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "react"
 import {
 	BackHandler,
 	FlatList,
 	Keyboard,
-	ScrollView,
+	Platform,
 	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native"
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
+import { SafeAreaView } from "react-native-safe-area-context"
 import LoadingScreen from "../components/Loading"
 import AppContext from "../contexts/AppContext"
 import { useChatContext } from "../contexts/ChatContext"
@@ -45,6 +51,7 @@ const MessageBubble = ({
 			style={[
 				styles.messageContainer,
 				isUser ? styles.userMessageContainer : styles.staffMessageContainer,
+				message.isOptimistic && { opacity: 0.75 },
 			]}
 		>
 			{isUser ? null : (
@@ -85,10 +92,12 @@ const MessageBubble = ({
 						isUser ? styles.userMessageTime : styles.staffMessageTime,
 					]}
 				>
-					{new Date(message.created_at).toLocaleTimeString([], {
-						hour: "2-digit",
-						minute: "2-digit",
-					})}
+					{message.isOptimistic
+						? "Enviando..."
+						: new Date(message.created_at).toLocaleTimeString([], {
+								hour: "2-digit",
+								minute: "2-digit",
+						  })}
 				</Text>
 			</View>
 			{!isUser ? null : (
@@ -113,35 +122,55 @@ const MessageBubble = ({
 }
 
 const ChatWindow = ({
-	chat,
+	staff_id,
 	onBack,
 	onSendMessage,
 }: {
-	chat: chats
+	staff_id: string
 	onBack: () => void
 	onSendMessage: (content: string) => Promise<void>
 }) => {
-	const scrollViewRef = useRef<ScrollView>(null)
+	const flatListRef = useRef<FlatList<chat_message>>(null)
 	const { selectedStudent, chats } = useContext(AppContext)!
 
 	// Get the current chat data from context to ensure we have the latest messages
-	const currentChat =
-		chats?.find(
-			(c) => c.staff.id === chat.staff.id && c.student_id === chat.student_id
-		) || chat
+	const currentChat = chats?.find((c) => c.staff.id === staff_id)!
 	const [messageText, setMessageText] = useState("")
 	const [isSending, setIsSending] = useState(false)
 	const [keyboardHeight, setKeyboardHeight] = useState(0)
-	const insets = useSafeAreaInsets()
 
 	useEffect(() => {
-		// Auto-scroll to bottom when messages change or on initial load
-		const timer = setTimeout(() => {
-			scrollViewRef.current?.scrollToEnd({ animated: false })
-		}, 300)
+		if (currentChat && selectedStudent) {
+			fetcher(`/mobile/chat/${selectedStudent?.id}/read`, {
+				method: "PUT",
+			})
+		}
+	}, [currentChat, selectedStudent])
 
-		return () => clearTimeout(timer)
-	}, [currentChat.messages])
+	const scrollToBottom = useCallback(
+		(animated = true) => {
+			if (!currentChat?.messages?.length || !flatListRef.current) {
+				console.log("No messages to scroll to bottom of")
+				return
+			}
+			console.log({ currentChatLength: currentChat.messages.length })
+
+			setTimeout(() => {
+				flatListRef.current?.scrollToOffset({
+					offset: 0,
+					animated
+				})
+			}, 100)
+		},
+		[currentChat?.messages?.length]
+	)
+
+	// Scroll to bottom when messages change
+	useEffect(() => {
+		if (currentChat?.messages?.length) {
+			scrollToBottom(false)
+		}
+	}, [currentChat?.messages?.length, scrollToBottom])
 
 	useEffect(() => {
 		// Handle Android back button
@@ -160,30 +189,25 @@ const ChatWindow = ({
 
 	useEffect(() => {
 		// Listen for keyboard events
-		const keyboardDidShowListener = Keyboard.addListener(
-			"keyboardDidShow",
-			(e) => {
-				setKeyboardHeight(e.endCoordinates.height)
-			}
-		)
+		const showEvent =
+			Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow"
+		const hideEvent =
+			Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide"
 
-		const keyboardDidHideListener = Keyboard.addListener(
-			"keyboardDidHide",
-			() => {
-				setKeyboardHeight(0)
-			}
-		)
+		const keyboardShowListener = Keyboard.addListener(showEvent, (e) => {
+			setKeyboardHeight(e.endCoordinates.height)
+			scrollToBottom()
+		})
+
+		const keyboardHideListener = Keyboard.addListener(hideEvent, () => {
+			setKeyboardHeight(0)
+		})
 
 		return () => {
-			keyboardDidShowListener.remove()
-			keyboardDidHideListener.remove()
+			keyboardShowListener.remove()
+			keyboardHideListener.remove()
 		}
-	}, [])
-
-	// Also scroll to bottom on layout changes
-	const handleContentSizeChange = () => {
-		scrollViewRef.current?.scrollToEnd({ animated: false })
-	}
+	}, [scrollToBottom])
 
 	const handleSend = async () => {
 		if (!messageText.trim() || isSending) return
@@ -192,11 +216,16 @@ const ChatWindow = ({
 		try {
 			await onSendMessage(messageText.trim())
 			setMessageText("")
+			scrollToBottom()
 		} catch (error) {
 			console.error("Failed to send message:", error)
 		} finally {
 			setIsSending(false)
 		}
+	}
+
+	if (!currentChat) {
+		return <LoadingScreen />
 	}
 
 	return (
@@ -222,19 +251,20 @@ const ChatWindow = ({
 			</SafeAreaView>
 
 			<View style={styles.chatContainer}>
-				<ScrollView
-					ref={scrollViewRef}
+				<FlatList
+					ref={flatListRef}
 					style={styles.chatContent}
 					contentContainerStyle={[
 						styles.chatContentContainer,
-						{ paddingBottom: keyboardHeight > 0 ? keyboardHeight + 130 : 20 },
+						{ paddingTop: keyboardHeight > 0 ? keyboardHeight + 130 : 20 },
 					]}
-					showsVerticalScrollIndicator={false}
-					onContentSizeChange={handleContentSizeChange}
-				>
-					{currentChat.messages.map((message) => (
+					data={currentChat.messages.slice().reverse()}
+					inverted
+					keyExtractor={(item) => item.id}
+					onLayout={() => scrollToBottom(false)}
+					onContentSizeChange={() => scrollToBottom(false)}
+					renderItem={({ item: message }) => (
 						<MessageBubble
-							key={message.id}
 							message={message}
 							isUser={message.sender_alias === "guardian"}
 							senderName={
@@ -245,8 +275,9 @@ const ChatWindow = ({
 									: currentChat.staff.full_name
 							}
 						/>
-					))}
-				</ScrollView>
+					)}
+					showsVerticalScrollIndicator={false}
+				/>
 
 				<View
 					style={[
@@ -327,18 +358,55 @@ const ChatroomItem = ({
 }
 
 export default function MessagingScreen() {
-	const { chats, chatLoading, selectedStudent, refreshChat } =
-		useContext(AppContext)!
+	const {
+		chats,
+		chatLoading,
+		selectedStudent,
+		refreshChat,
+		addOptimisticMessage,
+		removeOptimisticMessage,
+	} = useContext(AppContext)!
 	const { setIsChatWindowOpen } = useChatContext()
 	const [selectedChat, setSelectedChat] = useState<chats | null>(null)
 
 	const handleSendMessage = async (content: string) => {
-		if (!selectedStudent?.id) return
-		await fetcher(`/mobile/chat/${selectedStudent.id}`, {
-			method: "POST",
-			body: JSON.stringify({ content, staff_id: selectedChat?.staff.id }),
-		})
-		refreshChat()
+		if (!selectedStudent?.id || !selectedChat) return
+
+		// Create optimistic message
+		const optimisticMessage: chat_message = {
+			id: `temp-${Date.now()}-${Math.random()}`,
+			sender_alias: "guardian",
+			content,
+			created_at: new Date().toISOString(),
+		}
+
+		// Add optimistic message immediately
+		addOptimisticMessage(
+			selectedChat.staff.id,
+			selectedStudent.id,
+			optimisticMessage
+		)
+
+		try {
+			// Send message to server
+			await fetcher(`/mobile/chat/${selectedStudent.id}`, {
+				method: "POST",
+				body: JSON.stringify({ content, staff_id: selectedChat.staff.id }),
+			})
+
+			// Refresh to get real data - SWR will merge the real data seamlessly
+			refreshChat()
+		} catch (error) {
+			// Remove optimistic message on error
+			removeOptimisticMessage(
+				selectedChat.staff.id,
+				selectedStudent.id,
+				optimisticMessage.id
+			)
+			console.error("Failed to send message:", error)
+			// You could show an error toast here
+			throw error
+		}
 	}
 
 	const handleChatPress = (chat: chats) => {
@@ -366,7 +434,7 @@ export default function MessagingScreen() {
 	if (selectedChat) {
 		return (
 			<ChatWindow
-				chat={selectedChat}
+				staff_id={selectedChat.staff.id}
 				onBack={handleBackToList}
 				onSendMessage={handleSendMessage}
 			/>
@@ -587,7 +655,7 @@ const styles = StyleSheet.create({
 		backgroundColor: theme.colors.primary,
 	},
 	staffBubble: {
-		backgroundColor: "#f3f4f6",
+		backgroundColor: theme.colors.white,
 		borderWidth: 1,
 		borderColor: "#e5e7eb",
 	},

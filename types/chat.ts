@@ -13,4 +13,5 @@ export interface chat_message {
   sender_alias: "staff" | "guardian"
   content: string
   created_at: string
+  isOptimistic?: boolean
 }

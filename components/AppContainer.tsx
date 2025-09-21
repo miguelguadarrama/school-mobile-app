@@ -1,9 +1,10 @@
-import { ReactNode, useEffect, useState } from "react"
+import { ReactNode, useCallback, useEffect, useState } from "react"
 import useSWR from "swr"
 import AppContext from "../contexts/AppContext"
 import { useAuth } from "../contexts/AuthContext"
 import { setupNotificationListeners } from "../services/notifications"
 import { attendanceStatus, student } from "../types/students"
+import { chats, chat_message } from "../types/chat"
 import LoadingScreen from "./Loading"
 
 const AppContainer = ({ children }: { children: ReactNode }) => {
@@ -15,15 +16,67 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		attendance: attendanceStatus[]
 	}>(loggedIn ? "/mobile/profile" : null)
 	const {
-		data: chats,
+		data: rawChats,
 		isLoading: chatLoading,
 		mutate: refreshChat,
 	} = useSWR(
 		loggedIn && selectedStudent ? `/mobile/chat/${selectedStudent.id}` : null,
 		{
 			refreshInterval: 15000,
+			dedupingInterval: 10000,
+			revalidateOnFocus: true,
 		}
 	)
+
+	// State to hold optimistic messages
+	const [optimisticMessages, setOptimisticMessages] = useState<{[key: string]: chat_message[]}>({})
+
+	// Merge real data with optimistic messages
+	const chats = rawChats ? rawChats.map((chat: chats) => {
+		const chatKey = `${chat.staff.id}-${chat.student_id}`
+		const optimistic = optimisticMessages[chatKey] || []
+
+		// Filter out optimistic messages that might have been confirmed by server
+		const filteredOptimistic = optimistic.filter(optMsg =>
+			!chat.messages.some(realMsg =>
+				realMsg.content === optMsg.content &&
+				realMsg.sender_alias === optMsg.sender_alias &&
+				Math.abs(new Date(realMsg.created_at).getTime() - new Date(optMsg.created_at).getTime()) < 5000
+			)
+		).map(msg => ({ ...msg, isOptimistic: true }))
+
+		return {
+			...chat,
+			messages: [...chat.messages, ...filteredOptimistic]
+		}
+	}) : rawChats
+
+	const addOptimisticMessage = useCallback(
+		(staffId: string, studentId: string, message: chat_message) => {
+			const chatKey = `${staffId}-${studentId}`
+			setOptimisticMessages(prev => ({
+				...prev,
+				[chatKey]: [...(prev[chatKey] || []), message]
+			}))
+		},
+		[]
+	)
+
+	const removeOptimisticMessage = useCallback(
+		(staffId: string, studentId: string, messageId: string) => {
+			const chatKey = `${staffId}-${studentId}`
+			setOptimisticMessages(prev => ({
+				...prev,
+				[chatKey]: (prev[chatKey] || []).filter(msg => msg.id !== messageId)
+			}))
+		},
+		[]
+	)
+
+	// Clean up optimistic messages when selected student changes
+	useEffect(() => {
+		setOptimisticMessages({})
+	}, [selectedStudent?.id])
 
 	if (__DEV__) {
 		console.log(JSON.stringify(chats, null, 2))
@@ -60,6 +113,8 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 				chats,
 				refreshChat,
 				chatLoading,
+				addOptimisticMessage,
+				removeOptimisticMessage,
 			}}
 		>
 			{children}
