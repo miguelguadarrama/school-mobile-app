@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useMemo, useState } from "react"
 import { StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import useSWR from "swr"
-import LoadingScreen from "../components/Loading"
 import BlogPostList from "../components/blog"
 import AppContext from "../contexts/AppContext"
 import { theme } from "../helpers/theme"
@@ -35,9 +34,6 @@ export default function SocialScreen() {
 		}
 	}
 
-	if (isLoading || !classroom) {
-		return <LoadingScreen />
-	}
 	return (
 		<View style={styles.container}>
 			<SafeAreaView edges={["top"]} style={styles.headerContainer}>

@@ -2,7 +2,6 @@ import React, { useContext } from "react"
 import { StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import useSWR from "swr"
-import LoadingScreen from "../components/Loading"
 import AnnouncementList from "../components/blog/announcements"
 import AppContext from "../contexts/AppContext"
 import { theme } from "../helpers/theme"
@@ -24,10 +23,6 @@ export default function AnnouncementsScreen() {
 			// Trigger a revalidation of the data
 			await mutate()
 		}
-	}
-
-	if (isLoading || !academic_year) {
-		return <LoadingScreen />
 	}
 
 	return (
