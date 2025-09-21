@@ -104,6 +104,7 @@ const LoginPassword = () => {
 							value={password}
 							onChangeText={setPassword}
 							secureTextEntry
+							readOnly={status === "BUSY"}
 						/>
 
 						<AppButton

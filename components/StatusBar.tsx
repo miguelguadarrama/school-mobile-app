@@ -5,6 +5,7 @@ import AppContext from "../contexts/AppContext"
 import { useAuth } from "../contexts/AuthContext"
 import { displayName } from "../helpers/students"
 import { theme } from "../helpers/theme"
+import LogoutButton from "./common/LogoutButton"
 import StudentPhoto from "./ui/studentPhoto"
 
 const StatusBar: React.FC = () => {
@@ -12,6 +13,7 @@ const StatusBar: React.FC = () => {
 	const { students, selectedStudent, setSelectedStudent } =
 		useContext(AppContext)!
 	const [modalVisible, setModalVisible] = useState(false)
+	const [isLoggingOut, setIsLoggingOut] = useState(false)
 
 	useEffect(() => {
 		if (selectedStudent === null && students.length) {
@@ -21,6 +23,16 @@ const StatusBar: React.FC = () => {
 
 	const toggleModal = () => {
 		setModalVisible(!modalVisible)
+	}
+
+	const handleLogout = async () => {
+		setIsLoggingOut(true)
+		try {
+			await logout()
+		} catch (error) {
+			console.error("Logout error:", error)
+			setIsLoggingOut(false)
+		}
 	}
 
 	if (!selectedStudent) {
@@ -85,12 +97,7 @@ const StatusBar: React.FC = () => {
 							</>
 						)}
 
-						<TouchableOpacity
-							style={styles.signoutButton}
-							onPress={() => logout()}
-						>
-							<Text style={styles.signoutText}>Cerrar Sesión</Text>
-						</TouchableOpacity>
+						<LogoutButton />
 					</View>
 				</View>
 			</Modal>
@@ -201,19 +208,6 @@ const styles = StyleSheet.create({
 		fontSize: theme.typography.size.md,
 		color: theme.colors.text,
 		fontWeight: "500",
-	},
-	signoutButton: {
-		marginTop: theme.spacing.lg,
-		paddingHorizontal: theme.spacing.lg,
-		paddingVertical: theme.spacing.sm,
-		backgroundColor: theme.colors.danger,
-		borderRadius: theme.radius.lg,
-	},
-	signoutText: {
-		fontFamily: theme.typography.family.bold,
-		color: theme.colors.white,
-		fontWeight: "bold",
-		fontSize: theme.typography.size.md,
 	},
 	closeButton: {
 		marginTop: theme.spacing.sm,

@@ -1,13 +1,27 @@
-import React, { useState, useEffect } from "react"
-import { StyleSheet, Text, View, Switch, Alert, Linking, AppState } from "react-native"
+import { useFocusEffect } from "@react-navigation/native"
+import * as Notifications from "expo-notifications"
+import * as SecureStore from "expo-secure-store"
+import React, { useEffect, useState } from "react"
+import {
+	Alert,
+	AppState,
+	Linking,
+	StyleSheet,
+	Switch,
+	Text,
+	View,
+} from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { useFocusEffect } from '@react-navigation/native'
-import * as Notifications from 'expo-notifications'
-import * as SecureStore from 'expo-secure-store'
+import LogoutButton from "../components/common/LogoutButton"
+import SchoolCard from "../components/SchoolCard"
+import { useAuth } from "../contexts/AuthContext"
 import { theme } from "../helpers/theme"
-import { registerPushToken, unregisterPushToken, requestPermissions } from "../services/notifications"
+import {
+	registerPushToken,
+	unregisterPushToken,
+} from "../services/notifications"
 
-const NOTIFICATION_PREFERENCE_KEY = 'user_notification_preference'
+const NOTIFICATION_PREFERENCE_KEY = "user_notification_preference"
 
 export default function OptionsScreen() {
 	const [notificationsEnabled, setNotificationsEnabled] = useState(false)
@@ -20,19 +34,26 @@ export default function OptionsScreen() {
 
 	const getUserNotificationPreference = async (): Promise<boolean | null> => {
 		try {
-			const preference = await SecureStore.getItemAsync(NOTIFICATION_PREFERENCE_KEY)
+			const preference = await SecureStore.getItemAsync(
+				NOTIFICATION_PREFERENCE_KEY
+			)
 			return preference ? JSON.parse(preference) : null
 		} catch (error) {
-			console.error('Error getting notification preference:', error)
+			console.error("Error getting notification preference:", error)
 			return null
 		}
 	}
 
-	const setUserNotificationPreference = async (enabled: boolean): Promise<void> => {
+	const setUserNotificationPreference = async (
+		enabled: boolean
+	): Promise<void> => {
 		try {
-			await SecureStore.setItemAsync(NOTIFICATION_PREFERENCE_KEY, JSON.stringify(enabled))
+			await SecureStore.setItemAsync(
+				NOTIFICATION_PREFERENCE_KEY,
+				JSON.stringify(enabled)
+			)
 		} catch (error) {
-			console.error('Error setting notification preference:', error)
+			console.error("Error setting notification preference:", error)
 		}
 	}
 
@@ -40,7 +61,7 @@ export default function OptionsScreen() {
 		try {
 			const userPreference = await getUserNotificationPreference()
 			const { status } = await Notifications.getPermissionsAsync()
-			const hasPermission = status === 'granted'
+			const hasPermission = status === "granted"
 
 			// If user has no stored preference, show based on permission status but don't auto-save
 			if (userPreference === null) {
@@ -53,7 +74,7 @@ export default function OptionsScreen() {
 
 			setHasCheckedInitialStatus(true)
 		} catch (error) {
-			console.error('Error initializing notification status:', error)
+			console.error("Error initializing notification status:", error)
 		}
 	}
 
@@ -69,19 +90,22 @@ export default function OptionsScreen() {
 	// Also refresh when app becomes active (returning from settings)
 	useEffect(() => {
 		const handleAppStateChange = (nextAppState: string) => {
-			if (nextAppState === 'active' && hasCheckedInitialStatus) {
+			if (nextAppState === "active" && hasCheckedInitialStatus) {
 				checkNotificationStatus(true) // Allow auto-register when returning from settings
 			}
 		}
 
-		const subscription = AppState.addEventListener('change', handleAppStateChange)
+		const subscription = AppState.addEventListener(
+			"change",
+			handleAppStateChange
+		)
 		return () => subscription?.remove()
 	}, [hasCheckedInitialStatus])
 
 	const checkNotificationStatus = async (shouldAutoRegister = false) => {
 		try {
 			const { status } = await Notifications.getPermissionsAsync()
-			const hasPermission = status === 'granted'
+			const hasPermission = status === "granted"
 			const userPreference = await getUserNotificationPreference()
 			const wasEnabled = notificationsEnabled
 
@@ -94,27 +118,36 @@ export default function OptionsScreen() {
 			// 1. User preference is true
 			// 2. Permissions were just granted in settings (returning from settings)
 			// 3. Not during initial load
-			if (shouldAutoRegister && userPreference === true && !wasEnabled && shouldBeEnabled && hasCheckedInitialStatus) {
-				console.log('Permissions were enabled in settings and user wants notifications, auto-registering push token...')
+			if (
+				shouldAutoRegister &&
+				userPreference === true &&
+				!wasEnabled &&
+				shouldBeEnabled &&
+				hasCheckedInitialStatus
+			) {
+				console.log(
+					"Permissions were enabled in settings and user wants notifications, auto-registering push token..."
+				)
 				const success = await registerPushToken()
 				if (!success) {
-					console.warn('Failed to auto-register push token')
+					console.warn("Failed to auto-register push token")
 				}
 			}
 		} catch (error) {
-			console.error('Error checking notification status:', error)
+			console.error("Error checking notification status:", error)
 		}
 	}
 
 	const handleNotificationToggle = async (value: boolean) => {
 		if (value) {
 			// Check current permission status first
-			const { status: currentStatus } = await Notifications.getPermissionsAsync()
+			const { status: currentStatus } =
+				await Notifications.getPermissionsAsync()
 			const userPreference = await getUserNotificationPreference()
 			const isFirstTime = userPreference === null
 
 			// Only show settings alert if permission was explicitly denied AND it's not first time
-			if (currentStatus === 'denied' && !isFirstTime) {
+			if (currentStatus === "denied" && !isFirstTime) {
 				// Permission was previously denied, need to go to settings
 				Alert.alert(
 					"Permisos Requeridos",
@@ -127,8 +160,8 @@ export default function OptionsScreen() {
 								// Save user preference even if permission is denied
 								await setUserNotificationPreference(true)
 								Linking.openSettings()
-							}
-						}
+							},
+						},
 					]
 				)
 				return
@@ -146,8 +179,9 @@ export default function OptionsScreen() {
 						await setUserNotificationPreference(true)
 						// UI already shows ON, no need to set again
 					} else {
-						const { status: newStatus } = await Notifications.getPermissionsAsync()
-						if (newStatus === 'denied') {
+						const { status: newStatus } =
+							await Notifications.getPermissionsAsync()
+						if (newStatus === "denied") {
 							// Revert UI state
 							setNotificationsEnabled(false)
 							// Save user preference as false since they denied
@@ -163,8 +197,8 @@ export default function OptionsScreen() {
 											// Save user preference as true (they want notifications)
 											await setUserNotificationPreference(true)
 											Linking.openSettings()
-										}
-									}
+										},
+									},
 								]
 							)
 						} else {
@@ -179,7 +213,7 @@ export default function OptionsScreen() {
 					}
 				})
 				.catch((error) => {
-					console.error('Error enabling notifications:', error)
+					console.error("Error enabling notifications:", error)
 					// Revert UI state
 					setNotificationsEnabled(false)
 					Alert.alert(
@@ -198,36 +232,42 @@ export default function OptionsScreen() {
 			// Background task: save preference and unregister
 			Promise.all([
 				setUserNotificationPreference(false),
-				unregisterPushToken()
+				unregisterPushToken(),
 			]).catch((error) => {
-				console.error('Error disabling notifications:', error)
+				console.error("Error disabling notifications:", error)
 				// Could show a toast or silent error - don't revert UI for disable
 			})
 		}
 	}
 
+
 	return (
 		<View style={styles.container}>
 			<SafeAreaView edges={["top"]} style={styles.headerContainer}>
-				<Text style={styles.heading}>Configuración</Text>
+				<Text style={styles.heading}>Opciones</Text>
 			</SafeAreaView>
 			<View style={styles.content}>
-				<View style={styles.settingItem}>
-					<View style={styles.settingInfo}>
-						<Text style={styles.settingTitle}>Notificaciones</Text>
-						<Text style={styles.settingDescription}>
-							Para recibir notificaciones de actualizaciones de estado o mensajes de la institución
-						</Text>
+				<SchoolCard>
+					<View style={styles.settingItem}>
+						<View style={styles.settingInfo}>
+							<Text style={styles.settingTitle}>Notificaciones</Text>
+							<Text style={styles.settingDescription}>
+								Recibir notificaciones de actualizaciones de estado o mensajes de
+								la institución
+							</Text>
+						</View>
+						<Switch
+							value={notificationsEnabled}
+							onValueChange={handleNotificationToggle}
+							disabled={isLoading}
+							trackColor={{ false: "#E2E8F0", true: theme.colors.primary }}
+							thumbColor={notificationsEnabled ? theme.colors.white : "#F1F5F9"}
+							ios_backgroundColor="#E2E8F0"
+						/>
 					</View>
-					<Switch
-						value={notificationsEnabled}
-						onValueChange={handleNotificationToggle}
-						disabled={isLoading}
-						trackColor={{ false: "#E2E8F0", true: theme.colors.primary }}
-						thumbColor={notificationsEnabled ? theme.colors.white : "#F1F5F9"}
-						ios_backgroundColor="#E2E8F0"
-					/>
-				</View>
+				</SchoolCard>
+
+				<LogoutButton />
 			</View>
 		</View>
 	)
@@ -260,12 +300,6 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "space-between",
-		backgroundColor: theme.colors.white,
-		padding: theme.spacing.md,
-		borderRadius: theme.radius.md,
-		borderWidth: 1,
-		borderColor: theme.colors.gray,
-		...theme.shadow.soft,
 	},
 	settingInfo: {
 		flex: 1,
