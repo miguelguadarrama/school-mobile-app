@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons"
 import React, { useContext, useEffect, useRef, useState } from "react"
 import {
+	BackHandler,
 	FlatList,
+	Keyboard,
 	ScrollView,
 	StyleSheet,
 	Text,
@@ -9,9 +11,8 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import LoadingScreen from "../components/Loading"
-import KeyboardAvoidingWrapper from "../components/ui/KeyboardAvoidingWrapper"
 import AppContext from "../contexts/AppContext"
 import { useChatContext } from "../contexts/ChatContext"
 import { theme } from "../helpers/theme"
@@ -111,11 +112,27 @@ const MessageBubble = ({
 	)
 }
 
-const ChatWindow = ({ chat, onBack, onSendMessage }: { chat: chats; onBack: () => void; onSendMessage: (content: string) => Promise<void> }) => {
+const ChatWindow = ({
+	chat,
+	onBack,
+	onSendMessage,
+}: {
+	chat: chats
+	onBack: () => void
+	onSendMessage: (content: string) => Promise<void>
+}) => {
 	const scrollViewRef = useRef<ScrollView>(null)
-	const { selectedStudent } = useContext(AppContext)!
+	const { selectedStudent, chats } = useContext(AppContext)!
+
+	// Get the current chat data from context to ensure we have the latest messages
+	const currentChat =
+		chats?.find(
+			(c) => c.staff.id === chat.staff.id && c.student_id === chat.student_id
+		) || chat
 	const [messageText, setMessageText] = useState("")
 	const [isSending, setIsSending] = useState(false)
+	const [keyboardHeight, setKeyboardHeight] = useState(0)
+	const insets = useSafeAreaInsets()
 
 	useEffect(() => {
 		// Auto-scroll to bottom when messages change or on initial load
@@ -124,7 +141,44 @@ const ChatWindow = ({ chat, onBack, onSendMessage }: { chat: chats; onBack: () =
 		}, 300)
 
 		return () => clearTimeout(timer)
-	}, [chat.messages])
+	}, [currentChat.messages])
+
+	useEffect(() => {
+		// Handle Android back button
+		const handleBackPress = () => {
+			onBack()
+			return true // Prevent default behavior
+		}
+
+		const backHandler = BackHandler.addEventListener(
+			"hardwareBackPress",
+			handleBackPress
+		)
+
+		return () => backHandler.remove()
+	}, [onBack])
+
+	useEffect(() => {
+		// Listen for keyboard events
+		const keyboardDidShowListener = Keyboard.addListener(
+			"keyboardDidShow",
+			(e) => {
+				setKeyboardHeight(e.endCoordinates.height)
+			}
+		)
+
+		const keyboardDidHideListener = Keyboard.addListener(
+			"keyboardDidHide",
+			() => {
+				setKeyboardHeight(0)
+			}
+		)
+
+		return () => {
+			keyboardDidShowListener.remove()
+			keyboardDidHideListener.remove()
+		}
+	}, [])
 
 	// Also scroll to bottom on layout changes
 	const handleContentSizeChange = () => {
@@ -146,7 +200,7 @@ const ChatWindow = ({ chat, onBack, onSendMessage }: { chat: chats; onBack: () =
 	}
 
 	return (
-		<View style={styles.container}>
+		<View style={styles.chatWindowContainer}>
 			<SafeAreaView edges={["top"]} style={styles.headerContainer}>
 				<View style={styles.header}>
 					<TouchableOpacity style={styles.backButton} onPress={onBack}>
@@ -157,28 +211,28 @@ const ChatWindow = ({ chat, onBack, onSendMessage }: { chat: chats; onBack: () =
 						/>
 					</TouchableOpacity>
 					<View style={styles.headerInfo}>
-						<Text style={styles.staffNameHeader}>{chat.staff.full_name}</Text>
+						<Text style={styles.staffNameHeader}>
+							{currentChat.staff.full_name}
+						</Text>
 						<Text style={styles.roleHeader}>
-							{chat.role === "admin" ? "Administración" : "Profesor"}
+							{currentChat.role === "admin" ? "Administración" : "Profesor"}
 						</Text>
 					</View>
 				</View>
 			</SafeAreaView>
 
-			<KeyboardAvoidingWrapper
-				enableScrollView={false}
-				style={styles.chatContainer}
-				behavior="padding"
-				keyboardVerticalOffset={0}
-			>
+			<View style={styles.chatContainer}>
 				<ScrollView
 					ref={scrollViewRef}
 					style={styles.chatContent}
-					contentContainerStyle={styles.chatContentContainer}
+					contentContainerStyle={[
+						styles.chatContentContainer,
+						{ paddingBottom: keyboardHeight > 0 ? keyboardHeight + 130 : 20 },
+					]}
 					showsVerticalScrollIndicator={false}
 					onContentSizeChange={handleContentSizeChange}
 				>
-					{chat.messages.map((message) => (
+					{currentChat.messages.map((message) => (
 						<MessageBubble
 							key={message.id}
 							message={message}
@@ -188,39 +242,58 @@ const ChatWindow = ({ chat, onBack, onSendMessage }: { chat: chats; onBack: () =
 									? selectedStudent
 										? `${selectedStudent.first_name} ${selectedStudent.last_name}`
 										: "Usuario"
-									: chat.staff.full_name
+									: currentChat.staff.full_name
 							}
 						/>
 					))}
 				</ScrollView>
 
-				<View style={styles.inputContainer}>
-					<SafeAreaView edges={["bottom"]}>
+				<View
+					style={[
+						styles.inputContainer,
+						keyboardHeight > 0 && {
+							position: "absolute",
+							bottom: keyboardHeight + 48,
+							left: 0,
+							right: 0,
+						},
+					]}
+				>
+					<SafeAreaView edges={keyboardHeight > 0 ? [] : ["bottom"]}>
 						<View style={styles.inputWrapper}>
-					<TextInput
-						style={styles.textInput}
-						placeholder="Escribe un mensaje..."
-						placeholderTextColor={theme.colors.muted}
-						multiline
-						value={messageText}
-						onChangeText={setMessageText}
-						editable={!isSending}
-					/>
-					<TouchableOpacity
-						style={[styles.sendButton, messageText.trim() && !isSending ? styles.sendButtonActive : null]}
-						onPress={handleSend}
-						disabled={!messageText.trim() || isSending}
-					>
-						<Ionicons
-							name="send"
-							size={20}
-							color={messageText.trim() && !isSending ? theme.colors.primary : theme.colors.muted}
-						/>
-					</TouchableOpacity>
+							<TextInput
+								style={styles.textInput}
+								placeholder="Escribe un mensaje..."
+								placeholderTextColor={theme.colors.muted}
+								multiline
+								value={messageText}
+								onChangeText={setMessageText}
+								editable={!isSending}
+							/>
+							<TouchableOpacity
+								style={[
+									styles.sendButton,
+									messageText.trim() && !isSending
+										? styles.sendButtonActive
+										: null,
+								]}
+								onPress={handleSend}
+								disabled={!messageText.trim() || isSending}
+							>
+								<Ionicons
+									name="send"
+									size={20}
+									color={
+										messageText.trim() && !isSending
+											? theme.colors.primary
+											: theme.colors.muted
+									}
+								/>
+							</TouchableOpacity>
 						</View>
 					</SafeAreaView>
 				</View>
-			</KeyboardAvoidingWrapper>
+			</View>
 		</View>
 	)
 }
@@ -263,7 +336,7 @@ export default function MessagingScreen() {
 		if (!selectedStudent?.id) return
 		await fetcher(`/mobile/chat/${selectedStudent.id}`, {
 			method: "POST",
-			body: JSON.stringify({ content }),
+			body: JSON.stringify({ content, staff_id: selectedChat?.staff.id }),
 		})
 		refreshChat()
 	}
@@ -291,7 +364,13 @@ export default function MessagingScreen() {
 
 	// If a chat is selected, show the chat window
 	if (selectedChat) {
-		return <ChatWindow chat={selectedChat} onBack={handleBackToList} onSendMessage={handleSendMessage} />
+		return (
+			<ChatWindow
+				chat={selectedChat}
+				onBack={handleBackToList}
+				onSendMessage={handleSendMessage}
+			/>
+		)
 	}
 
 	const adminChats = chats?.filter((chat) => chat.role === "admin") || []
@@ -347,6 +426,15 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: theme.colors.background,
+	},
+	chatWindowContainer: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		backgroundColor: theme.colors.background,
+		zIndex: 1000,
 	},
 	headerContainer: {
 		backgroundColor: theme.colors.surface,
@@ -530,11 +618,20 @@ const styles = StyleSheet.create({
 		borderTopWidth: 1,
 		borderTopColor: theme.colors.border,
 	},
+	inputContainerAbsolute: {
+		position: "absolute",
+		left: 0,
+		right: 0,
+		backgroundColor: theme.colors.surface,
+		borderTopWidth: 1,
+		borderTopColor: theme.colors.border,
+	},
 	inputWrapper: {
 		flexDirection: "row",
 		alignItems: "flex-end",
 		paddingHorizontal: theme.spacing.md,
-		paddingVertical: theme.spacing.sm,
+		paddingTop: theme.spacing.sm,
+		paddingBottom: theme.spacing.sm,
 	},
 	textInput: {
 		flex: 1,
@@ -543,7 +640,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: theme.spacing.md,
 		paddingVertical: theme.spacing.sm,
 		marginRight: theme.spacing.sm,
-		maxHeight: 100,
+		maxHeight: 50,
 		fontFamily: theme.typography.family.regular,
 		fontSize: theme.typography.size.sm,
 		color: theme.colors.text,
