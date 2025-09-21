@@ -1,4 +1,5 @@
 import { BlogPostMedia } from "./post";
+import { chats } from "./chat";
 
 export type AuthStackParamList = {
   LoginEmail: undefined
@@ -20,5 +21,12 @@ export type SocialStackParamList = {
     photos: BlogPostMedia[]
     initialIndex: number
     title?: string
+  }
+}
+
+export type MessagingStackParamList = {
+  Messaging: undefined
+  ChatWindow: {
+    chat: chats
   }
 }

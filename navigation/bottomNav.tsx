@@ -24,6 +24,7 @@ import PagerView, {
 } from "react-native-pager-view"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { TabContext } from "../contexts/TabContext"
+import { useChatContext } from "../contexts/ChatContext"
 import { theme } from "../helpers/theme"
 import AnnouncementsScreen from "../screens/Announcements"
 import HomeScreen from "../screens/Home"
@@ -61,6 +62,7 @@ function SwipeableTabContent(): JSX.Element {
 	const [isPhotoViewerActive, setIsPhotoViewerActive] = useState<boolean>(false)
 	const isSwipingRef = useRef<boolean>(false)
 	const targetIndexRef = useRef<number>(2)
+	const { isChatWindowOpen } = useChatContext()
 
 	// Monitor navigation state to detect PhotoViewer or PhotoGrid
 	const navigationState = useNavigationState((state) => state)
@@ -123,14 +125,15 @@ function SwipeableTabContent(): JSX.Element {
 			if (
 				index !== currentIndex &&
 				!isSwipingRef.current &&
-				!isPhotoViewerActive
+				!isPhotoViewerActive &&
+				!isChatWindowOpen
 			) {
 				targetIndexRef.current = index
 				setCurrentIndex(index)
 				pagerRef.current?.setPage(index)
 			}
 		},
-		[currentIndex, isPhotoViewerActive]
+		[currentIndex, isPhotoViewerActive, isChatWindowOpen]
 	)
 
 	// Render screens with performance optimization
@@ -164,7 +167,7 @@ function SwipeableTabContent(): JSX.Element {
 					onPageScrollStateChanged={onPageScrollStateChanged}
 					orientation="horizontal"
 					overdrag={false}
-					scrollEnabled={!isPhotoViewerActive} // Disable scrolling when PhotoViewer is active
+					scrollEnabled={!isPhotoViewerActive && !isChatWindowOpen} // Disable scrolling when PhotoViewer or ChatWindow is active
 					pageMargin={0}
 				>
 					{tabScreens
@@ -185,6 +188,7 @@ function SwipeableTabContent(): JSX.Element {
 function CustomTabBar(): JSX.Element | null {
 	const { currentIndex, navigateToTab, isPhotoViewerActive } =
 		useContext(TabContext)
+	const { isChatWindowOpen } = useChatContext()
 
 	const getIconName = (
 		routeName: string,
@@ -206,8 +210,8 @@ function CustomTabBar(): JSX.Element | null {
 		}
 	}
 
-	// Hide tab bar when PhotoViewer is active
-	if (isPhotoViewerActive) {
+	// Hide tab bar when PhotoViewer or ChatWindow is active
+	if (isPhotoViewerActive || isChatWindowOpen) {
 		return null
 	}
 
