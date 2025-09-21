@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "92439789782",
+    "project_id": "leeli-school-app",
+    "storage_bucket": "leeli-school-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:92439789782:android:23e9a3a6e7067a3c0ac977",
+        "android_client_info": {
+          "package_name": "com.leeliai.school_mobile_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlawAqqRTDiYGah1yMiQUIwuFSWGBwV0Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

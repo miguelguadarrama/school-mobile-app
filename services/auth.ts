@@ -141,6 +141,7 @@ export const logout = async () => {
   await deleteToken("id_token")
   await deleteToken("refresh_token")
   await deleteToken("expires_at")
+  await deleteToken("user_notification_preference")
 }
 
 export const getSession = async () => {

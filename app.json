@@ -25,6 +25,7 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [],
+      "googleServicesFile": "./google-services.json",
       "package": "com.leeliai.school_mobile_app"
     },
     "web": {

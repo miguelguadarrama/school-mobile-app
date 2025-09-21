@@ -51,7 +51,7 @@ const tabScreens: TabScreen[] = [
 	{ name: "Social", component: SocialScreen },
 	{ name: "Inicio", component: HomeScreen },
 	{ name: "Mensajería", component: MessagingScreen },
-	{ name: "Opciones", disabled: true, component: OptionsScreen },
+	{ name: "Opciones", component: OptionsScreen },
 ]
 
 // Custom wrapper component that handles the swipe functionality

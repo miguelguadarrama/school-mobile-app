@@ -63,6 +63,7 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		marginBottom: 20,
 		paddingHorizontal: 12,
+		backgroundColor: "#fff",
 	},
 	inputField: {
 		fontFamily: "Nunito_400Regular",

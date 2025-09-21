@@ -17,11 +17,11 @@ export const fetcher = async (endpoint: string, options: RequestInit = {}) => {
     }
 
     const baseOptions: RequestInit = {
+      ...options,
       headers: {
         Authorization: `Bearer ${token}`,
         ...options.headers,
       },
-      ...options
     }
 
     const url = `${EXPO_PUBLIC_API_BASE_URL}${endpoint}`
