@@ -1,23 +1,32 @@
 export const theme = {
   colors: {
-    "light-gray": "#F8F9FE",
-    gray: "#E5E7EB",
-    primary: "#FF6B9D", // Playful pink
-    "primary-light": "#FFB3D1", // Light pink for disabled states
-    secondary: "#FFB347", // Warm orange
-    success: "#4ECDC4", // Mint green
-    warning: "#FFD93D", // Sunshine yellow
-    danger: "#FF8A80", // Soft coral red
-    surface: "#FFF5F8", // Light pink tint
-    text: "#2D3748", // Softer dark text
-    muted: "#718096", // Warmer muted text
-    border: "#F7FAFC", // Very light border
+    // Neutrals
+    "light-gray": "#F8F9FE",          // unchanged
+    gray: "#E5E7EB",                  // unchanged
+    text: "#1F2937",                  // darker for legibility
+    muted: "#64748B",                 // cooler secondary text
+    border: "#E2E8F0",                // stronger than before for crisp edges
+    "border-subtle": "#F1F5F9",       // hairline dividers / card outlines
     white: "#FFFFFF",
-    background: "#F0F4FF", // Soft blue-tinted background
-    accent1: "#A78BFA", // Soft purple
-    accent2: "#34D399", // Fresh green
-    accent3: "#FBBF24", // Golden yellow
-    accent4: "#60A5FA", // Sky blue
+
+    // App canvas
+    background: "#ECF2FF",            // slightly deeper cool blue (vs #F0F4FF)
+    surface: "#FFFFFF",               // bars, sheets, panels → clear contrast on background
+    "surface-alt": "#FFEAF2",         // OPTIONAL: gentle pink tint for emphasized bars
+
+    // Brand & states (unchanged vibe)
+    primary: "#FF6B9D",               // playful pink
+    "primary-light": "#FFB3D1",
+    secondary: "#FFB347",             // warm orange
+    success: "#4ECDC4",               // mint
+    warning: "#FFD93D",               // sunshine yellow
+    danger: "#FF8A80",                // soft coral red
+
+    // Accents (unchanged vibe)
+    accent1: "#A78BFA",               // soft purple
+    accent2: "#34D399",               // fresh green
+    accent3: "#FBBF24",               // golden yellow
+    accent4: "#60A5FA",               // sky blue
   },
   radius: {
     sm: 12,
