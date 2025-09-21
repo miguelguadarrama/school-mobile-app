@@ -2,7 +2,7 @@ import * as Application from 'expo-application'
 import Constants from 'expo-constants'
 import * as Device from 'expo-device'
 import * as Notifications from 'expo-notifications'
-import { Platform } from 'react-native'
+import { AppState, Platform } from 'react-native'
 import { fetcher } from './api'
 import { saveToken } from "./auth"
 
@@ -30,13 +30,18 @@ const getDeviceId = async (): Promise<string> => {
 }
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
+  handleNotification: async () => {
+    const appState = AppState.currentState
+    const isAppActive = appState === 'active'
+
+    return {
+      shouldShowAlert: !isAppActive,
+      shouldPlaySound: !isAppActive,
+      shouldSetBadge: !isAppActive,
+      shouldShowBanner: !isAppActive,
+      shouldShowList: !isAppActive,
+    }
+  },
 })
 
 export const requestPermissions = async (): Promise<boolean> => {

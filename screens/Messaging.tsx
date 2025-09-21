@@ -343,6 +343,9 @@ const ChatroomItem = ({
 	onPress: () => void
 }) => {
 	const lastMessage = item.messages[item.messages.length - 1]
+	const unreadCount = item.messages.filter(
+		(message) => message.sender_alias === "staff" && message.read_at === null
+	).length
 
 	return (
 		<TouchableOpacity style={styles.chatroomItem} onPress={onPress}>
@@ -355,9 +358,18 @@ const ChatroomItem = ({
 			</View>
 			<View style={styles.chatroomContent}>
 				<Text style={styles.staffName}>{item.staff.full_name}</Text>
-				<Text style={styles.lastMessage} numberOfLines={1}>
-					{lastMessage?.content || "-"}
-				</Text>
+				<View style={styles.lastMessageContainer}>
+					{unreadCount > 0 && (
+						<View style={styles.unreadBadge}>
+							<Text style={styles.unreadBadgeText}>
+								{unreadCount > 99 ? "99+" : unreadCount}
+							</Text>
+						</View>
+					)}
+					<Text style={styles.lastMessage} numberOfLines={1}>
+						{lastMessage?.content || "-"}
+					</Text>
+				</View>
 			</View>
 		</TouchableOpacity>
 	)
@@ -545,6 +557,22 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 	},
+	unreadBadge: {
+		backgroundColor: "#ef4444",
+		borderRadius: 10,
+		minWidth: 20,
+		height: 20,
+		justifyContent: "center",
+		alignItems: "center",
+		paddingHorizontal: 6,
+		marginRight: theme.spacing.xs,
+	},
+	unreadBadgeText: {
+		color: theme.colors.white,
+		fontSize: 12,
+		fontWeight: "600",
+		fontFamily: theme.typography.family.bold,
+	},
 	avatarText: {
 		fontFamily: theme.typography.family.bold,
 		fontSize: theme.typography.size.lg,
@@ -553,6 +581,10 @@ const styles = StyleSheet.create({
 	},
 	chatroomContent: {
 		flex: 1,
+	},
+	lastMessageContainer: {
+		flexDirection: "row",
+		alignItems: "center",
 	},
 	staffName: {
 		fontFamily: theme.typography.family.bold,
