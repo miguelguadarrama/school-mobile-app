@@ -158,7 +158,7 @@ const ChatWindow = ({
 			setTimeout(() => {
 				flatListRef.current?.scrollToOffset({
 					offset: 0,
-					animated
+					animated,
 				})
 			}, 100)
 		},
@@ -256,7 +256,12 @@ const ChatWindow = ({
 					style={styles.chatContent}
 					contentContainerStyle={[
 						styles.chatContentContainer,
-						{ paddingTop: keyboardHeight > 0 ? keyboardHeight + 130 : 20 },
+						{
+							paddingTop:
+								keyboardHeight > 0
+									? keyboardHeight + (Platform.OS === "ios" ? 100 : 130)
+									: 20,
+						},
 					]}
 					data={currentChat.messages.slice().reverse()}
 					inverted
@@ -284,7 +289,7 @@ const ChatWindow = ({
 						styles.inputContainer,
 						keyboardHeight > 0 && {
 							position: "absolute",
-							bottom: keyboardHeight + 48,
+							bottom: keyboardHeight + (Platform.OS === "ios" ? 0 : 48),
 							left: 0,
 							right: 0,
 						},
@@ -299,6 +304,7 @@ const ChatWindow = ({
 								multiline
 								value={messageText}
 								onChangeText={setMessageText}
+								onSubmitEditing={handleSend}
 								editable={!isSending}
 							/>
 							<TouchableOpacity
@@ -316,7 +322,7 @@ const ChatWindow = ({
 									size={20}
 									color={
 										messageText.trim() && !isSending
-											? theme.colors.primary
+											? theme.colors.white
 											: theme.colors.muted
 									}
 								/>
