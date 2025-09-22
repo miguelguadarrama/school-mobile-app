@@ -1,5 +1,5 @@
 import { createContext } from "react"
-import { chats, chat_message } from "../types/chat"
+import { chat_message, chats } from "../types/chat"
 import { attendanceStatus, student } from "../types/students"
 
 interface AppContextType {
@@ -12,8 +12,17 @@ interface AppContextType {
 	chats: chats[] | undefined
 	refreshChat: () => void
 	chatLoading: boolean
-	addOptimisticMessage: (staffId: string, studentId: string, message: chat_message) => void
-	removeOptimisticMessage: (staffId: string, studentId: string, messageId: string) => void
+	addOptimisticMessage: (
+		staffId: string,
+		studentId: string,
+		message: chat_message
+	) => void
+	removeOptimisticMessage: (
+		staffId: string,
+		studentId: string,
+		messageId: string
+	) => void
+	roles: ("admin" | "guardian" | "staff")[]
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
