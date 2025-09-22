@@ -11,7 +11,11 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 	const { loggedIn } = useAuth()
 	const [selectedDate, setSelectedDate] = useState(new Date())
 	const [selectedStudent, setSelectedStudent] = useState<student | null>(null)
-	const { data, isLoading } = useSWR<{
+	const {
+		data,
+		isLoading,
+		mutate: refreshAppData,
+	} = useSWR<{
 		students: student[]
 		attendance: attendanceStatus[]
 		roles: ("admin" | "guardian" | "staff")[]
@@ -112,6 +116,8 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 	return (
 		<AppContext.Provider
 			value={{
+				isDataLoading: isLoading,
+				refreshAppData,
 				roles: data?.roles || [],
 				students: data?.students || [],
 				selectedStudent,

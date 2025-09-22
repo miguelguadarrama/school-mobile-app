@@ -23,6 +23,8 @@ interface AppContextType {
 		messageId: string
 	) => void
 	roles: ("admin" | "guardian" | "staff")[]
+	refreshAppData: () => void
+	isDataLoading: boolean
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)

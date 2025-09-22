@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useContext } from "react"
 import {
 	Image,
 	RefreshControl,
@@ -8,39 +8,14 @@ import {
 	View,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import useSWR from "swr"
-import LoadingScreen from "../components/Loading"
 import StatusBar from "../components/StatusBar"
 import CommunicationCard from "../components/home/communication"
 import DayInfoCard from "../components/home/dayInfo"
+import AppContext from "../contexts/AppContext"
 import { theme } from "../helpers/theme"
-import { student } from "../types/students"
 
 export default function HomeScreen() {
-	// Fetch student information from the API
-	const { data, isLoading, mutate } = useSWR<{ students: student[] }>(
-		"/mobile/profile"
-	)
-
-	//console.log({ data: JSON.stringify(data.students) })
-
-	// Pull to refresh handler
-	const [refreshing, setRefreshing] = React.useState(false)
-
-	const onRefresh = React.useCallback(async () => {
-		setRefreshing(true)
-		try {
-			await mutate()
-		} catch (error) {
-			console.error("Error refreshing data:", error)
-		} finally {
-			setRefreshing(false)
-		}
-	}, [mutate])
-
-	if (isLoading) {
-		return <LoadingScreen />
-	}
+	const { refreshAppData, isDataLoading } = useContext(AppContext)!
 
 	return (
 		<>
@@ -54,8 +29,8 @@ export default function HomeScreen() {
 					showsVerticalScrollIndicator={false}
 					refreshControl={
 						<RefreshControl
-							refreshing={refreshing}
-							onRefresh={onRefresh}
+							refreshing={isDataLoading}
+							onRefresh={refreshAppData}
 							tintColor={theme.colors.primary}
 							colors={[theme.colors.primary]}
 						/>
