@@ -25,14 +25,15 @@ import PagerView, {
 import { SafeAreaView } from "react-native-safe-area-context"
 import AppContext from "../contexts/AppContext"
 import { useChatContext } from "../contexts/ChatContext"
-import { TeacherChatProvider } from "../contexts/TeacherChatContext"
 import { TabContext } from "../contexts/TabContext"
+import { TeacherChatProvider } from "../contexts/TeacherChatContext"
 import { theme } from "../helpers/theme"
 import AnnouncementsScreen from "../screens/Announcements"
 import HomeScreen from "../screens/Home"
 import MessagingScreen from "../screens/Messaging"
 import OptionsScreen from "../screens/Options"
 import SocialScreen from "../screens/social/Stack"
+import HomeTeacherScreen from "../screens/teacher/Home"
 import TeacherMessagingScreen from "../screens/teacher/messaging"
 
 // Wrapper component for TeacherMessagingScreen with TeacherChatProvider
@@ -68,7 +69,7 @@ const tabScreens: TabScreen[] = [
 const teacherTabScreens: TabScreen[] = [
 	{ name: "Anuncios", component: AnnouncementsScreen },
 	{ name: "Social", component: SocialScreen },
-	{ name: "Inicio", component: HomeScreen },
+	{ name: "Inicio", component: HomeTeacherScreen },
 	{ name: "Mensajería", component: TeacherMessagingScreenWithProvider },
 	{ name: "Opciones", component: OptionsScreen },
 ]

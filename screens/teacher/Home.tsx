@@ -1,22 +1,11 @@
-import React, { useContext } from "react"
-import {
-	Image,
-	RefreshControl,
-	ScrollView,
-	StyleSheet,
-	Text,
-	View,
-} from "react-native"
+import React from "react"
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import StatusBar from "../components/StatusBar"
-import CommunicationCard from "../components/home/communication"
-import DayInfoCard from "../components/home/dayInfo"
-import AppContext from "../contexts/AppContext"
-import { theme } from "../helpers/theme"
+import StatusBar from "../../components/StatusBar"
+import AppButton from "../../components/ui/button"
+import { theme } from "../../helpers/theme"
 
-export default function HomeScreen() {
-	const { refreshAppData, isDataLoading } = useContext(AppContext)!
-
+export default function HomeTeacherScreen() {
 	return (
 		<>
 			<SafeAreaView style={styles.statusBarContainer} edges={["top"]}>
@@ -27,19 +16,11 @@ export default function HomeScreen() {
 					style={styles.scrollView}
 					contentContainerStyle={styles.scrollContent}
 					showsVerticalScrollIndicator={false}
-					refreshControl={
-						<RefreshControl
-							refreshing={isDataLoading}
-							onRefresh={refreshAppData}
-							tintColor={theme.colors.primary}
-							colors={[theme.colors.primary]}
-						/>
-					}
 				>
 					{/* School Header */}
 					<View style={styles.schoolHeader}>
 						<Image
-							source={require("../assets/icon.png")}
+							source={require("../../assets/icon.png")}
 							style={styles.schoolLogo}
 						/>
 						<Text style={styles.schoolName}>
@@ -47,14 +28,15 @@ export default function HomeScreen() {
 						</Text>
 					</View>
 
-					{/* Day Information Card */}
 					<View style={styles.cardContainer}>
-						<DayInfoCard />
-					</View>
-
-					{/* Communication Recap */}
-					<View style={styles.cardContainer}>
-						<CommunicationCard />
+						<Text
+							style={{ ...styles.schoolName, marginBottom: theme.spacing.sm }}
+						>
+							Bienvenido, Docente
+						</Text>
+						<AppButton variant="primary" onPress={() => {}}>
+							Panel de Docente
+						</AppButton>
 					</View>
 
 					{/* Bottom spacing for better scroll experience */}

@@ -220,6 +220,9 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 	// Create array of status items - all items are always present now
 	const statusItems = [mood, eating, pee, poop]
 
+	// Check if all statuses are missing (empty state)
+	const allStatusesMissing = statusItems.every(status => status.isMissing)
+
 	return (
 		<SchoolCard>
 			{/* Header with date and weather side by side */}
@@ -236,48 +239,55 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 			<View style={styles.divider} />
 			<View style={styles.activitySection}>
 				<Text style={styles.sectionTitle}>Información del día</Text>
-				{/* Always use 2x2 grid layout */}
-				<View style={styles.activityStatusGrid}>
-					{statusItems.map((status, index) => (
-						<View
-							key={index}
-							style={[
-								styles.activityStatusItem,
-								styles.activityStatusGridItem,
-							]}
-						>
-							<Ionicons
-								name={status.icon}
-								size={28}
-								color={
-									status.isMissing
-										? colors.missing
-										: status.isNeutral
-										? colors.neutral
-										: status.isPositive
-										? colors.positive
-										: colors.negative
-								}
-							/>
-							<Text
+				{allStatusesMissing ? (
+					<View style={styles.emptyStateContainer}>
+						<Text style={styles.emptyStateText}>
+							No hay actualizaciones por el momento
+						</Text>
+					</View>
+				) : (
+					<View style={styles.activityStatusGrid}>
+						{statusItems.map((status, index) => (
+							<View
+								key={index}
 								style={[
-									styles.activityStatusText,
-									{
-										color: status.isMissing
+									styles.activityStatusItem,
+									styles.activityStatusGridItem,
+								]}
+							>
+								<Ionicons
+									name={status.icon}
+									size={28}
+									color={
+										status.isMissing
 											? colors.missing
 											: status.isNeutral
 											? colors.neutral
 											: status.isPositive
 											? colors.positive
-											: colors.negative,
-									},
-								]}
-							>
-								{status.text}
-							</Text>
-						</View>
-					))}
-				</View>
+											: colors.negative
+									}
+								/>
+								<Text
+									style={[
+										styles.activityStatusText,
+										{
+											color: status.isMissing
+												? colors.missing
+												: status.isNeutral
+												? colors.neutral
+												: status.isPositive
+												? colors.positive
+												: colors.negative,
+										},
+									]}
+								>
+									{status.text}
+								</Text>
+							</View>
+						))}
+					</View>
+				)}
 			</View>
 		</SchoolCard>
 	)
@@ -416,5 +426,18 @@ const styles = StyleSheet.create({
 		marginTop: theme.spacing.sm,
 		textAlign: "center",
 		lineHeight: 16,
+	},
+	emptyStateContainer: {
+		paddingVertical: theme.spacing.lg,
+		paddingHorizontal: theme.spacing.md,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	emptyStateText: {
+		fontFamily: theme.typography.family.regular,
+		fontSize: theme.typography.size.sm,
+		color: theme.colors.muted,
+		textAlign: "center",
+		fontStyle: "italic",
 	},
 })
