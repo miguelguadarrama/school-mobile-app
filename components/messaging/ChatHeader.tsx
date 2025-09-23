@@ -1,7 +1,7 @@
-import React from "react"
-import { Text, View, TouchableOpacity, StyleSheet } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
+import React from "react"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { theme } from "../../helpers/theme"
 
 interface ChatHeaderProps {
@@ -26,11 +26,19 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 					/>
 				</TouchableOpacity>
 				<View style={styles.headerInfo}>
-					<Text style={styles.staffNameHeader} numberOfLines={1} ellipsizeMode="tail">
+					<Text
+						style={styles.staffNameHeader}
+						numberOfLines={1}
+						ellipsizeMode="tail"
+					>
 						{staffName}
 					</Text>
 					<Text style={styles.roleHeader}>
-						{role === "admin" ? "Administración" : role === "teacher" ? "Profesor" : "Estudiante"}
+						{role === "admin"
+							? "Administración"
+							: role === "teacher"
+							? "Docente"
+							: "Estudiante"}
 					</Text>
 				</View>
 			</View>

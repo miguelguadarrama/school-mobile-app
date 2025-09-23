@@ -31,7 +31,9 @@ export const TeacherChatroomItem: React.FC<TeacherChatroomItemProps> = ({ item, 
 				/>
 			</View>
 			<View style={styles.chatroomContent}>
-				<Text style={styles.studentName}>{studentDisplayName}</Text>
+				<Text style={styles.studentName} numberOfLines={1} ellipsizeMode="tail">
+					{studentDisplayName}
+				</Text>
 				<View style={styles.lastMessageContainer}>
 					<UnreadBadge count={unreadCount} />
 					<Text style={styles.lastMessage} numberOfLines={1}>

@@ -85,10 +85,6 @@ export default function MessagingScreen() {
 			</SafeAreaView>
 			<FlatList<ListItem>
 				data={[
-					...(adminChats.length > 0
-						? [{ type: "section" as const, title: "Administración" }]
-						: []),
-					...adminChats.map((chat) => ({ type: "chat" as const, data: chat })),
 					...(teacherChats.length > 0
 						? [{ type: "section" as const, title: "Docentes" }]
 						: []),
@@ -96,6 +92,10 @@ export default function MessagingScreen() {
 						type: "chat" as const,
 						data: chat,
 					})),
+					...(adminChats.length > 0
+						? [{ type: "section" as const, title: "Administración" }]
+						: []),
+					...adminChats.map((chat) => ({ type: "chat" as const, data: chat })),
 				]}
 				keyExtractor={(item) =>
 					item.type === "section"
