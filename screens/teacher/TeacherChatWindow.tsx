@@ -1,10 +1,4 @@
-import React, {
-	useCallback,
-	useContext,
-	useEffect,
-	useRef,
-	useState,
-} from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import {
 	BackHandler,
 	FlatList,
@@ -13,42 +7,44 @@ import {
 	StyleSheet,
 	View,
 } from "react-native"
-import AppContext from "../../contexts/AppContext"
-import { useChatContext } from "../../contexts/ChatContext"
+import LoadingScreen from "../../components/Loading"
+import {
+	ChatHeader,
+	MessageBubble,
+	MessageInput,
+} from "../../components/messaging"
+import { useTeacherChatContext } from "../../contexts/TeacherChatContext"
 import { theme } from "../../helpers/theme"
 import { fetcher } from "../../services/api"
 import { chat_message } from "../../types/chat"
-import LoadingScreen from "../Loading"
-import { ChatHeader } from "./ChatHeader"
-import { MessageBubble } from "./MessageBubble"
-import { MessageInput } from "./MessageInput"
 
-interface ChatWindowProps {
-	staff_id: string
+interface TeacherChatWindowProps {
+	studentId: string
 	onBack: () => void
 	onSendMessage: (content: string) => Promise<void>
 }
 
-export const ChatWindow: React.FC<ChatWindowProps> = ({
-	staff_id,
+export const TeacherChatWindow: React.FC<TeacherChatWindowProps> = ({
+	studentId,
 	onBack,
 	onSendMessage,
 }) => {
 	const flatListRef = useRef<FlatList<chat_message>>(null)
-	const { selectedStudent } = useContext(AppContext)!
-	const { chats } = useChatContext()
-
-	const currentChat = chats?.find((c) => c.staff_id === staff_id)
+	const { chats } = useTeacherChatContext()
 	const [keyboardHeight, setKeyboardHeight] = useState(0)
 
+	// Find the current chat based on studentId
+	const currentChat = chats?.find((c) => c.student_id === studentId)
+
 	useEffect(() => {
-		if (currentChat && selectedStudent) {
-			fetcher(`/mobile/chat/${selectedStudent?.id}/read`, {
+		if (currentChat) {
+			// Mark messages as read for teacher
+			fetcher(`/mobile/chat/teacher/read`, {
 				method: "PUT",
-				body: JSON.stringify({ staff_id: currentChat.staff_id }),
+				body: JSON.stringify({ student_id: studentId }),
 			})
 		}
-	}, [currentChat, selectedStudent])
+	}, [currentChat, studentId])
 
 	const scrollToBottom = useCallback(
 		(animated = true) => {
@@ -117,13 +113,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 		return <LoadingScreen />
 	}
 
+	// For teachers, userInfo contains the student's information
+	const studentName = currentChat.userInfo.full_name
+
 	return (
 		<View style={styles.chatWindowContainer}>
-			<ChatHeader
-				staffName={currentChat.userInfo.full_name}
-				role={currentChat.role}
-				onBack={onBack}
-			/>
+			<ChatHeader staffName={studentName} role="student" onBack={onBack} />
 
 			<View style={styles.chatContainer}>
 				<FlatList
@@ -146,13 +141,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 					renderItem={({ item: message }) => (
 						<MessageBubble
 							message={message}
-							isUser={message.sender_alias === "guardian"}
+							isUser={message.sender_alias === "staff"}
 							senderName={
-								message.sender_alias === "guardian"
-									? selectedStudent
-										? `${selectedStudent.first_name} ${selectedStudent.last_name}`
-										: "Usuario"
-									: currentChat.userInfo.full_name
+								message.sender_alias === "staff"
+									? "Yo" // Teacher's messages
+									: studentName // Student's messages
 							}
 						/>
 					)}

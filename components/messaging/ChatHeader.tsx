@@ -6,7 +6,7 @@ import { theme } from "../../helpers/theme"
 
 interface ChatHeaderProps {
 	staffName: string
-	role: "admin" | "teacher"
+	role: "admin" | "teacher" | "student"
 	onBack: () => void
 }
 
@@ -28,7 +28,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 				<View style={styles.headerInfo}>
 					<Text style={styles.staffNameHeader}>{staffName}</Text>
 					<Text style={styles.roleHeader}>
-						{role === "admin" ? "Administración" : "Profesor"}
+						{role === "admin" ? "Administración" : role === "teacher" ? "Profesor" : "Estudiante"}
 					</Text>
 				</View>
 			</View>

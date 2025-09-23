@@ -2,7 +2,6 @@ import { StyleSheet, View } from "react-native"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import AppLayout from "./components/Layout"
 import { AuthProvider } from "./contexts/AuthContext"
-import { ChatProvider } from "./contexts/ChatContext"
 import "./global.css"
 import {
 	useFonts,
@@ -23,11 +22,9 @@ export default function App() {
 	return (
 		<SafeAreaProvider>
 			<AuthProvider>
-				<ChatProvider>
-					<View style={styles.container}>
-						<AppLayout />
-					</View>
-				</ChatProvider>
+				<View style={styles.container}>
+					<AppLayout />
+				</View>
 			</AuthProvider>
 		</SafeAreaProvider>
 	)

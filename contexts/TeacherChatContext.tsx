@@ -1,15 +1,9 @@
-import React, {
-	createContext,
-	useCallback,
-	useContext,
-	useEffect,
-	useState,
-} from "react"
+import React, { createContext, useCallback, useContext, useState } from "react"
 import useSWR from "swr"
 import { fetcher } from "../services/api"
 import { chat_message, chats } from "../types/chat"
 
-interface ChatContextType {
+interface TeacherChatContextType {
 	// UI State
 	isChatWindowOpen: boolean
 	setIsChatWindowOpen: (open: boolean) => void
@@ -22,7 +16,7 @@ interface ChatContextType {
 	refreshChats: () => void
 
 	// Message Operations
-	sendMessage: (staffId: string, content: string) => Promise<void>
+	sendMessage: (studentId: string, content: string) => Promise<void>
 
 	// Optimistic Updates
 	addOptimisticMessage: (
@@ -37,12 +31,13 @@ interface ChatContextType {
 	) => void
 }
 
-const ChatContext = createContext<ChatContextType | undefined>(undefined)
+const TeacherChatContext = createContext<TeacherChatContextType | undefined>(
+	undefined
+)
 
-export const ChatProvider: React.FC<{
+export const TeacherChatProvider: React.FC<{
 	children: React.ReactNode
-	selectedStudentId?: string
-}> = ({ children, selectedStudentId }) => {
+}> = ({ children }) => {
 	// UI State
 	const [isChatWindowOpen, setIsChatWindowOpen] = useState(false)
 	const [selectedChat, setSelectedChat] = useState<chats | null>(null)
@@ -52,19 +47,16 @@ export const ChatProvider: React.FC<{
 		[key: string]: chat_message[]
 	}>({})
 
-	// SWR for chat data
+	// SWR for teacher chat data
 	const {
 		data: rawChats,
 		isLoading,
 		mutate: refreshChats,
-	} = useSWR<chats[]>(
-		selectedStudentId ? `/mobile/chat/${selectedStudentId}` : null,
-		{
-			refreshInterval: 15000,
-			dedupingInterval: 10000,
-			revalidateOnFocus: true,
-		}
-	)
+	} = useSWR<chats[]>("/mobile/chat/teacher", {
+		refreshInterval: 15000,
+		dedupingInterval: 10000,
+		revalidateOnFocus: true,
+	})
 
 	// Merge real data with optimistic messages
 	const chats = rawChats
@@ -118,59 +110,45 @@ export const ChatProvider: React.FC<{
 		[]
 	)
 
-	// Send message operation
+	// Send message operation for teachers
 	const sendMessage = useCallback(
-		async (staffId: string, content: string) => {
-			if (!selectedStudentId) return
-
+		async (studentId: string, content: string) => {
 			// Create optimistic message
 			const optimisticMessage: chat_message = {
 				id: `temp-${Date.now()}-${Math.random()}`,
-				sender_alias: "guardian",
+				sender_alias: "staff",
 				content,
 				created_at: new Date().toISOString(),
 			}
 
+			// For teachers, we use the staff_id from the chat
+			const currentStaffId = selectedChat?.staff_id
+			if (!currentStaffId) return
+
 			// Add optimistic message immediately
-			addOptimisticMessage(staffId, selectedStudentId, optimisticMessage)
+			addOptimisticMessage(currentStaffId, studentId, optimisticMessage)
 
 			try {
-				// Send message to server
-				const res = await fetcher(`/mobile/chat/${selectedStudentId}`, {
+				// Send message to server - teacher endpoint
+				await fetcher(`/mobile/chat/teacher`, {
 					method: "POST",
-					body: JSON.stringify({ content, staff_id: staffId }),
+					body: JSON.stringify({ student_id: studentId, content }),
 				})
 
-				console.log({ res })
-
-				// Refresh to get real data - SWR will merge the real data seamlessly
+				// Refresh to get real data
 				refreshChats()
 			} catch (error) {
 				// Remove optimistic message on error
-				removeOptimisticMessage(
-					staffId,
-					selectedStudentId,
-					optimisticMessage.id
-				)
+				removeOptimisticMessage(currentStaffId, studentId, optimisticMessage.id)
 				console.error("Failed to send message:", error)
 				throw error
 			}
 		},
-		[
-			selectedStudentId,
-			addOptimisticMessage,
-			removeOptimisticMessage,
-			refreshChats,
-		]
+		[selectedChat, addOptimisticMessage, removeOptimisticMessage, refreshChats]
 	)
 
-	// Clean up optimistic messages when selected student changes
-	useEffect(() => {
-		setOptimisticMessages({})
-	}, [selectedStudentId])
-
 	return (
-		<ChatContext.Provider
+		<TeacherChatContext.Provider
 			value={{
 				// UI State
 				isChatWindowOpen,
@@ -192,14 +170,16 @@ export const ChatProvider: React.FC<{
 			}}
 		>
 			{children}
-		</ChatContext.Provider>
+		</TeacherChatContext.Provider>
 	)
 }
 
-export const useChatContext = () => {
-	const context = useContext(ChatContext)
+export const useTeacherChatContext = () => {
+	const context = useContext(TeacherChatContext)
 	if (context === undefined) {
-		throw new Error("useChatContext must be used within a ChatProvider")
+		throw new Error(
+			"useTeacherChatContext must be used within a TeacherChatProvider"
+		)
 	}
 	return context
 }

@@ -5,28 +5,33 @@ import { chats } from "../../types/chat"
 import { Avatar } from "./Avatar"
 import { UnreadBadge } from "./UnreadBadge"
 
-interface ChatroomItemProps {
+interface TeacherChatroomItemProps {
 	item: chats
 	onPress: () => void
 }
 
-export const ChatroomItem: React.FC<ChatroomItemProps> = ({ item, onPress }) => {
+export const TeacherChatroomItem: React.FC<TeacherChatroomItemProps> = ({ item, onPress }) => {
 	const lastMessage = item.messages[item.messages.length - 1]
+
+	// For teachers, count unread messages from guardians (parents)
 	const unreadCount = item.messages.filter(
-		(message) => message.sender_alias === "staff" && message.read_at === null
+		(message) => message.sender_alias === "guardian" && message.read_at === null
 	).length
+
+	// Use actual student name from the chat data (userInfo now contains student info for teachers)
+	const studentDisplayName = item.userInfo.full_name
 
 	return (
 		<TouchableOpacity style={styles.chatroomItem} onPress={onPress}>
 			<View style={styles.avatarContainer}>
 				<Avatar
-					name={item.userInfo.full_name}
+					name={studentDisplayName}
 					size="large"
 					variant="primary"
 				/>
 			</View>
 			<View style={styles.chatroomContent}>
-				<Text style={styles.staffName}>{item.userInfo.full_name}</Text>
+				<Text style={styles.studentName}>{studentDisplayName}</Text>
 				<View style={styles.lastMessageContainer}>
 					<UnreadBadge count={unreadCount} />
 					<Text style={styles.lastMessage} numberOfLines={1}>
@@ -55,7 +60,7 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 	},
-	staffName: {
+	studentName: {
 		fontFamily: theme.typography.family.bold,
 		fontSize: theme.typography.size.sm,
 		color: theme.colors.text,

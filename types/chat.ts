@@ -1,10 +1,12 @@
-import { user } from "./user"
 
 export interface chats {
   staff_id: string
   student_id: string
   role: "admin" | "teacher"
-  staff: user
+  userInfo: {
+    id: string
+    full_name: string
+  }
   messages: chat_message[]
 }
 

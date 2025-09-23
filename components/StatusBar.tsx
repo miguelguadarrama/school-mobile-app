@@ -51,29 +51,29 @@ const StatusBar: React.FC = () => {
 							/>
 						</>
 					)}
-					{!is_guardian && <Text style={styles.name}>Docente</Text>}
+					{!is_guardian && (
+						<View>
+							<Text style={styles.name}>Docente</Text>
+						</View>
+					)}
 				</TouchableOpacity>
 			</View>
 
 			<Modal visible={modalVisible} animationType="fade" transparent={true}>
 				<View style={styles.modalContainer}>
 					<View style={styles.modalContent}>
+						<TouchableOpacity style={styles.editButton} onPress={toggleModal}>
+							<Ionicons
+								name="close-outline"
+								size={24}
+								color={theme.colors.muted}
+							/>
+						</TouchableOpacity>
 						{is_guardian && (
 							<>
 								<Text style={styles.modalName}>
 									{displayName(selectedStudent!)}
 								</Text>
-
-								<TouchableOpacity
-									style={styles.editButton}
-									onPress={toggleModal}
-								>
-									<Ionicons
-										name="close-outline"
-										size={24}
-										color={theme.colors.muted}
-									/>
-								</TouchableOpacity>
 
 								{students.length > 1 && (
 									<>
