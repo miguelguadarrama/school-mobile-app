@@ -2,18 +2,15 @@ import { Ionicons } from "@expo/vector-icons"
 import React, { useContext, useEffect, useState } from "react"
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import AppContext from "../contexts/AppContext"
-import { useAuth } from "../contexts/AuthContext"
 import { displayName } from "../helpers/students"
 import { theme } from "../helpers/theme"
 import LogoutButton from "./common/LogoutButton"
 import StudentPhoto from "./ui/studentPhoto"
 
 const StatusBar: React.FC = () => {
-	const { logout } = useAuth()
-	const { students, selectedStudent, setSelectedStudent } =
+	const { roles, students, selectedStudent, setSelectedStudent } =
 		useContext(AppContext)!
 	const [modalVisible, setModalVisible] = useState(false)
-	const [isLoggingOut, setIsLoggingOut] = useState(false)
 
 	useEffect(() => {
 		if (selectedStudent === null && students.length) {
@@ -25,19 +22,7 @@ const StatusBar: React.FC = () => {
 		setModalVisible(!modalVisible)
 	}
 
-	const handleLogout = async () => {
-		setIsLoggingOut(true)
-		try {
-			await logout()
-		} catch (error) {
-			console.error("Logout error:", error)
-			setIsLoggingOut(false)
-		}
-	}
-
-	if (!selectedStudent) {
-		return null
-	}
+	const is_guardian = roles.includes("guardian") && selectedStudent
 
 	//const gender = selectedStudent.gender_alias === "gender_male" ? "boy" : "girl"
 
@@ -45,55 +30,74 @@ const StatusBar: React.FC = () => {
 		<>
 			<View style={styles.container}>
 				<TouchableOpacity onPress={toggleModal} style={styles.profileContainer}>
-					<StudentPhoto student={selectedStudent} style={styles.profileImage} />
-					<View>
-						<Text style={styles.name}>{displayName(selectedStudent)}</Text>
-						<Text style={styles.classroom}>
-							{selectedStudent.academic_year_classroom_students?.[0]?.classrooms
-								?.name || ""}
-						</Text>
-					</View>
-					<Ionicons
-						name="chevron-down"
-						size={18}
-						color={theme.colors.muted}
-						style={styles.chevronDown}
-					/>
+					{is_guardian && (
+						<>
+							<StudentPhoto
+								student={selectedStudent!}
+								style={styles.profileImage}
+							/>
+							<View>
+								<Text style={styles.name}>{displayName(selectedStudent!)}</Text>
+								<Text style={styles.classroom}>
+									{selectedStudent!.academic_year_classroom_students?.[0]
+										?.classrooms?.name || ""}
+								</Text>
+							</View>
+							<Ionicons
+								name="chevron-down"
+								size={18}
+								color={theme.colors.muted}
+								style={styles.chevronDown}
+							/>
+						</>
+					)}
+					{!is_guardian && <Text style={styles.name}>Docente</Text>}
 				</TouchableOpacity>
 			</View>
 
 			<Modal visible={modalVisible} animationType="fade" transparent={true}>
 				<View style={styles.modalContainer}>
 					<View style={styles.modalContent}>
-						<StudentPhoto student={selectedStudent} style={styles.modalImage} />
-
-						<Text style={styles.modalName}>{displayName(selectedStudent)}</Text>
-
-						<TouchableOpacity style={styles.editButton} onPress={toggleModal}>
-							<Ionicons
-								name="close-outline"
-								size={24}
-								color={theme.colors.muted}
-							/>
-						</TouchableOpacity>
-
-						{students.length > 1 && (
+						{is_guardian && (
 							<>
-								<Text style={styles.sectionTitle}>Switch Profile</Text>
-								{students.map((s) => (
-									<TouchableOpacity
-										style={styles.profileOption}
-										key={s.id}
-										onPress={() => {
-											setSelectedStudent(s)
-											toggleModal()
-										}}
-									>
-										<Text style={styles.profileOptionText}>
-											{displayName(s)}
-										</Text>
-									</TouchableOpacity>
-								))}
+								<Text style={styles.modalName}>
+									{displayName(selectedStudent!)}
+								</Text>
+
+								<TouchableOpacity
+									style={styles.editButton}
+									onPress={toggleModal}
+								>
+									<Ionicons
+										name="close-outline"
+										size={24}
+										color={theme.colors.muted}
+									/>
+								</TouchableOpacity>
+
+								{students.length > 1 && (
+									<>
+										<StudentPhoto
+											student={selectedStudent!}
+											style={styles.modalImage}
+										/>
+										<Text style={styles.sectionTitle}>Switch Profile</Text>
+										{students.map((s) => (
+											<TouchableOpacity
+												style={styles.profileOption}
+												key={s.id}
+												onPress={() => {
+													setSelectedStudent(s)
+													toggleModal()
+												}}
+											>
+												<Text style={styles.profileOptionText}>
+													{displayName(s)}
+												</Text>
+											</TouchableOpacity>
+										))}
+									</>
+								)}
 							</>
 						)}
 
