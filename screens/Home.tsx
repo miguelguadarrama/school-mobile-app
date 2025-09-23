@@ -11,11 +11,15 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import StatusBar from "../components/StatusBar"
 import CommunicationCard from "../components/home/communication"
 import DayInfoCard from "../components/home/dayInfo"
+import AppButton from "../components/ui/button"
 import AppContext from "../contexts/AppContext"
 import { theme } from "../helpers/theme"
 
 export default function HomeScreen() {
-	const { refreshAppData, isDataLoading } = useContext(AppContext)!
+	const { refreshAppData, isDataLoading, roles } = useContext(AppContext)!
+
+	const is_guardian = roles.includes("guardian")
+	const is_teacher = roles.includes("staff")
 
 	return (
 		<>
@@ -47,25 +51,32 @@ export default function HomeScreen() {
 						</Text>
 					</View>
 
-					{/* Day Information Card */}
-					<View style={styles.cardContainer}>
-						<DayInfoCard />
-					</View>
+					{is_guardian && (
+						<>
+							{/* Day Information Card */}
+							<View style={styles.cardContainer}>
+								<DayInfoCard />
+							</View>
 
-					{/* Communication Recap */}
-					<View style={styles.cardContainer}>
-						<CommunicationCard />
-					</View>
+							{/* Communication Recap */}
+							<View style={styles.cardContainer}>
+								<CommunicationCard />
+							</View>
+						</>
+					)}
 
-					{/* Calendar & Events */}
-					<View style={styles.cardContainer}>
-						{/* CalendarCard component will go here */}
-					</View>
-
-					{/* Today's Events */}
-					<View style={styles.cardContainer}>
-						{/* TodayEventsCard component will go here */}
-					</View>
+					{is_teacher && (
+						<View style={styles.cardContainer}>
+							<Text
+								style={{ ...styles.schoolName, marginBottom: theme.spacing.sm }}
+							>
+								Bienvenido, Docente
+							</Text>
+							<AppButton variant="primary" onPress={() => {}}>
+								Panel de Docente
+							</AppButton>
+						</View>
+					)}
 
 					{/* Bottom spacing for better scroll experience */}
 					<View style={styles.bottomSpacing} />

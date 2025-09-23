@@ -23,14 +23,16 @@ import PagerView, {
 	PagerViewOnPageSelectedEvent,
 } from "react-native-pager-view"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { TabContext } from "../contexts/TabContext"
+import AppContext from "../contexts/AppContext"
 import { useChatContext } from "../contexts/ChatContext"
+import { TabContext } from "../contexts/TabContext"
 import { theme } from "../helpers/theme"
 import AnnouncementsScreen from "../screens/Announcements"
 import HomeScreen from "../screens/Home"
 import MessagingScreen from "../screens/Messaging"
 import OptionsScreen from "../screens/Options"
 import SocialScreen from "../screens/social/Stack"
+import TeacherMessagingScreen from "../screens/teacher/messaging"
 
 const Tab = createBottomTabNavigator()
 const { width: screenWidth } = Dimensions.get("window")
@@ -55,8 +57,17 @@ const tabScreens: TabScreen[] = [
 	{ name: "Opciones", component: OptionsScreen },
 ]
 
+const teacherTabScreens: TabScreen[] = [
+	{ name: "Anuncios", component: AnnouncementsScreen },
+	{ name: "Social", component: SocialScreen },
+	{ name: "Inicio", component: HomeScreen },
+	{ name: "Mensajería", component: TeacherMessagingScreen },
+	{ name: "Opciones", component: OptionsScreen },
+]
+
 // Custom wrapper component that handles the swipe functionality
 function SwipeableTabContent(): JSX.Element {
+	const { roles } = useContext(AppContext)!
 	const pagerRef = useRef<PagerView>(null)
 	const [currentIndex, setCurrentIndex] = useState<number>(2) // Start with Home (index 2)
 	const [isPhotoViewerActive, setIsPhotoViewerActive] = useState<boolean>(false)
@@ -148,6 +159,11 @@ function SwipeableTabContent(): JSX.Element {
 		[currentIndex]
 	)
 
+	const appScreens =
+		roles.includes("staff") && !roles.includes("guardian")
+			? teacherTabScreens
+			: tabScreens
+
 	return (
 		<TabContext.Provider
 			value={{
@@ -170,7 +186,7 @@ function SwipeableTabContent(): JSX.Element {
 					scrollEnabled={!isPhotoViewerActive && !isChatWindowOpen} // Disable scrolling when PhotoViewer or ChatWindow is active
 					pageMargin={0}
 				>
-					{tabScreens
+					{appScreens
 						.filter((k) => !k.disabled)
 						.map((screen, index) => (
 							<View key={screen.name} style={styles.page}>
