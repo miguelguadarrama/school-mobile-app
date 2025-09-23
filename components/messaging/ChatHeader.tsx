@@ -26,7 +26,9 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 					/>
 				</TouchableOpacity>
 				<View style={styles.headerInfo}>
-					<Text style={styles.staffNameHeader}>{staffName}</Text>
+					<Text style={styles.staffNameHeader} numberOfLines={1} ellipsizeMode="tail">
+						{staffName}
+					</Text>
 					<Text style={styles.roleHeader}>
 						{role === "admin" ? "Administración" : role === "teacher" ? "Profesor" : "Estudiante"}
 					</Text>
@@ -54,6 +56,7 @@ const styles = StyleSheet.create({
 	},
 	headerInfo: {
 		flex: 1,
+		paddingRight: theme.spacing.md,
 	},
 	staffNameHeader: {
 		fontFamily: theme.typography.family.bold,
