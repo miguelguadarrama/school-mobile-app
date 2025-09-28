@@ -8,7 +8,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import useSWR from "swr"
 import SchoolCard from "../../components/SchoolCard"
 import { useTeacherChatContext } from "../../contexts/TeacherChatContext"
@@ -34,6 +34,7 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 	student,
 	onBack,
 }) => {
+	const insets = useSafeAreaInsets()
 	const { data: studentProfile, isLoading } = useSWR<StudentProfileData>(
 		`/mobile/students/${student.id}`
 	)
@@ -207,7 +208,7 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 			{/* Content */}
 			<ScrollView
 				style={styles.content}
-				contentContainerStyle={styles.contentContainer}
+				contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + theme.spacing.lg }]}
 				showsVerticalScrollIndicator={false}
 			>
 				{/* Avatar Section */}
