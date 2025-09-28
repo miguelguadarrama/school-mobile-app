@@ -1,18 +1,18 @@
-import React, { useContext, useEffect, useMemo, useState } from "react"
-import { BackHandler, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
+import React, { useContext, useEffect, useState } from "react"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import useSWR from "swr"
-import { Ionicons } from "@expo/vector-icons"
 import BlogPostList from "../components/blog"
 import AppContext from "../contexts/AppContext"
 import { TabContext } from "../contexts/TabContext"
 import { theme } from "../helpers/theme"
 import { SocialPostModal } from "./teacher/SocialPostModal"
 
-
 export default function SocialScreen() {
 	const { selectedStudent, roles } = useContext(AppContext)!
-	const { isSocialPostModalActive, setIsSocialPostModalActive } = useContext(TabContext)
+	const { isSocialPostModalActive, setIsSocialPostModalActive } =
+		useContext(TabContext)
 	const is_teacher = roles.includes("staff")
 	const [classroom, setClassroom] = useState<{
 		id: string
@@ -26,18 +26,12 @@ export default function SocialScreen() {
 			} | null
 		)
 	}, [selectedStudent])
-	const key = useMemo(
-		() => (classroom?.id ? `/mobile/posts/classroom/${classroom.id}` : null),
-		[classroom]
-	)
-	const { data, isLoading, mutate } = useSWR(key)
+
+	const { data, isLoading, mutate } = useSWR(`/mobile/posts/classroom`)
 
 	// Handle refresh action
 	const handleRefresh = async () => {
-		if (key) {
-			// Trigger a revalidation of the data
-			await mutate()
-		}
+		await mutate()
 	}
 
 	return (
@@ -51,11 +45,7 @@ export default function SocialScreen() {
 							onPress={() => setIsSocialPostModalActive(true)}
 							activeOpacity={0.7}
 						>
-							<Ionicons
-								name="add"
-								size={20}
-								color={theme.colors.white}
-							/>
+							<Ionicons name="add" size={20} color={theme.colors.white} />
 							<Text style={styles.createPostButtonText}>Publicar</Text>
 						</TouchableOpacity>
 					)}

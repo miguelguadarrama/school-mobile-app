@@ -92,6 +92,110 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 		)
 	}
 
+	const requestUploadUrl = async () => {
+		if (!post?.id) return false
+
+		// Filter only new media files (without id)
+		const newMediaFiles = mediaFiles.filter((file) => !file.id)
+		if (newMediaFiles.length === 0) return []
+
+		// use this function to request upload URLs
+		const response = await fetcher(
+			`/mobile/posts/classroom/${classroomId}/sas`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					post_id: post?.id,
+					files: newMediaFiles.map((file) => ({
+						type: file.type,
+						name: file.uri.split("/").pop() || "image.jpg", // Extract filename from URI
+					})),
+				}),
+			}
+		)
+		if (!response || !Array.isArray(response)) {
+			throw new Error("Invalid response from server")
+		}
+		return response as { file: string; sasUrl: string }[]
+	}
+
+	const uploadFileToSas = async (
+		fileUri: string,
+		sasUrl: string
+	): Promise<boolean> => {
+		//console.log("Uploading file to SAS URL:", { fileUri, sasUrl })
+		try {
+			// Read file as blob
+			const response = await fetch(fileUri)
+			const blob = await response.blob()
+
+			// Upload to SAS URL
+			const uploadResponse = await fetch(sasUrl, {
+				method: "PUT",
+				body: blob,
+				headers: {
+					"x-ms-blob-type": "BlockBlob",
+				},
+			})
+
+			return uploadResponse.ok
+		} catch (error) {
+			console.error("Error uploading file:", error)
+			return false
+		}
+	}
+
+	const savePostWithMedia = async (
+		uploadedFiles: { file: string; sasUrl: string }[]
+	) => {
+		if (!post?.id) {
+			throw new Error("Post ID is required to save post with media")
+		}
+		// Create media array with both existing and new media
+		const existingMedia = mediaFiles
+			.filter((file) => file.id)
+			.map((file) => ({
+				id: file.id!,
+				file_url: file.uri,
+				caption: file.caption || "",
+			}))
+
+		const newMedia = uploadedFiles.map((uploadedFile) => {
+			const originalFile = mediaFiles.find(
+				(file) => !file.id && file.uri.split("/").pop() === uploadedFile.file
+			)
+			return {
+				file_url: uploadedFile.sasUrl.split("?")[0], // Remove SAS token from URL
+				caption: originalFile?.caption || "",
+			}
+		})
+
+		const allMedia = [...existingMedia, ...newMedia]
+		console.log({ allMedia })
+
+		// Save post with media
+		const response = await fetcher(
+			`/mobile/teacher/${classroomId}/posts/${post.id}`,
+			{
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					title: title.trim(),
+					content: content.trim(),
+					published,
+					media: allMedia,
+				}),
+			}
+		)
+
+		return response
+	}
+
 	const handleCreateDraft = async () => {
 		if (!title.trim() || !content.trim()) {
 			// TODO: Show validation error
@@ -143,22 +247,65 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 		}
 	}
 
-	const handleSave = () => {
+	const handleSave = async () => {
 		if (!title.trim() || !content.trim()) {
 			// TODO: Show validation error
 			return
 		}
 
 		setStatus("busy")
-		// Note: classroomId will be used when implementing the API call
-		console.log("Saving to classroom:", classroomId)
-		onSave({
-			title: title.trim(),
-			content: content.trim(),
-			published,
-			mediaFiles,
-		})
-		setStatus("idle")
+
+		try {
+			// Check if there are new media files to upload
+			const newMediaFiles = mediaFiles.filter((file) => !file.id)
+
+			if (newMediaFiles.length > 0) {
+				// Step 1: Request upload URLs for new media files
+				const uploadUrls = await requestUploadUrl()
+				if (!uploadUrls) {
+					throw new Error("Failed to get upload URLs")
+				}
+
+				console.log({ uploadUrls })
+
+				// Step 2: Upload each file to its SAS URL
+				const uploadPromises = uploadUrls.map(async (urlData) => {
+					const mediaFile = newMediaFiles.find(
+						(file) => file.uri.split("/").pop() === urlData.file
+					)
+					if (!mediaFile) {
+						throw new Error(`Media file not found for ${urlData.file}`)
+					}
+
+					const success = await uploadFileToSas(mediaFile.uri, urlData.sasUrl)
+					if (!success) {
+						throw new Error(`Failed to upload ${urlData.file}`)
+					}
+					return urlData
+				})
+
+				const uploadedFiles = await Promise.all(uploadPromises)
+
+				// Step 3: Save post with media array
+				await savePostWithMedia(uploadedFiles)
+			} else {
+				// No new media files, just update the post
+				await savePostWithMedia([])
+			}
+
+			// Notify parent component
+			onSave({
+				title: title.trim(),
+				content: content.trim(),
+				published,
+				mediaFiles,
+			})
+		} catch (error) {
+			console.error("Error saving post:", error)
+			// TODO: Show error message to user
+		} finally {
+			setStatus("idle")
+		}
 	}
 
 	const isBusy = status === "busy"
