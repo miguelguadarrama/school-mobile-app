@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons"
+import * as ImagePicker from "expo-image-picker"
 import React, { useState } from "react"
 import {
 	Alert,
@@ -25,47 +26,49 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 	const [captionText, setCaptionText] = useState("")
 
 	const handleAddMedia = () => {
-		// TODO: Implement image/video picker
-		Alert.alert(
-			"Agregar Multimedia",
-			"Selecciona el tipo de archivo",
-			[
-				{
-					text: "Cancelar",
-					style: "cancel",
-				},
-				{
-					text: "Foto",
-					onPress: () => handleImagePicker(),
-				},
-				{
-					text: "Video",
-					onPress: () => handleVideoPicker(),
-				},
-			]
-		)
+		handleImagePicker()
 	}
 
-	const handleImagePicker = () => {
-		// TODO: Implement image picker using expo-image-picker
-		// For now, add a placeholder
-		const newFile: MediaFile = {
-			uri: "https://via.placeholder.com/300x200.png?text=Nueva+Imagen",
-			type: "image",
-			caption: "",
-		}
-		onMediaFilesChange([...mediaFiles, newFile])
-	}
+	const handleImagePicker = async () => {
+		try {
+			// Request gallery permissions
+			const permissionResult =
+				await ImagePicker.requestMediaLibraryPermissionsAsync()
 
-	const handleVideoPicker = () => {
-		// TODO: Implement video picker using expo-image-picker
-		// For now, add a placeholder
-		const newFile: MediaFile = {
-			uri: "https://via.placeholder.com/300x200.png?text=Nuevo+Video",
-			type: "video",
-			caption: "",
+			if (!permissionResult.granted) {
+				Alert.alert(
+					"Permisos Requeridos",
+					"Necesitamos permisos para acceder a la galería de fotos",
+					[{ text: "OK" }]
+				)
+				return
+			}
+
+			// Launch gallery picker
+			const result = await ImagePicker.launchImageLibraryAsync({
+				mediaTypes: "images",
+				allowsEditing: false, // Optional cropping
+				quality: 0.8,
+				allowsMultipleSelection: true,
+				selectionLimit: 30 - mediaFiles.length, // Limit to 5 total files
+			})
+
+			if (!result.canceled && result.assets && result.assets.length > 0) {
+				const newFiles: MediaFile[] = result.assets.map((asset) => ({
+					uri: asset.uri,
+					type: "image",
+					caption: "",
+				}))
+				onMediaFilesChange([...mediaFiles, ...newFiles])
+			}
+		} catch (error) {
+			console.error("Error picking image:", error)
+			Alert.alert(
+				"Error",
+				"No se pudo seleccionar la imagen. Inténtalo de nuevo.",
+				[{ text: "OK" }]
+			)
 		}
-		onMediaFilesChange([...mediaFiles, newFile])
 	}
 
 	const handleRemoveMedia = (index: number) => {
@@ -123,15 +126,6 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 								style={styles.mediaImage}
 								resizeMode="cover"
 							/>
-							{file.type === "video" && (
-								<View style={styles.videoOverlay}>
-									<Ionicons
-										name="play-circle"
-										size={32}
-										color={theme.colors.white}
-									/>
-								</View>
-							)}
 							<TouchableOpacity
 								style={styles.removeButton}
 								onPress={() => handleRemoveMedia(index)}
@@ -201,19 +195,19 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 				))}
 
 				{/* Add Media Button */}
-				<TouchableOpacity style={styles.addMediaButton} onPress={handleAddMedia}>
-					<Ionicons
-						name="add"
-						size={32}
-						color={theme.colors.primary}
-					/>
-					<Text style={styles.addMediaText}>Agregar Archivo</Text>
+				<TouchableOpacity
+					style={styles.addMediaButton}
+					onPress={handleAddMedia}
+				>
+					<Ionicons name="add" size={32} color={theme.colors.primary} />
+					<Text style={styles.addMediaText}>Agregar Fotos</Text>
 				</TouchableOpacity>
 			</View>
 
 			{mediaFiles.length > 0 && (
 				<Text style={styles.mediaInfo}>
-					{mediaFiles.length} archivo{mediaFiles.length > 1 ? "s" : ""} agregado{mediaFiles.length > 1 ? "s" : ""}
+					{mediaFiles.length} foto{mediaFiles.length > 1 ? "s" : ""} agregada
+					{mediaFiles.length > 1 ? "s" : ""}
 				</Text>
 			)}
 		</View>
@@ -244,16 +238,6 @@ const styles = StyleSheet.create({
 	mediaImage: {
 		width: "100%",
 		height: 120,
-	},
-	videoOverlay: {
-		position: "absolute",
-		top: 0,
-		left: 0,
-		right: 0,
-		bottom: 0,
-		justifyContent: "center",
-		alignItems: "center",
-		backgroundColor: "rgba(0, 0, 0, 0.3)",
 	},
 	removeButton: {
 		position: "absolute",
