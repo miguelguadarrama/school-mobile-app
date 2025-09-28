@@ -26,7 +26,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import AppContext from "../contexts/AppContext"
 import { useChatContext } from "../contexts/ChatContext"
 import { TabContext } from "../contexts/TabContext"
-import { TeacherChatProvider } from "../contexts/TeacherChatContext"
+import { TeacherChatProvider, useTeacherChatContext } from "../contexts/TeacherChatContext"
 import { theme } from "../helpers/theme"
 import AnnouncementsScreen from "../screens/Announcements"
 import HomeScreen from "../screens/Home"
@@ -36,12 +36,7 @@ import SocialScreen from "../screens/social/Stack"
 import HomeTeacherScreen from "../screens/teacher/Home"
 import TeacherMessagingScreen from "../screens/teacher/messaging"
 
-// Wrapper component for TeacherMessagingScreen with TeacherChatProvider
-const TeacherMessagingScreenWithProvider = () => (
-	<TeacherChatProvider>
-		<TeacherMessagingScreen />
-	</TeacherChatProvider>
-)
+// Remove the individual wrapper since we'll wrap the entire navigator
 
 const Tab = createBottomTabNavigator()
 const { width: screenWidth } = Dimensions.get("window")
@@ -70,9 +65,15 @@ const teacherTabScreens: TabScreen[] = [
 	{ name: "Anuncios", component: AnnouncementsScreen },
 	{ name: "Social", component: SocialScreen },
 	{ name: "Inicio", component: HomeTeacherScreen },
-	{ name: "Mensajería", component: TeacherMessagingScreenWithProvider },
+	{ name: "Mensajería", component: TeacherMessagingScreen },
 	{ name: "Opciones", component: OptionsScreen },
 ]
+
+// Custom hook to check teacher chat context (now always available)
+const useTeacherChatWindowState = () => {
+	const context = useTeacherChatContext()
+	return context.isChatWindowOpen
+}
 
 // Custom wrapper component that handles the swipe functionality
 function SwipeableTabContent(): JSX.Element {
@@ -83,6 +84,7 @@ function SwipeableTabContent(): JSX.Element {
 	const isSwipingRef = useRef<boolean>(false)
 	const targetIndexRef = useRef<number>(2)
 	const { isChatWindowOpen } = useChatContext()
+	const isTeacherChatWindowOpen = useTeacherChatWindowState()
 
 	// Monitor navigation state to detect PhotoViewer or PhotoGrid
 	const navigationState = useNavigationState((state) => state)
@@ -146,14 +148,15 @@ function SwipeableTabContent(): JSX.Element {
 				index !== currentIndex &&
 				!isSwipingRef.current &&
 				!isPhotoViewerActive &&
-				!isChatWindowOpen
+				!isChatWindowOpen &&
+				!isTeacherChatWindowOpen
 			) {
 				targetIndexRef.current = index
 				setCurrentIndex(index)
 				pagerRef.current?.setPage(index)
 			}
 		},
-		[currentIndex, isPhotoViewerActive, isChatWindowOpen]
+		[currentIndex, isPhotoViewerActive, isChatWindowOpen, isTeacherChatWindowOpen]
 	)
 
 	// Render screens with performance optimization
@@ -192,7 +195,7 @@ function SwipeableTabContent(): JSX.Element {
 					onPageScrollStateChanged={onPageScrollStateChanged}
 					orientation="horizontal"
 					overdrag={false}
-					scrollEnabled={!isPhotoViewerActive && !isChatWindowOpen} // Disable scrolling when PhotoViewer or ChatWindow is active
+					scrollEnabled={!isPhotoViewerActive && !isChatWindowOpen && !isTeacherChatWindowOpen} // Disable scrolling when PhotoViewer or ChatWindow is active
 					pageMargin={0}
 				>
 					{appScreens
@@ -214,6 +217,7 @@ function CustomTabBar(): JSX.Element | null {
 	const { currentIndex, navigateToTab, isPhotoViewerActive } =
 		useContext(TabContext)
 	const { isChatWindowOpen } = useChatContext()
+	const isTeacherChatWindowOpen = useTeacherChatWindowState()
 
 	const getIconName = (
 		routeName: string,
@@ -236,7 +240,7 @@ function CustomTabBar(): JSX.Element | null {
 	}
 
 	// Hide tab bar when PhotoViewer or ChatWindow is active
-	if (isPhotoViewerActive || isChatWindowOpen) {
+	if (isPhotoViewerActive || isChatWindowOpen || isTeacherChatWindowOpen) {
 		return null
 	}
 
@@ -287,23 +291,25 @@ interface TabScreenWrapperProps {
 
 export default function BottomTabNavigator(): JSX.Element {
 	return (
-		<Tab.Navigator
-			screenOptions={({ route }) => {
-				// Get the currently focused route name
-				const routeName = getFocusedRouteNameFromRoute(route)
+		<TeacherChatProvider>
+			<Tab.Navigator
+				screenOptions={({ route }) => {
+					// Get the currently focused route name
+					const routeName = getFocusedRouteNameFromRoute(route)
 
-				return {
-					headerShown: false,
-					tabBarStyle: { display: "none" }, // Hide default tab bar
-				}
-			}}
-		>
-			<Tab.Screen
-				name="SwipeableTabs"
-				component={SwipeableTabContent}
-				options={{ tabBarStyle: { display: "none" } }}
-			/>
-		</Tab.Navigator>
+					return {
+						headerShown: false,
+						tabBarStyle: { display: "none" }, // Hide default tab bar
+					}
+				}}
+			>
+				<Tab.Screen
+					name="SwipeableTabs"
+					component={SwipeableTabContent}
+					options={{ tabBarStyle: { display: "none" } }}
+				/>
+			</Tab.Navigator>
+		</TeacherChatProvider>
 	)
 }
 
