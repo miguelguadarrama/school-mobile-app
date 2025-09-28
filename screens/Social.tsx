@@ -1,13 +1,19 @@
 import React, { useContext, useEffect, useMemo, useState } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import { BackHandler, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import useSWR from "swr"
+import { Ionicons } from "@expo/vector-icons"
 import BlogPostList from "../components/blog"
 import AppContext from "../contexts/AppContext"
+import { TabContext } from "../contexts/TabContext"
 import { theme } from "../helpers/theme"
+import { SocialPostModal } from "./teacher/SocialPostModal"
+
 
 export default function SocialScreen() {
-	const { selectedStudent } = useContext(AppContext)!
+	const { selectedStudent, roles } = useContext(AppContext)!
+	const { isSocialPostModalActive, setIsSocialPostModalActive } = useContext(TabContext)
+	const is_teacher = roles.includes("staff")
 	const [classroom, setClassroom] = useState<{
 		id: string
 		name: string
@@ -37,7 +43,23 @@ export default function SocialScreen() {
 	return (
 		<View style={styles.container}>
 			<SafeAreaView edges={["top"]} style={styles.headerContainer}>
-				<Text style={styles.heading}>Social</Text>
+				<View style={styles.headerContent}>
+					<Text style={styles.heading}>Social</Text>
+					{is_teacher && (
+						<TouchableOpacity
+							style={styles.createPostButton}
+							onPress={() => setIsSocialPostModalActive(true)}
+							activeOpacity={0.7}
+						>
+							<Ionicons
+								name="add"
+								size={20}
+								color={theme.colors.white}
+							/>
+							<Text style={styles.createPostButtonText}>Publicar</Text>
+						</TouchableOpacity>
+					)}
+				</View>
 			</SafeAreaView>
 			<BlogPostList
 				emptyTitle="No hay publicaciones"
@@ -46,6 +68,11 @@ export default function SocialScreen() {
 				onRefresh={handleRefresh}
 				isRefreshing={isLoading}
 			/>
+
+			{/* Social Post Modal */}
+			{isSocialPostModalActive && (
+				<SocialPostModal onBack={() => setIsSocialPostModalActive(false)} />
+			)}
 		</View>
 	)
 }
@@ -60,13 +87,33 @@ const styles = StyleSheet.create({
 		borderBottomWidth: 1,
 		borderBottomColor: theme.colors.border,
 	},
+	headerContent: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		marginTop: theme.spacing.md,
+		paddingHorizontal: theme.spacing.md,
+		paddingBottom: theme.spacing.sm,
+	},
 	heading: {
 		fontFamily: theme.typography.family.bold,
 		fontSize: theme.typography.size.xl,
 		fontWeight: "bold",
 		color: theme.colors.primary,
-		marginTop: theme.spacing.md,
+		flex: 1,
+	},
+	createPostButton: {
+		backgroundColor: theme.colors.primary,
+		flexDirection: "row",
+		alignItems: "center",
 		paddingHorizontal: theme.spacing.md,
-		paddingBottom: theme.spacing.sm,
+		paddingVertical: theme.spacing.sm,
+		borderRadius: theme.radius.md,
+	},
+	createPostButtonText: {
+		fontSize: theme.typography.size.sm,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.white,
+		marginLeft: theme.spacing.xs,
 	},
 })

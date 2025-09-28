@@ -1,7 +1,7 @@
 export interface BlogPost {
   id: string
   academic_year_id: string
-  classrom_id: string
+  classrom_id?: string
   title: string
   content: string
   author_id: string

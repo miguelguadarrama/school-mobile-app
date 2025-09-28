@@ -9,6 +9,8 @@ interface TabContextType {
 	isPhotoViewerActive: boolean
 	isStudentProfileActive: boolean
 	setIsStudentProfileActive: (active: boolean) => void
+	isSocialPostModalActive: boolean
+	setIsSocialPostModalActive: (active: boolean) => void
 }
 
 // Context to share state between tab navigator and pager
@@ -20,4 +22,6 @@ export const TabContext = createContext<TabContextType>({
 	isPhotoViewerActive: false,
 	isStudentProfileActive: false,
 	setIsStudentProfileActive: () => {},
+	isSocialPostModalActive: false,
+	setIsSocialPostModalActive: () => {},
 })

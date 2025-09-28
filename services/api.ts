@@ -34,7 +34,7 @@ export const fetcher = async (endpoint: string, options: RequestInit = {}) => {
       new Promise((resolve) =>
         setTimeout(() => {
           resolve(true)
-        }, __DEV__ ? 2000 : 0)
+        }, __DEV__ ? 1000 : 0)
       ),
     ])
 
