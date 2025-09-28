@@ -8,7 +8,7 @@ This is a React Native mobile application built with Expo that enables parents a
 
 ### Core Framework
 
-- **Expo 54.0.7** - React Native development platform targeting iOS/Android
+- **Expo 54** - React Native development platform targeting iOS/Android
 - **React Native 0.81.4** with React 19.1.0
 - **TypeScript** - Full TypeScript implementation throughout the codebase
 - **Expo EAS** - Build and deployment system (development, preview, production environments)
@@ -54,25 +54,6 @@ This is a React Native mobile application built with Expo that enables parents a
 - **File System**: Expo FileSystem for local operations
 - **Sharing**: Expo Sharing for content sharing
 
-## Project Structure
-
-### Key Directories
-
-```text
-├── src/
-│   ├── components/     # Reusable UI components
-│   ├── screens/        # Screen components
-│   ├── navigation/     # Navigation configuration
-│   ├── services/       # API services and Auth0 integration
-│   ├── contexts/       # React Context providers
-│   ├── types/          # TypeScript type definitions
-│   ├── utils/          # Utility functions
-│   └── constants/      # App constants and theme
-├── assets/             # Images, fonts, and static assets
-├── app.config.js       # Expo configuration
-└── tailwind.config.js  # Tailwind CSS configuration
-```
-
 ## Backend Integration
 
 - **Separate Repository**: NextJS backend application
@@ -80,31 +61,6 @@ This is a React Native mobile application built with Expo that enables parents a
 - **Azure Blob Storage**: For file and asset storage
 - **Environment Configuration**: Separate configs for dev/preview/production
 - **API Authentication**: Integrated with Auth0 tokens
-
-## Development Workflow
-
-- **Expo Dev Client** - Custom development builds
-- **EAS Build** - Production build system
-- **Environment Management** - Development, preview, and production environments
-- **TypeScript** - Full type safety with custom type definitions
-
-## Key Features
-
-- Secure parent/guardian authentication via Auth0
-- Real-time communication between parents and school staff
-- Rich content support with markdown rendering
-- Cross-platform iOS and Android support
-- Offline-capable with SWR caching
-- File sharing and attachment support
-- Modern, accessible UI with custom design system
-
-## Development Notes
-
-- Uses Expo managed workflow with custom dev client
-- Babel configured for NativeWind JSX transformation
-- Custom authentication flow with automatic token management
-- Swipeable tab navigation with gesture support
-- Comprehensive error handling and loading states
 
 ## Code Style & Patterns
 
@@ -114,21 +70,4 @@ This is a React Native mobile application built with Expo that enables parents a
 - **Service Layer** - Abstracted API calls through service classes
 - **Error Boundaries** - Proper error handling throughout the app
 - **Responsive Design** - Mobile-first design with cross-platform considerations
-
-## Environment Variables
-
-The app uses environment-based configuration for:
-
-- Auth0 domain and client configuration
-- API endpoints for different environments
-- Azure Blob Storage connection strings
-- Feature flags for development/production differences
-
-## Testing Approach
-
-- Component testing with React Native Testing Library
-- API service testing with Jest
-- E2E testing capabilities through Expo
-- Type checking with TypeScript compiler
-
-This architecture provides a scalable, maintainable foundation for parent-school communication with modern React Native development practices.
+- Use SchoolCard component for consistent card UI

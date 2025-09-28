@@ -1,11 +1,32 @@
-import React from "react"
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native"
+import React, { useContext, useState } from "react"
+import { ScrollView, StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
+import ClassroomStudentsList from "../../components/ClassroomStudentsList"
+import JAC_H_Logo from "../../components/logo"
 import StatusBar from "../../components/StatusBar"
-import AppButton from "../../components/ui/button"
+import AppContext from "../../contexts/AppContext"
+import { TabContext } from "../../contexts/TabContext"
 import { theme } from "../../helpers/theme"
+import { StudentData } from "../../types/students"
+import { StudentProfile } from "./StudentProfile"
 
 export default function HomeTeacherScreen() {
+	const { classrooms, selectedDate } = useContext(AppContext)!
+	const { setIsStudentProfileActive } = useContext(TabContext)
+	const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(
+		null
+	)
+
+	const handleStudentPress = (student: StudentData) => {
+		setSelectedStudent(student)
+		setIsStudentProfileActive(true)
+	}
+
+	const handleCloseStudentProfile = () => {
+		setSelectedStudent(null)
+		setIsStudentProfileActive(false)
+	}
+
 	return (
 		<>
 			<SafeAreaView style={styles.statusBarContainer} edges={["top"]}>
@@ -18,31 +39,26 @@ export default function HomeTeacherScreen() {
 					showsVerticalScrollIndicator={false}
 				>
 					{/* School Header */}
-					<View style={styles.schoolHeader}>
-						<Image
-							source={require("../../assets/icon.png")}
-							style={styles.schoolLogo}
-						/>
-						<Text style={styles.schoolName}>
-							{process.env.EXPO_PUBLIC_SCHOOL_NAME}
-						</Text>
-					</View>
+					<JAC_H_Logo />
 
-					<View style={styles.cardContainer}>
-						<Text
-							style={{ ...styles.schoolName, marginBottom: theme.spacing.sm }}
-						>
-							Bienvenido, Docente
-						</Text>
-						<AppButton variant="primary" onPress={() => {}}>
-							Panel de Docente
-						</AppButton>
-					</View>
+					<ClassroomStudentsList
+						classrooms={classrooms}
+						selectedDate={selectedDate}
+						onStudentPress={handleStudentPress}
+					/>
 
 					{/* Bottom spacing for better scroll experience */}
 					<View style={styles.bottomSpacing} />
 				</ScrollView>
 			</View>
+
+			{/* Student Profile Modal */}
+			{selectedStudent && (
+				<StudentProfile
+					student={selectedStudent}
+					onBack={handleCloseStudentProfile}
+				/>
+			)}
 		</>
 	)
 }
@@ -68,22 +84,5 @@ const styles = StyleSheet.create({
 	},
 	bottomSpacing: {
 		height: theme.spacing.xl,
-	},
-	schoolHeader: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		marginBottom: theme.spacing.sm,
-		paddingHorizontal: theme.spacing.sm,
-	},
-	schoolLogo: {
-		width: 48,
-		height: 48,
-		marginRight: theme.spacing.sm,
-	},
-	schoolName: {
-		fontSize: theme.typography.size.lg,
-		fontFamily: theme.typography.family.bold,
-		color: theme.colors.text,
 	},
 })

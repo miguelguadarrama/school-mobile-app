@@ -1,16 +1,10 @@
 import React, { useContext } from "react"
-import {
-	Image,
-	RefreshControl,
-	ScrollView,
-	StyleSheet,
-	Text,
-	View,
-} from "react-native"
+import { RefreshControl, ScrollView, StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import StatusBar from "../components/StatusBar"
 import CommunicationCard from "../components/home/communication"
 import DayInfoCard from "../components/home/dayInfo"
+import JAC_H_Logo from "../components/logo"
 import AppContext from "../contexts/AppContext"
 import { theme } from "../helpers/theme"
 
@@ -37,15 +31,7 @@ export default function HomeScreen() {
 					}
 				>
 					{/* School Header */}
-					<View style={styles.schoolHeader}>
-						<Image
-							source={require("../assets/icon.png")}
-							style={styles.schoolLogo}
-						/>
-						<Text style={styles.schoolName}>
-							{process.env.EXPO_PUBLIC_SCHOOL_NAME}
-						</Text>
-					</View>
+					<JAC_H_Logo />
 
 					{/* Day Information Card */}
 					<View style={styles.cardContainer}>
@@ -86,22 +72,5 @@ const styles = StyleSheet.create({
 	},
 	bottomSpacing: {
 		height: theme.spacing.xl,
-	},
-	schoolHeader: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		marginBottom: theme.spacing.sm,
-		paddingHorizontal: theme.spacing.sm,
-	},
-	schoolLogo: {
-		width: 48,
-		height: 48,
-		marginRight: theme.spacing.sm,
-	},
-	schoolName: {
-		fontSize: theme.typography.size.lg,
-		fontFamily: theme.typography.family.bold,
-		color: theme.colors.text,
 	},
 })

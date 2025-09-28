@@ -1,5 +1,6 @@
 import { createContext } from "react"
 import { attendanceStatus, student } from "../types/students"
+import { ClassroomData } from "../types/teacher"
 
 interface AppContextType {
 	students: student[]
@@ -10,6 +11,7 @@ interface AppContextType {
 	setSelectedDate: (date: Date) => void
 	roles: ("admin" | "guardian" | "staff")[]
 	refreshAppData: () => void
+	classrooms?: ClassroomData[]
 	isDataLoading: boolean
 }
 

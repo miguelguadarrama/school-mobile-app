@@ -7,6 +7,8 @@ interface TabContextType {
 	pagerRef: React.RefObject<PagerView | null> | null
 	navigateToTab: (index: number) => void
 	isPhotoViewerActive: boolean
+	isStudentProfileActive: boolean
+	setIsStudentProfileActive: (active: boolean) => void
 }
 
 // Context to share state between tab navigator and pager
@@ -16,4 +18,6 @@ export const TabContext = createContext<TabContextType>({
 	pagerRef: null,
 	navigateToTab: () => {},
 	isPhotoViewerActive: false,
+	isStudentProfileActive: false,
+	setIsStudentProfileActive: () => {},
 })

@@ -81,6 +81,7 @@ function SwipeableTabContent(): JSX.Element {
 	const pagerRef = useRef<PagerView>(null)
 	const [currentIndex, setCurrentIndex] = useState<number>(2) // Start with Home (index 2)
 	const [isPhotoViewerActive, setIsPhotoViewerActive] = useState<boolean>(false)
+	const [isStudentProfileActive, setIsStudentProfileActive] = useState<boolean>(false)
 	const isSwipingRef = useRef<boolean>(false)
 	const targetIndexRef = useRef<number>(2)
 	const { isChatWindowOpen } = useChatContext()
@@ -149,14 +150,15 @@ function SwipeableTabContent(): JSX.Element {
 				!isSwipingRef.current &&
 				!isPhotoViewerActive &&
 				!isChatWindowOpen &&
-				!isTeacherChatWindowOpen
+				!isTeacherChatWindowOpen &&
+				!isStudentProfileActive
 			) {
 				targetIndexRef.current = index
 				setCurrentIndex(index)
 				pagerRef.current?.setPage(index)
 			}
 		},
-		[currentIndex, isPhotoViewerActive, isChatWindowOpen, isTeacherChatWindowOpen]
+		[currentIndex, isPhotoViewerActive, isChatWindowOpen, isTeacherChatWindowOpen, isStudentProfileActive]
 	)
 
 	// Render screens with performance optimization
@@ -184,6 +186,8 @@ function SwipeableTabContent(): JSX.Element {
 				pagerRef,
 				navigateToTab,
 				isPhotoViewerActive,
+				isStudentProfileActive,
+				setIsStudentProfileActive,
 			}}
 		>
 			<View style={styles.container}>
@@ -195,7 +199,7 @@ function SwipeableTabContent(): JSX.Element {
 					onPageScrollStateChanged={onPageScrollStateChanged}
 					orientation="horizontal"
 					overdrag={false}
-					scrollEnabled={!isPhotoViewerActive && !isChatWindowOpen && !isTeacherChatWindowOpen} // Disable scrolling when PhotoViewer or ChatWindow is active
+					scrollEnabled={!isPhotoViewerActive && !isChatWindowOpen && !isTeacherChatWindowOpen && !isStudentProfileActive} // Disable scrolling when PhotoViewer, ChatWindow, or StudentProfile is active
 					pageMargin={0}
 				>
 					{appScreens
@@ -214,7 +218,7 @@ function SwipeableTabContent(): JSX.Element {
 
 // Custom tab bar component
 function CustomTabBar(): JSX.Element | null {
-	const { currentIndex, navigateToTab, isPhotoViewerActive } =
+	const { currentIndex, navigateToTab, isPhotoViewerActive, isStudentProfileActive } =
 		useContext(TabContext)
 	const { isChatWindowOpen } = useChatContext()
 	const isTeacherChatWindowOpen = useTeacherChatWindowState()
@@ -239,8 +243,8 @@ function CustomTabBar(): JSX.Element | null {
 		}
 	}
 
-	// Hide tab bar when PhotoViewer or ChatWindow is active
-	if (isPhotoViewerActive || isChatWindowOpen || isTeacherChatWindowOpen) {
+	// Hide tab bar when PhotoViewer, ChatWindow, or StudentProfile is active
+	if (isPhotoViewerActive || isChatWindowOpen || isTeacherChatWindowOpen || isStudentProfileActive) {
 		return null
 	}
 
