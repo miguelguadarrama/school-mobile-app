@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons"
+import { ImageManipulator as ExpoImageManipulator, SaveFormat } from "expo-image-manipulator"
 import * as ImagePicker from "expo-image-picker"
 import React, { useState } from "react"
 import {
@@ -24,6 +25,39 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 }) => {
 	const [editingCaption, setEditingCaption] = useState<string | null>(null)
 	const [captionText, setCaptionText] = useState("")
+
+	const processImage = async (uri: string): Promise<string> => {
+		try {
+			// Load the image to read its intrinsic dimensions
+			const originalImage = await ExpoImageManipulator.manipulate(uri).renderAsync()
+
+			const { width, height } = originalImage
+			const maxDimension = 1600
+			const saveOptions = {
+				compress: 0.8,
+				format: SaveFormat.JPEG,
+				base64: false,
+			}
+
+			if (width > maxDimension || height > maxDimension) {
+				const scale = Math.min(maxDimension / width, maxDimension / height)
+				const newWidth = Math.round(width * scale)
+				const newHeight = Math.round(height * scale)
+
+				const resizeContext = ExpoImageManipulator.manipulate(originalImage)
+				resizeContext.resize({ width: newWidth, height: newHeight })
+				const resizedImage = await resizeContext.renderAsync()
+				const result = await resizedImage.saveAsync(saveOptions)
+				return result.uri
+			}
+
+			const result = await originalImage.saveAsync(saveOptions)
+			return result.uri
+		} catch (error) {
+			console.error("Error processing image:", error)
+			return uri
+		}
+	}
 
 	const handleAddMedia = () => {
 		handleImagePicker()
@@ -54,12 +88,31 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 			})
 
 			if (!result.canceled && result.assets && result.assets.length > 0) {
-				const newFiles: MediaFile[] = result.assets.map((asset) => ({
-					uri: asset.uri,
-					type: "image",
-					caption: "",
-				}))
-				onMediaFilesChange([...mediaFiles, ...newFiles])
+				// Process each selected image
+				const processedFiles: MediaFile[] = []
+
+				for (const asset of result.assets) {
+					try {
+						// Process image: resize, compress, convert to JPEG, remove metadata
+						const processedUri = await processImage(asset.uri)
+
+						processedFiles.push({
+							uri: processedUri,
+							type: "image",
+							caption: "",
+						})
+					} catch (error) {
+						console.error("Error processing image:", error)
+						// If processing fails, use original image
+						processedFiles.push({
+							uri: asset.uri,
+							type: "image",
+							caption: "",
+						})
+					}
+				}
+
+				onMediaFilesChange([...mediaFiles, ...processedFiles])
 			}
 		} catch (error) {
 			console.error("Error picking image:", error)
