@@ -183,6 +183,7 @@ export const registerPushToken = async (): Promise<boolean> => {
 
 export const unregisterPushToken = async (): Promise<boolean> => {
   try {
+    const pushToken = await getPushToken()
     const response = await fetcher('/users/push', {
       method: 'DELETE',
       headers: {
@@ -190,6 +191,7 @@ export const unregisterPushToken = async (): Promise<boolean> => {
       },
       body: JSON.stringify({
         deviceId: await getDeviceId(),
+        token: pushToken ? pushToken.token : null,
       }),
     }).catch((error) => {
       if (__DEV__) {
