@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons"
-import React, { useEffect } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import {
 	BackHandler,
 	ScrollView,
@@ -11,9 +11,11 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import useSWR from "swr"
 import SchoolCard from "../../components/SchoolCard"
+import AppContext from "../../contexts/AppContext"
 import { useTeacherChatContext } from "../../contexts/TeacherChatContext"
 import { theme } from "../../helpers/theme"
-import { StudentProfileData } from "../../types/students"
+import { fetcher } from "../../services/api"
+import { StudentProfileData, StudentStatusItems } from "../../types/students"
 import { TeacherChatWindow } from "./TeacherChatWindow"
 
 interface StudentData {
@@ -34,10 +36,258 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 	student,
 	onBack,
 }) => {
+	const { refreshAppData } = useContext(AppContext)!
 	const insets = useSafeAreaInsets()
-	const { data: studentProfile, isLoading } = useSWR<StudentProfileData>(
-		`/mobile/students/${student.id}`
-	)
+	const {
+		data: studentProfile,
+		isLoading,
+		mutate: refreshStudentData,
+	} = useSWR<StudentProfileData>(`/mobile/students/${student.id}`)
+	const { data: status_items, isLoading: isLoadingStatusItems } = useSWR<
+		StudentStatusItems[]
+	>(`/mobile/attendance_status`)
+
+	// Attendance form state
+	const [status, setStatus] = useState<"idle" | "busy">("idle")
+	const [selectedDate, setSelectedDate] = useState(new Date())
+	const [attendanceStatus, setAttendanceStatus] = useState<string>("")
+	const [mealStatus, setMealStatus] = useState<string>("")
+	const [moodStatus, setMoodStatus] = useState<string>("")
+	const [peeStatus, setPeeStatus] = useState<string>("")
+	const [poopStatus, setPoopStatus] = useState<string>("")
+
+	// Track original state to detect changes
+	const [originalAttendanceState, setOriginalAttendanceState] = useState({
+		attendance: "",
+		meal: "",
+		mood: "",
+		pee: "",
+		poop: "",
+	})
+
+	// const getStatusLabel = (status_type: string) => {
+	// 	if (!status_items) return status_type
+
+	// 	const item = status_items.find((s) => s.alias === status_type)
+	// 	return item ? item.description : status_type
+	// }
+
+	// Date navigation functions
+	const formatSelectedDate = (date: Date) => {
+		return date.toLocaleDateString("es-ES", {
+			weekday: "long",
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+		})
+	}
+
+	// Get date range limits (last 7 days, including today)
+	const getDateLimits = () => {
+		const today = new Date()
+		const sevenDaysAgo = new Date()
+		sevenDaysAgo.setDate(today.getDate() - 6) // 6 days ago + today = 7 days
+		return { minDate: sevenDaysAgo, maxDate: today }
+	}
+
+	const { minDate, maxDate } = getDateLimits()
+
+	const navigateDate = (direction: "prev" | "next") => {
+		const newDate = new Date(selectedDate)
+		if (direction === "prev") {
+			newDate.setDate(newDate.getDate() - 1)
+			if (newDate >= minDate) {
+				setSelectedDate(newDate)
+			}
+		} else {
+			newDate.setDate(newDate.getDate() + 1)
+			if (newDate <= maxDate) {
+				setSelectedDate(newDate)
+			}
+		}
+	}
+
+	// Check if navigation buttons should be disabled
+	const isPrevDisabled = selectedDate.toDateString() === minDate.toDateString()
+	const isNextDisabled = selectedDate.toDateString() === maxDate.toDateString()
+
+	// Check if student is marked as absent
+	const isStudentAbsent = () => {
+		if (!status_items) return false
+		const absentOption = status_items.find(
+			(item) =>
+				item.alias.startsWith("attendance_status_") &&
+				item.description.toLowerCase().includes("ausente")
+		)
+		return absentOption ? attendanceStatus === absentOption.alias : false
+	}
+
+	// Get status options by type
+	const getStatusOptions = (statusType: string) => {
+		if (!status_items) return []
+
+		return status_items.filter((item) => {
+			if (statusType === "attendance") {
+				return item.alias.startsWith("attendance_status_")
+			}
+			if (statusType === "meal") {
+				return item.alias.startsWith("meal_status_")
+			}
+			if (statusType === "mood") {
+				return item.alias.startsWith("mood_status_")
+			}
+			if (statusType === "pee") {
+				return item.alias.startsWith("pee_status_")
+			}
+			if (statusType === "poop") {
+				return item.alias.startsWith("poop_status_")
+			}
+			return false
+		})
+	}
+
+	// Get existing attendance data for selected date
+	const getExistingAttendanceForDate = () => {
+		if (
+			!studentProfile?.academic_year_classroom_students?.[0]?.attendance_records
+		) {
+			return {}
+		}
+
+		const selectedDateString = selectedDate.toISOString().split("T")[0]
+		const records =
+			studentProfile.academic_year_classroom_students[0].attendance_records
+
+		const existingData: { [key: string]: string } = {}
+
+		records.forEach((record) => {
+			const recordDateString = record.date.split("T")[0]
+			if (recordDateString === selectedDateString) {
+				switch (record.status_type) {
+					case "attendance_status":
+						existingData.attendance = record.status_value
+						break
+					case "meal_status":
+						existingData.meal = record.status_value
+						break
+					case "mood_status":
+						existingData.mood = record.status_value
+						break
+					case "pee_status":
+						existingData.pee = record.status_value
+						break
+					case "poop_status":
+						existingData.poop = record.status_value
+						break
+				}
+			}
+		})
+
+		return existingData
+	}
+
+	// Load existing data when date changes
+	React.useEffect(() => {
+		const existingData = getExistingAttendanceForDate()
+		const newState = {
+			attendance: existingData.attendance || "",
+			meal: existingData.meal || "",
+			mood: existingData.mood || "",
+			pee: existingData.pee || "",
+			poop: existingData.poop || "",
+		}
+
+		setAttendanceStatus(newState.attendance)
+		setMealStatus(newState.meal)
+		setMoodStatus(newState.mood)
+		setPeeStatus(newState.pee)
+		setPoopStatus(newState.poop)
+
+		// Store original state for comparison
+		setOriginalAttendanceState(newState)
+	}, [selectedDate, studentProfile])
+
+	// Handle attendance status change
+	const handleAttendanceStatusChange = (statusValue: string) => {
+		setAttendanceStatus(statusValue)
+
+		// If student is marked as absent, clear all other statuses
+		if (status_items) {
+			const absentOption = status_items.find(
+				(item) =>
+					item.alias.startsWith("attendance_status_") &&
+					item.description.toLowerCase().includes("ausente")
+			)
+
+			if (absentOption && statusValue === absentOption.alias) {
+				setMealStatus("")
+				setMoodStatus("")
+				setPeeStatus("")
+				setPoopStatus("")
+			}
+		}
+	}
+
+	// Check if there are changes from original state
+	const hasChanges = () => {
+		return (
+			originalAttendanceState.attendance !== attendanceStatus ||
+			originalAttendanceState.meal !== mealStatus ||
+			originalAttendanceState.mood !== moodStatus ||
+			originalAttendanceState.pee !== peeStatus ||
+			originalAttendanceState.poop !== poopStatus
+		)
+	}
+
+	// Save attendance handler (placeholder)
+	const handleSaveAttendance = async () => {
+		if (!hasChanges()) return
+		setStatus("busy")
+
+		const res = await fetcher(`/mobile/students/${student.id}/attendance`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				date: selectedDate,
+				attendance_records: [
+					{
+						status_type: "attendance_status",
+						status_value: attendanceStatus,
+					},
+					{
+						status_type: "meal_status",
+						status_value: mealStatus,
+					},
+					{
+						status_type: "mood_status",
+						status_value: moodStatus,
+					},
+					{
+						status_type: "pee_status",
+						status_value: peeStatus,
+					},
+					{
+						status_type: "poop_status",
+						status_value: poopStatus,
+					},
+				],
+			}),
+		})
+
+		if (!res.success) {
+			if (__DEV__) {
+				console.log({ res })
+				console.error("Failed to save attendance")
+			}
+		}
+
+		refreshStudentData().finally(() => {
+			setStatus("idle")
+		})
+		refreshAppData()
+	}
 
 	const {
 		chats,
@@ -45,7 +295,7 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 		setIsChatWindowOpen,
 		isChatWindowOpen,
 		selectedChat,
-		sendMessage
+		sendMessage,
 	} = useTeacherChatContext()
 
 	const fullName = studentProfile
@@ -84,55 +334,9 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 		}
 	}
 
-	const getStatusLabel = (statusType: string, statusValue: string) => {
-		switch (statusType) {
-			case "attendance_status":
-				switch (statusValue) {
-					case "attendance_status_present":
-						return "Presente"
-					case "attendance_status_absent":
-						return "Ausente"
-					case "attendance_status_late":
-						return "Tarde"
-					default:
-						return statusValue
-				}
-			case "meal_status":
-				switch (statusValue) {
-					case "meal_status_ok":
-						return "Comió bien"
-					case "meal_status_little":
-						return "Comió poco"
-					case "meal_status_no":
-						return "No comió"
-					default:
-						return statusValue
-				}
-			case "mood_status":
-				switch (statusValue) {
-					case "mood_status_happy":
-						return "Feliz"
-					case "mood_status_tired":
-						return "Cansado"
-					case "mood_status_sad":
-						return "Triste"
-					case "mood_status_sick":
-						return "Enfermo"
-					default:
-						return statusValue
-				}
-			case "poop_status":
-				return statusValue === "poop_status_yes" ? "Sí" : "No"
-			case "pee_status":
-				return statusValue === "pee_status_yes" ? "Sí" : "No"
-			default:
-				return statusValue
-		}
-	}
-
 	const handleChatWithGuardian = () => {
 		// Find existing chat for this student
-		const existingChat = chats?.find(chat => chat.student_id === student.id)
+		const existingChat = chats?.find((chat) => chat.student_id === student.id)
 
 		if (existingChat) {
 			// Open existing chat
@@ -208,7 +412,10 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 			{/* Content */}
 			<ScrollView
 				style={styles.content}
-				contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + theme.spacing.lg }]}
+				contentContainerStyle={[
+					styles.contentContainer,
+					{ paddingBottom: insets.bottom + theme.spacing.lg },
+				]}
 				showsVerticalScrollIndicator={false}
 			>
 				{/* Avatar Section */}
@@ -220,7 +427,7 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 					<Text style={styles.subtitle}>Perfil del Estudiante</Text>
 				</View>
 
-				{isLoading ? (
+				{isLoading || isLoadingStatusItems ? (
 					<View style={styles.loadingContainer}>
 						<Text style={styles.loadingText}>
 							Cargando información del estudiante...
@@ -307,57 +514,294 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 							</SchoolCard>
 						)}
 
-						{/* Today's Attendance Records */}
-						{studentProfile.academic_year_classroom_students.length > 0 &&
-							studentProfile.academic_year_classroom_students[0]
-								.attendance_records.length > 0 && (
-								<SchoolCard style={styles.cardSpacing}>
-									<Text style={styles.sectionTitle}>Registros de Hoy</Text>
-									{studentProfile.academic_year_classroom_students[0].attendance_records
-										.filter((record) => {
-											const recordDate = new Date(record.date).toDateString()
-											const today = new Date().toDateString()
-											return recordDate === today
-										})
-										.map((record) => (
-											<View key={record.id} style={styles.attendanceItem}>
-												<View style={styles.attendanceHeader}>
-													<Text style={styles.attendanceType}>
-														{record.status_type === "attendance_status" &&
-															"Asistencia"}
-														{record.status_type === "meal_status" &&
-															"Alimentación"}
-														{record.status_type === "mood_status" &&
-															"Estado de Ánimo"}
-														{record.status_type === "poop_status" &&
-															"Deposición"}
-														{record.status_type === "pee_status" && "Orina"}
+						{/* Attendance Records Form */}
+						<SchoolCard style={styles.cardSpacing}>
+							<Text style={styles.sectionTitle}>Registros de Asistencia</Text>
+
+							{/* Date Navigation */}
+							<View style={styles.dateNavigation}>
+								<TouchableOpacity
+									style={[
+										styles.dateNavButton,
+										isPrevDisabled && styles.dateNavButtonDisabled,
+									]}
+									onPress={() => !isPrevDisabled && navigateDate("prev")}
+									disabled={isPrevDisabled}
+								>
+									<Ionicons
+										name="chevron-back"
+										size={24}
+										color={
+											isPrevDisabled ? theme.colors.muted : theme.colors.primary
+										}
+									/>
+								</TouchableOpacity>
+
+								<Text style={styles.selectedDate}>
+									{formatSelectedDate(selectedDate)}
+								</Text>
+
+								<TouchableOpacity
+									style={[
+										styles.dateNavButton,
+										isNextDisabled && styles.dateNavButtonDisabled,
+									]}
+									onPress={() => !isNextDisabled && navigateDate("next")}
+									disabled={isNextDisabled}
+								>
+									<Ionicons
+										name="chevron-forward"
+										size={24}
+										color={
+											isNextDisabled ? theme.colors.muted : theme.colors.primary
+										}
+									/>
+								</TouchableOpacity>
+							</View>
+
+							{/* Status Selection Items */}
+							<View style={styles.statusContainer}>
+								{/* Asistencia */}
+								<View style={styles.statusItem}>
+									<Text style={styles.statusLabel}>Asistencia</Text>
+									<View style={styles.statusOptions}>
+										{getStatusOptions("attendance")
+											.slice()
+
+											.map((option) => (
+												<TouchableOpacity
+													key={option.alias}
+													style={[
+														styles.statusOption,
+														attendanceStatus === option.alias &&
+															styles.statusOptionSelected,
+													]}
+													onPress={() =>
+														handleAttendanceStatusChange(option.alias)
+													}
+													activeOpacity={1}
+													disabled={status === "busy"}
+												>
+													<Text
+														style={[
+															styles.statusOptionText,
+															attendanceStatus === option.alias &&
+																styles.statusOptionTextSelected,
+														]}
+													>
+														{option.description}
 													</Text>
-													<Text style={styles.attendanceTime}>
-														{new Date(record.created_at).toLocaleTimeString(
-															"es-ES",
-															{
-																hour: "2-digit",
-																minute: "2-digit",
-															}
-														)}
-													</Text>
-												</View>
-												<Text style={styles.attendanceValue}>
-													{getStatusLabel(
-														record.status_type,
-														record.status_value
-													)}
+												</TouchableOpacity>
+											))}
+									</View>
+								</View>
+
+								{/* Alimentación */}
+								<View
+									style={[
+										styles.statusItem,
+										isStudentAbsent() && styles.statusItemDisabled,
+									]}
+								>
+									<Text
+										style={[
+											styles.statusLabel,
+											isStudentAbsent() && styles.statusLabelDisabled,
+										]}
+									>
+										Alimentación
+									</Text>
+									<View style={styles.statusOptions}>
+										{getStatusOptions("meal").map((option) => (
+											<TouchableOpacity
+												key={option.alias}
+												style={[
+													styles.statusOption,
+													mealStatus === option.alias &&
+														styles.statusOptionSelected,
+													isStudentAbsent() && styles.statusOptionDisabled,
+												]}
+												onPress={() =>
+													!isStudentAbsent() && setMealStatus(option.alias)
+												}
+												activeOpacity={1}
+												disabled={isStudentAbsent() || status === "busy"}
+											>
+												<Text
+													style={[
+														styles.statusOptionText,
+														mealStatus === option.alias &&
+															styles.statusOptionTextSelected,
+													]}
+												>
+													{option.description}
 												</Text>
-												{record.reason && (
-													<Text style={styles.attendanceReason}>
-														Motivo: {record.reason}
-													</Text>
-												)}
-											</View>
+											</TouchableOpacity>
 										))}
-								</SchoolCard>
-							)}
+									</View>
+								</View>
+
+								{/* Ánimo */}
+								<View
+									style={[
+										styles.statusItem,
+										isStudentAbsent() && styles.statusItemDisabled,
+									]}
+								>
+									<Text
+										style={[
+											styles.statusLabel,
+											isStudentAbsent() && styles.statusLabelDisabled,
+										]}
+									>
+										Ánimo
+									</Text>
+									<View style={styles.statusOptions}>
+										{getStatusOptions("mood").map((option) => (
+											<TouchableOpacity
+												key={option.alias}
+												style={[
+													styles.statusOption,
+													moodStatus === option.alias &&
+														styles.statusOptionSelected,
+													isStudentAbsent() && styles.statusOptionDisabled,
+												]}
+												onPress={() =>
+													!isStudentAbsent() && setMoodStatus(option.alias)
+												}
+												activeOpacity={1}
+												disabled={isStudentAbsent() || status === "busy"}
+											>
+												<Text
+													style={[
+														styles.statusOptionText,
+														moodStatus === option.alias &&
+															styles.statusOptionTextSelected,
+													]}
+												>
+													{option.description}
+												</Text>
+											</TouchableOpacity>
+										))}
+									</View>
+								</View>
+
+								{/* Orina */}
+								<View
+									style={[
+										styles.statusItem,
+										isStudentAbsent() && styles.statusItemDisabled,
+									]}
+								>
+									<Text
+										style={[
+											styles.statusLabel,
+											isStudentAbsent() && styles.statusLabelDisabled,
+										]}
+									>
+										Orina
+									</Text>
+									<View style={styles.statusOptions}>
+										{getStatusOptions("pee").map((option) => (
+											<TouchableOpacity
+												key={option.alias}
+												style={[
+													styles.statusOption,
+													peeStatus === option.alias &&
+														styles.statusOptionSelected,
+													isStudentAbsent() && styles.statusOptionDisabled,
+												]}
+												onPress={() =>
+													!isStudentAbsent() && setPeeStatus(option.alias)
+												}
+												activeOpacity={1}
+												disabled={isStudentAbsent() || status === "busy"}
+											>
+												<Text
+													style={[
+														styles.statusOptionText,
+														peeStatus === option.alias &&
+															styles.statusOptionTextSelected,
+													]}
+												>
+													{option.description}
+												</Text>
+											</TouchableOpacity>
+										))}
+									</View>
+								</View>
+
+								{/* Heces */}
+								<View
+									style={[
+										styles.statusItem,
+										isStudentAbsent() && styles.statusItemDisabled,
+									]}
+								>
+									<Text
+										style={[
+											styles.statusLabel,
+											isStudentAbsent() && styles.statusLabelDisabled,
+										]}
+									>
+										Heces
+									</Text>
+									<View style={styles.statusOptions}>
+										{getStatusOptions("poop").map((option) => (
+											<TouchableOpacity
+												key={option.alias}
+												style={[
+													styles.statusOption,
+													poopStatus === option.alias &&
+														styles.statusOptionSelected,
+													isStudentAbsent() && styles.statusOptionDisabled,
+												]}
+												onPress={() =>
+													!isStudentAbsent() && setPoopStatus(option.alias)
+												}
+												activeOpacity={1}
+												disabled={isStudentAbsent() || status === "busy"}
+											>
+												<Text
+													style={[
+														styles.statusOptionText,
+														poopStatus === option.alias &&
+															styles.statusOptionTextSelected,
+													]}
+												>
+													{option.description}
+												</Text>
+											</TouchableOpacity>
+										))}
+									</View>
+								</View>
+							</View>
+
+							{/* Save Button */}
+							<TouchableOpacity
+								style={[
+									styles.saveButton,
+									!hasChanges() && styles.saveButtonDisabled,
+								]}
+								onPress={handleSaveAttendance}
+								activeOpacity={0.7}
+								disabled={!hasChanges() || status === "busy"}
+							>
+								<Ionicons
+									name="checkmark"
+									size={20}
+									color={hasChanges() ? theme.colors.white : theme.colors.muted}
+								/>
+								<Text
+									style={[
+										styles.saveButtonText,
+										!hasChanges() && styles.saveButtonTextDisabled,
+									]}
+								>
+									{status === "busy" ? "Guardando..." : "Guardar Registros"}
+								</Text>
+							</TouchableOpacity>
+						</SchoolCard>
 					</>
 				) : (
 					<View style={styles.errorContainer}>
@@ -598,5 +1042,103 @@ const styles = StyleSheet.create({
 		fontFamily: theme.typography.family.bold,
 		color: theme.colors.white,
 		marginLeft: theme.spacing.xs,
+	},
+	// Attendance form styles
+	dateNavigation: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		marginBottom: theme.spacing.lg,
+		paddingHorizontal: theme.spacing.sm,
+	},
+	dateNavButton: {
+		padding: theme.spacing.sm,
+		borderRadius: theme.radius.sm,
+		backgroundColor: theme.colors.surface,
+	},
+	dateNavButtonDisabled: {
+		backgroundColor: theme.colors.background,
+		opacity: 0.5,
+	},
+	selectedDate: {
+		fontSize: theme.typography.size.md,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.text,
+		textAlign: "center",
+		flex: 1,
+		marginHorizontal: theme.spacing.md,
+	},
+	statusContainer: {
+		marginBottom: theme.spacing.lg,
+	},
+	statusItem: {
+		marginBottom: theme.spacing.lg,
+	},
+	statusLabel: {
+		fontSize: theme.typography.size.md,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.text,
+		marginBottom: theme.spacing.sm,
+	},
+	statusOptions: {
+		flexDirection: "row",
+		flexWrap: "wrap",
+		gap: theme.spacing.sm,
+	},
+	statusOption: {
+		paddingHorizontal: theme.spacing.md,
+		paddingVertical: theme.spacing.sm,
+		borderRadius: theme.radius.md,
+		borderWidth: 1,
+		borderColor: theme.colors.border,
+		backgroundColor: theme.colors.surface,
+	},
+	statusOptionSelected: {
+		backgroundColor: theme.colors.primary,
+		borderColor: theme.colors.primary,
+	},
+	statusOptionText: {
+		fontSize: theme.typography.size.sm,
+		fontFamily: theme.typography.family.regular,
+		color: theme.colors.text,
+	},
+	statusOptionTextSelected: {
+		color: theme.colors.white,
+		fontFamily: theme.typography.family.bold,
+	},
+	saveButton: {
+		backgroundColor: theme.colors.primary,
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		paddingVertical: theme.spacing.md,
+		paddingHorizontal: theme.spacing.lg,
+		borderRadius: theme.radius.md,
+		marginTop: theme.spacing.sm,
+	},
+	saveButtonText: {
+		fontSize: theme.typography.size.md,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.white,
+		marginLeft: theme.spacing.xs,
+	},
+	saveButtonDisabled: {
+		backgroundColor: theme.colors.background,
+		borderWidth: 1,
+		borderColor: theme.colors.border,
+	},
+	saveButtonTextDisabled: {
+		color: theme.colors.muted,
+	},
+	statusItemDisabled: {
+		opacity: 0.5,
+	},
+	statusLabelDisabled: {
+		color: theme.colors.muted,
+	},
+	statusOptionDisabled: {
+		backgroundColor: theme.colors.background,
+		borderColor: theme.colors.muted,
+		opacity: 0.5,
 	},
 })
