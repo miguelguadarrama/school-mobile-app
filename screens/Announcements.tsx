@@ -1,28 +1,17 @@
-import React, { useContext } from "react"
+import React from "react"
 import { StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import useSWR from "swr"
 import AnnouncementList from "../components/blog/announcements"
-import AppContext from "../contexts/AppContext"
 import { theme } from "../helpers/theme"
 
 export default function AnnouncementsScreen() {
-	const { students } = useContext(AppContext)!
-	const student = students?.[0]
-	const academic_year =
-		student?.academic_year_classroom_students?.[0]?.classrooms?.academic_years
-			?.id
-	const key = academic_year
-		? `/mobile/posts/announcements/${academic_year}`
-		: null
-	const { data, isLoading, mutate } = useSWR(key)
+	const { data, isLoading, mutate } = useSWR(`/mobile/posts/announcements`)
 
 	// Handle refresh action
 	const handleRefresh = async () => {
-		if (key) {
-			// Trigger a revalidation of the data
-			await mutate()
-		}
+		// Trigger a revalidation of the data
+		await mutate()
 	}
 
 	return (

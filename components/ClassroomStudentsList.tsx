@@ -137,7 +137,8 @@ export default function ClassroomStudentsList({
 											key={index}
 											style={[
 												styles.studentItem,
-												index === sortedStudents.length - 1 && styles.lastStudentItem,
+												index === sortedStudents.length - 1 &&
+													styles.lastStudentItem,
 											]}
 											onPress={() => onStudentPress?.(student)}
 											activeOpacity={0.6}
@@ -185,12 +186,12 @@ const styles = StyleSheet.create({
 		marginBottom: theme.spacing.sm,
 	},
 	studentsContainer: {
-		paddingLeft: theme.spacing.sm,
+		paddingLeft: 0,
 		paddingTop: theme.spacing.xs,
 	},
 	studentItem: {
 		paddingVertical: theme.spacing.sm,
-		paddingHorizontal: theme.spacing.xs,
+		paddingHorizontal: 0,
 		borderBottomWidth: 1,
 		borderBottomColor: theme.colors["border-subtle"],
 	},
