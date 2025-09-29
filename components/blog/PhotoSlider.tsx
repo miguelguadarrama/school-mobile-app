@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, memo, useCallback } from "react"
 import {
 	Image,
 	ScrollView,
@@ -15,9 +15,20 @@ interface PhotoSliderProps {
 	onPress: () => void
 }
 
-const PhotoSlider: React.FC<PhotoSliderProps> = ({ media, onPress }) => {
+const PhotoSlider: React.FC<PhotoSliderProps> = memo(({ media, onPress }) => {
 	const [currentIndex, setCurrentIndex] = useState(0)
 	const [containerWidth, setContainerWidth] = useState(0)
+
+	const handleScroll = useCallback((event: any) => {
+		const { contentOffset, layoutMeasurement } = event.nativeEvent
+		const index = Math.round(contentOffset.x / layoutMeasurement.width)
+		setCurrentIndex(index)
+	}, [])
+
+	const handleContainerLayout = useCallback((event: any) => {
+		const { width } = event.nativeEvent.layout
+		setContainerWidth(width)
+	}, [])
 
 	if (!media || media.length === 0) {
 		return null
@@ -30,23 +41,11 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ media, onPress }) => {
 				<Image
 					source={{ uri: media[0].file_url }}
 					style={styles.singleImage}
-					onError={({ nativeEvent }) => {
-						console.warn("Image loading error:", nativeEvent.error)
-					}}
+					resizeMode="cover"
+					loadingIndicatorSource={{ uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' }}
 				/>
 			</TouchableOpacity>
 		)
-	}
-
-	const handleScroll = (event: any) => {
-		const { contentOffset, layoutMeasurement } = event.nativeEvent
-		const index = Math.round(contentOffset.x / layoutMeasurement.width)
-		setCurrentIndex(index)
-	}
-
-	const handleContainerLayout = (event: any) => {
-		const { width } = event.nativeEvent.layout
-		setContainerWidth(width)
 	}
 
 	// Don't render until we have container width
@@ -66,15 +65,17 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ media, onPress }) => {
 				showsHorizontalScrollIndicator={false}
 				onMomentumScrollEnd={handleScroll}
 				style={styles.scrollView}
-				scrollEventThrottle={16}
+				scrollEventThrottle={100}
 				decelerationRate="fast"
 				bounces={false}
 				alwaysBounceHorizontal={false}
 				directionalLockEnabled={true}
 				automaticallyAdjustContentInsets={false}
 				contentInsetAdjustmentBehavior="never"
+				removeClippedSubviews={true}
+				overScrollMode="never"
 			>
-				{media.map((item) => (
+				{media.map((item, index) => (
 					<TouchableOpacity
 						key={item.id}
 						style={[styles.imageContainer, { width: containerWidth }]}
@@ -85,31 +86,33 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ media, onPress }) => {
 							source={{ uri: item.file_url }}
 							style={styles.image}
 							resizeMode="cover"
-							onError={({ nativeEvent }) => {
-								console.warn("Image loading error:", nativeEvent.error)
-							}}
+							loadingIndicatorSource={{ uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' }}
+							progressiveRenderingEnabled={true}
+							fadeDuration={200}
 						/>
 					</TouchableOpacity>
 				))}
 			</ScrollView>
 
 			{/* Indicators */}
-			<View style={styles.indicatorContainer}>
-				{media.map((_, index) => (
-					<View
-						key={index}
-						style={[
-							styles.indicator,
-							{
-								backgroundColor: index === currentIndex ? theme.colors.primary : 'rgba(255, 255, 255, 0.4)',
-							},
-						]}
-					/>
-				))}
-			</View>
+			{media.length > 1 && (
+				<View style={styles.indicatorContainer}>
+					{media.map((_, index) => (
+						<View
+							key={index}
+							style={[
+								styles.indicator,
+								{
+									backgroundColor: index === currentIndex ? theme.colors.primary : 'rgba(255, 255, 255, 0.4)',
+								},
+							]}
+						/>
+					))}
+				</View>
+			)}
 		</View>
 	)
-}
+})
 
 const styles = StyleSheet.create({
 	container: {

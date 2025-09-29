@@ -2,7 +2,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import React from "react"
+import React, { memo, useCallback } from "react"
 import {
 	Dimensions,
 	FlatList,
@@ -36,6 +36,53 @@ interface BlogPostListProps {
 //const fallbackImage = "https://placehold.co/600x400/png"
 const { width: screenWidth } = Dimensions.get("window")
 
+// Memoized blog post item component
+const BlogPostItem = memo<{
+	item: BlogPost
+	onCardPress?: (post: BlogPost) => void
+	navigation: BlogPostListNavigationProp
+}>(({ item, onCardPress, navigation }) => {
+	const hasMedia = item.post_media && item.post_media.length > 0
+
+	const handlePress = useCallback(() => {
+		onCardPress?.(item)
+	}, [onCardPress, item])
+
+	const handlePhotoPress = useCallback(() => {
+		navigation.navigate("PhotoGrid", {
+			photos: item.post_media || [],
+			title: item.title,
+		})
+	}, [navigation, item.post_media, item.title])
+
+	return (
+		<TouchableOpacity
+			style={styles.postContainer}
+			onPress={handlePress}
+			activeOpacity={1}
+		>
+			<SchoolCard>
+				{hasMedia && (
+					<PhotoSlider
+						media={item.post_media || []}
+						postTitle={item.title}
+						onPress={handlePhotoPress}
+					/>
+				)}
+				<View
+					style={hasMedia ? styles.postContent : styles.postContentNoImage}
+				>
+					<Text style={styles.title}>{item.title}</Text>
+					<Text style={styles.date}>
+						Publicado el{" "}
+						{dayjs(item.created_at).format("dddd D [de] MMMM YYYY")}
+					</Text>
+				</View>
+			</SchoolCard>
+		</TouchableOpacity>
+	)
+})
+
 const BlogPostList: React.FC<BlogPostListProps> = ({
 	emptyTitle = "No hay publicaciones",
 	emptySubtitle = "Cuando haya nuevas publicaciones en tu clase, aparecerán aquí",
@@ -46,8 +93,7 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 }) => {
 	const navigation = useNavigation<BlogPostListNavigationProp>()
 
-
-	const EmptyState = () => (
+	const EmptyState = memo(() => (
 		<View style={styles.emptyState}>
 			<View style={styles.emptyIconContainer}>
 				<Ionicons name="chatbubbles-outline" size={64} color="#ccc" />
@@ -55,49 +101,30 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 			<Text style={styles.emptyTitle}>{emptyTitle}</Text>
 			<Text style={styles.emptySubtitle}>{emptySubtitle}</Text>
 		</View>
-	)
+	))
 
-	const renderItem = ({ item }: { item: BlogPost }) => {
-		const hasMedia = item.post_media && item.post_media.length > 0
+	const renderItem = useCallback(({ item }: { item: BlogPost }) => (
+		<BlogPostItem
+			item={item}
+			onCardPress={onCardPress}
+			navigation={navigation}
+		/>
+	), [onCardPress, navigation])
 
-		return (
-			<TouchableOpacity
-				style={styles.postContainer}
-				onPress={() => onCardPress?.(item)}
-				activeOpacity={1}
-			>
-				<SchoolCard>
-					{hasMedia && (
-						<PhotoSlider
-							media={item.post_media || []}
-							postTitle={item.title}
-							onPress={() => {
-								navigation.navigate("PhotoGrid", {
-									photos: item.post_media || [],
-									title: item.title,
-								})
-							}}
-						/>
-					)}
-					<View
-						style={hasMedia ? styles.postContent : styles.postContentNoImage}
-					>
-						<Text style={styles.title}>{item.title}</Text>
-						<Text style={styles.date}>
-							Publicado el{" "}
-							{dayjs(item.created_at).format("dddd D [de] MMMM YYYY")}
-						</Text>
-					</View>
-				</SchoolCard>
-			</TouchableOpacity>
-		)
-	}
+	const keyExtractor = useCallback((item: BlogPost) => item.id, [])
+
+	const getItemLayout = useCallback((data: any, index: number) => ({
+		length: 200, // Approximate item height
+		offset: 200 * index,
+		index,
+	}), [])
 
 	return (
 		<FlatList
 			data={posts}
 			renderItem={renderItem}
-			keyExtractor={(item) => item.id}
+			keyExtractor={keyExtractor}
+			getItemLayout={getItemLayout}
 			contentContainerStyle={[
 				styles.container,
 				!posts || posts.length === 0 ? styles.emptyContainer : {},
@@ -114,6 +141,13 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 			}
 			showsVerticalScrollIndicator={false}
 			ListEmptyComponent={EmptyState}
+			// Performance optimizations
+			removeClippedSubviews={true}
+			windowSize={10}
+			maxToRenderPerBatch={5}
+			updateCellsBatchingPeriod={100}
+			initialNumToRender={3}
+			scrollEventThrottle={16}
 		/>
 	)
 }
