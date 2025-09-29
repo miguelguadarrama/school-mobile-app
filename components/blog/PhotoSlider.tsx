@@ -1,4 +1,4 @@
-import React, { useState, memo, useCallback } from "react"
+import React, { memo, useCallback, useState } from "react"
 import {
 	Image,
 	ScrollView,
@@ -6,8 +6,8 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native"
-import { BlogPostMedia } from "../../types/post"
 import { theme } from "../../helpers/theme"
+import { BlogPostMedia } from "../../types/post"
 
 interface PhotoSliderProps {
 	media: BlogPostMedia[]
@@ -37,12 +37,18 @@ const PhotoSlider: React.FC<PhotoSliderProps> = memo(({ media, onPress }) => {
 	// If only one image, show it without indicators
 	if (media.length === 1) {
 		return (
-			<TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.9}>
+			<TouchableOpacity
+				style={styles.container}
+				onPress={onPress}
+				activeOpacity={0.9}
+			>
 				<Image
 					source={{ uri: media[0].file_url }}
 					style={styles.singleImage}
 					resizeMode="cover"
-					loadingIndicatorSource={{ uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' }}
+					loadingIndicatorSource={{
+						uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+					}}
 				/>
 			</TouchableOpacity>
 		)
@@ -75,7 +81,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = memo(({ media, onPress }) => {
 				removeClippedSubviews={true}
 				overScrollMode="never"
 			>
-				{media.map((item, index) => (
+				{media.map((item) => (
 					<TouchableOpacity
 						key={item.id}
 						style={[styles.imageContainer, { width: containerWidth }]}
@@ -86,7 +92,9 @@ const PhotoSlider: React.FC<PhotoSliderProps> = memo(({ media, onPress }) => {
 							source={{ uri: item.file_url }}
 							style={styles.image}
 							resizeMode="cover"
-							loadingIndicatorSource={{ uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' }}
+							loadingIndicatorSource={{
+								uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+							}}
 							progressiveRenderingEnabled={true}
 							fadeDuration={200}
 						/>
@@ -103,7 +111,10 @@ const PhotoSlider: React.FC<PhotoSliderProps> = memo(({ media, onPress }) => {
 							style={[
 								styles.indicator,
 								{
-									backgroundColor: index === currentIndex ? theme.colors.primary : 'rgba(255, 255, 255, 0.4)',
+									backgroundColor:
+										index === currentIndex
+											? theme.colors.primary
+											: "rgba(255, 255, 255, 0.4)",
 								},
 							]}
 						/>
@@ -140,6 +151,7 @@ const styles = StyleSheet.create({
 		width: "100%",
 		height: "100%",
 		backgroundColor: "#eaeaea",
+		borderRadius: theme.radius.sm,
 	},
 	indicatorContainer: {
 		position: "absolute",
@@ -156,8 +168,8 @@ const styles = StyleSheet.create({
 		borderRadius: 6,
 		marginHorizontal: 6,
 		borderWidth: 2,
-		borderColor: 'rgba(255, 255, 255, 0.8)',
-		shadowColor: '#000',
+		borderColor: "rgba(255, 255, 255, 0.8)",
+		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 1 },
 		shadowOpacity: 0.3,
 		shadowRadius: 2,

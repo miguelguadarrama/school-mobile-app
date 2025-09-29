@@ -2,11 +2,10 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import React, { memo, useCallback } from "react"
+import React, { memo, useCallback, useState } from "react"
 import {
 	Dimensions,
 	FlatList,
-	Image,
 	RefreshControl,
 	StyleSheet,
 	Text,
@@ -14,8 +13,8 @@ import {
 	View,
 } from "react-native"
 import dayjs from "../../lib/dayjs"
-import { BlogPost, BlogPostMedia } from "../../types/post"
 import { SocialStackParamList } from "../../types/navigation"
+import { BlogPost } from "../../types/post"
 import SchoolCard from "../SchoolCard"
 import PhotoSlider from "./PhotoSlider"
 
@@ -23,6 +22,8 @@ type BlogPostListNavigationProp = NativeStackNavigationProp<
 	SocialStackParamList,
 	"Social"
 >
+
+const max_content_length = 80
 
 interface BlogPostListProps {
 	emptyTitle?: string
@@ -42,6 +43,7 @@ const BlogPostItem = memo<{
 	onCardPress?: (post: BlogPost) => void
 	navigation: BlogPostListNavigationProp
 }>(({ item, onCardPress, navigation }) => {
+	const [isExpanded, setIsExpanded] = useState(false)
 	const hasMedia = item.post_media && item.post_media.length > 0
 
 	const handlePress = useCallback(() => {
@@ -55,6 +57,22 @@ const BlogPostItem = memo<{
 		})
 	}, [navigation, item.post_media, item.title])
 
+	const handleExpandPress = useCallback(
+		(e: any) => {
+			e.stopPropagation()
+			setIsExpanded(!isExpanded)
+		},
+		[isExpanded]
+	)
+
+	// Check if content needs truncation (rough estimate based on character count)
+	const contentLength = item.content?.length || 0
+	const shouldShowExpandButton = contentLength > max_content_length
+	const displayContent =
+		isExpanded || !shouldShowExpandButton
+			? item.content
+			: item.content?.substring(0, max_content_length) + "..."
+
 	return (
 		<TouchableOpacity
 			style={styles.postContainer}
@@ -62,21 +80,49 @@ const BlogPostItem = memo<{
 			activeOpacity={1}
 		>
 			<SchoolCard>
-				{hasMedia && (
-					<PhotoSlider
-						media={item.post_media || []}
-						postTitle={item.title}
-						onPress={handlePhotoPress}
-					/>
-				)}
-				<View
-					style={hasMedia ? styles.postContent : styles.postContentNoImage}
-				>
+				<View style={styles.postContentFull}>
+					{/* Author Section - Now at the top */}
+					<View style={styles.authorSection}>
+						<View style={styles.avatar}>
+							<Ionicons name="person" size={20} color="#666" />
+						</View>
+						<View style={styles.authorInfo}>
+							<Text style={styles.authorName}>{item.users.full_name}</Text>
+							<Text style={styles.publishDate}>
+								{dayjs(item.created_at).format("dddd D [de] MMMM YYYY")}
+							</Text>
+						</View>
+					</View>
+
+					{/* Title */}
 					<Text style={styles.title}>{item.title}</Text>
-					<Text style={styles.date}>
-						Publicado el{" "}
-						{dayjs(item.created_at).format("dddd D [de] MMMM YYYY")}
-					</Text>
+
+					{/* Content */}
+					{item.content && (
+						<View style={styles.contentContainer}>
+							<Text style={styles.content}>{displayContent}</Text>
+							{shouldShowExpandButton && (
+								<TouchableOpacity
+									onPress={handleExpandPress}
+									style={styles.expandButton}
+									activeOpacity={0.7}
+								>
+									<Text style={styles.expandButtonText}>
+										{isExpanded ? "Leer menos" : "Leer más..."}
+									</Text>
+								</TouchableOpacity>
+							)}
+						</View>
+					)}
+
+					{/* Photo Slider - Now at the bottom */}
+					{hasMedia && (
+						<PhotoSlider
+							media={item.post_media || []}
+							postTitle={item.title}
+							onPress={handlePhotoPress}
+						/>
+					)}
 				</View>
 			</SchoolCard>
 		</TouchableOpacity>
@@ -103,21 +149,27 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 		</View>
 	))
 
-	const renderItem = useCallback(({ item }: { item: BlogPost }) => (
-		<BlogPostItem
-			item={item}
-			onCardPress={onCardPress}
-			navigation={navigation}
-		/>
-	), [onCardPress, navigation])
+	const renderItem = useCallback(
+		({ item }: { item: BlogPost }) => (
+			<BlogPostItem
+				item={item}
+				onCardPress={onCardPress}
+				navigation={navigation}
+			/>
+		),
+		[onCardPress, navigation]
+	)
 
 	const keyExtractor = useCallback((item: BlogPost) => item.id, [])
 
-	const getItemLayout = useCallback((data: any, index: number) => ({
-		length: 200, // Approximate item height
-		offset: 200 * index,
-		index,
-	}), [])
+	const getItemLayout = useCallback(
+		(data: any, index: number) => ({
+			length: 200, // Approximate item height
+			offset: 200 * index,
+			index,
+		}),
+		[]
+	)
 
 	return (
 		<FlatList
@@ -204,6 +256,37 @@ const styles = StyleSheet.create({
 		padding: 16,
 		paddingHorizontal: 0,
 	},
+	postContentFull: {
+		padding: 0,
+		paddingHorizontal: 0,
+	},
+	authorSection: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: 24,
+	},
+	avatar: {
+		width: 40,
+		height: 40,
+		borderRadius: 20,
+		backgroundColor: "#f0f0f0",
+		justifyContent: "center",
+		alignItems: "center",
+		marginRight: 12,
+	},
+	authorInfo: {
+		flex: 1,
+	},
+	authorName: {
+		fontSize: 14,
+		fontWeight: "600",
+		color: "#333",
+		marginBottom: 2,
+	},
+	publishDate: {
+		fontSize: 12,
+		color: "#888",
+	},
 	title: {
 		fontSize: 18,
 		fontWeight: "bold",
@@ -226,6 +309,24 @@ const styles = StyleSheet.create({
 	},
 	mediaCount: {
 		fontSize: 12,
+		color: "#007AFF",
+		fontWeight: "500",
+	},
+	contentContainer: {
+		marginBottom: 12,
+	},
+	content: {
+		fontSize: 14,
+		color: "#555",
+		lineHeight: 20,
+		marginBottom: 4,
+	},
+	expandButton: {
+		alignSelf: "flex-start",
+		paddingVertical: 2,
+	},
+	expandButtonText: {
+		fontSize: 14,
 		color: "#007AFF",
 		fontWeight: "500",
 	},
