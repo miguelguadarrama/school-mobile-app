@@ -253,9 +253,14 @@ export const SocialPostModal: React.FC<SocialPostModalProps> = ({ onBack }) => {
 										{item.content}
 									</Text>
 									<View style={styles.postFooter}>
-										<Text style={styles.postDate}>
-											{formatDate(item.created_at)}
-										</Text>
+										<View style={styles.postLeftInfo}>
+											<Text style={styles.postAuthor}>
+												{item.users.full_name.toLowerCase()}
+											</Text>
+											<Text style={styles.postDate}>
+												{formatDate(item.created_at)}
+											</Text>
+										</View>
 										{item.post_media && item.post_media.length > 0 && (
 											<View style={styles.mediaIndicator}>
 												<Ionicons
@@ -476,6 +481,16 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
+	},
+	postLeftInfo: {
+		flex: 1,
+	},
+	postAuthor: {
+		fontSize: theme.typography.size.sm,
+		fontFamily: theme.typography.family.regular,
+		color: theme.colors.text,
+		marginBottom: 2,
+		textTransform: "capitalize",
 	},
 	postDate: {
 		fontSize: 12,

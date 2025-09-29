@@ -87,7 +87,9 @@ const BlogPostItem = memo<{
 							<Ionicons name="person" size={20} color="#666" />
 						</View>
 						<View style={styles.authorInfo}>
-							<Text style={styles.authorName}>{item.users.full_name}</Text>
+							<Text style={styles.authorName}>
+								{item.users.full_name.toLowerCase()}
+							</Text>
 							<Text style={styles.publishDate}>
 								{dayjs(item.created_at).format("dddd D [de] MMMM YYYY")}
 							</Text>
@@ -282,6 +284,7 @@ const styles = StyleSheet.create({
 		fontWeight: "600",
 		color: "#333",
 		marginBottom: 2,
+		textTransform: "capitalize",
 	},
 	publishDate: {
 		fontSize: 12,
