@@ -13,6 +13,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { theme } from "../../helpers/theme"
 import { fetcher } from "../../services/api"
 import { BlogPost } from "../../types/post"
+import { LoadingDialog } from "../ui/LoadingDialog"
 import { MediaManager } from "./MediaManager"
 
 interface PostEditorProps {
@@ -527,6 +528,11 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 					</View>
 				)}
 			</ScrollView>
+
+			<LoadingDialog
+				visible={isBusy}
+				message={isEditing ? "Guardando..." : "Creando borrador..."}
+			/>
 		</View>
 	)
 }
