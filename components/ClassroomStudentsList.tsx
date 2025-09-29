@@ -135,12 +135,19 @@ export default function ClassroomStudentsList({
 									return (
 										<TouchableOpacity
 											key={index}
-											style={styles.studentItem}
+											style={[
+												styles.studentItem,
+												index === sortedStudents.length - 1 && styles.lastStudentItem,
+											]}
 											onPress={() => onStudentPress?.(student)}
-											activeOpacity={0.7}
+											activeOpacity={0.6}
 										>
 											<View style={styles.studentRow}>
-												<Text style={styles.studentName}>
+												<Text
+													style={styles.studentName}
+													numberOfLines={1}
+													ellipsizeMode="tail"
+												>
 													{student.last_name}
 													{student.second_last_name
 														? ` ${student.second_last_name}`
@@ -179,11 +186,16 @@ const styles = StyleSheet.create({
 	},
 	studentsContainer: {
 		paddingLeft: theme.spacing.sm,
+		paddingTop: theme.spacing.xs,
 	},
 	studentItem: {
-		paddingVertical: theme.spacing.xs,
+		paddingVertical: theme.spacing.sm,
+		paddingHorizontal: theme.spacing.xs,
 		borderBottomWidth: 1,
-		borderBottomColor: theme.colors.border,
+		borderBottomColor: theme.colors["border-subtle"],
+	},
+	lastStudentItem: {
+		borderBottomWidth: 0,
 	},
 	studentRow: {
 		flexDirection: "row",
@@ -195,6 +207,7 @@ const styles = StyleSheet.create({
 		fontFamily: theme.typography.family.regular,
 		color: theme.colors.text,
 		flex: 1,
+		marginRight: theme.spacing.sm,
 	},
 	attendanceIndicator: {
 		width: 24,
