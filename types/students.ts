@@ -25,6 +25,7 @@ export interface StudentData {
   first_name: string
   middle_name: string | null
   last_name: string
+  birthdate: Date
   second_last_name: string | null
   name: string
 }

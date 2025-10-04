@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import ClassroomStudentsList from "../../components/ClassroomStudentsList"
 import JAC_H_Logo from "../../components/logo"
 import StatusBar from "../../components/StatusBar"
+import UpcomingBirthdays from "../../components/UpcomingBirthdays"
 import AppContext from "../../contexts/AppContext"
 import { TabContext } from "../../contexts/TabContext"
 import { theme } from "../../helpers/theme"
@@ -40,6 +41,9 @@ export default function HomeTeacherScreen() {
 				>
 					{/* School Header */}
 					<JAC_H_Logo />
+
+					{/* Upcoming Birthdays */}
+					<UpcomingBirthdays classrooms={classrooms} />
 
 					<ClassroomStudentsList
 						classrooms={classrooms}
