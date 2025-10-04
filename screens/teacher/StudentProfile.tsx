@@ -65,6 +65,9 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 		poop: "",
 	})
 
+	// Collapsible state for additional statuses
+	const [showAdditionalStatuses, setShowAdditionalStatuses] = useState(false)
+
 	// const getStatusLabel = (status_type: string) => {
 	// 	if (!status_items) return status_type
 
@@ -205,6 +208,11 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 
 		// Store original state for comparison
 		setOriginalAttendanceState(newState)
+
+		// Auto-expand if any additional status is set
+		const hasAdditionalStatuses =
+			newState.meal || newState.mood || newState.pee || newState.poop
+		setShowAdditionalStatuses(!!hasAdditionalStatuses)
 	}, [selectedDate, studentProfile])
 
 	// Handle attendance status change
@@ -424,7 +432,22 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 						<Ionicons name="person" size={60} color={theme.colors.muted} />
 					</View>
 					<Text style={styles.fullName}>{fullName}</Text>
-					<Text style={styles.subtitle}>Perfil del Estudiante</Text>
+
+					{/* Quick Actions */}
+					<View style={styles.quickActionsContainer}>
+						<TouchableOpacity
+							style={styles.quickActionButton}
+							onPress={handleChatWithGuardian}
+							activeOpacity={0.7}
+						>
+							<Ionicons
+								name="chatbubble-outline"
+								size={20}
+								color={theme.colors.primary}
+							/>
+							<Text style={styles.quickActionText}>Chat Representante</Text>
+						</TouchableOpacity>
+					</View>
 				</View>
 
 				{isLoading || isLoadingStatusItems ? (
@@ -435,6 +458,322 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 					</View>
 				) : studentProfile ? (
 					<>
+						{/* Attendance Records Form - Moved to top */}
+						<SchoolCard style={styles.cardSpacing}>
+							<Text style={styles.sectionTitle}>Registros de Asistencia</Text>
+
+							{/* Date Navigation */}
+							<View style={styles.dateNavigation}>
+								<TouchableOpacity
+									style={[
+										styles.dateNavButton,
+										isPrevDisabled && styles.dateNavButtonDisabled,
+									]}
+									onPress={() => !isPrevDisabled && navigateDate("prev")}
+									disabled={isPrevDisabled}
+								>
+									<Ionicons
+										name="chevron-back"
+										size={24}
+										color={
+											isPrevDisabled ? theme.colors.muted : theme.colors.primary
+										}
+									/>
+								</TouchableOpacity>
+
+								<Text style={styles.selectedDate}>
+									{formatSelectedDate(selectedDate)}
+								</Text>
+
+								<TouchableOpacity
+									style={[
+										styles.dateNavButton,
+										isNextDisabled && styles.dateNavButtonDisabled,
+									]}
+									onPress={() => !isNextDisabled && navigateDate("next")}
+									disabled={isNextDisabled}
+								>
+									<Ionicons
+										name="chevron-forward"
+										size={24}
+										color={
+											isNextDisabled ? theme.colors.muted : theme.colors.primary
+										}
+									/>
+								</TouchableOpacity>
+							</View>
+
+							{/* Status Selection Items */}
+							<View style={styles.statusContainer}>
+								{/* Asistencia - Always visible */}
+								<View style={styles.statusItem}>
+									<Text style={styles.statusLabel}>Asistencia</Text>
+									<View style={styles.statusOptions}>
+										{getStatusOptions("attendance")
+											.slice()
+
+											.map((option) => (
+												<TouchableOpacity
+													key={option.alias}
+													style={[
+														styles.statusOption,
+														attendanceStatus === option.alias &&
+															styles.statusOptionSelected,
+													]}
+													onPress={() =>
+														handleAttendanceStatusChange(option.alias)
+													}
+													activeOpacity={1}
+													disabled={status === "busy"}
+												>
+													<Text
+														style={[
+															styles.statusOptionText,
+															attendanceStatus === option.alias &&
+																styles.statusOptionTextSelected,
+														]}
+													>
+														{option.description}
+													</Text>
+												</TouchableOpacity>
+											))}
+									</View>
+								</View>
+
+								{/* Toggle Button for Additional Statuses */}
+								<TouchableOpacity
+									style={styles.toggleButton}
+									onPress={() =>
+										setShowAdditionalStatuses(!showAdditionalStatuses)
+									}
+									activeOpacity={0.7}
+								>
+									<Text style={styles.toggleButtonText}>
+										{showAdditionalStatuses
+											? "Ocultar otros registros"
+											: "Mostrar otros registros"}
+									</Text>
+									<Ionicons
+										name={
+											showAdditionalStatuses ? "chevron-up" : "chevron-down"
+										}
+										size={20}
+										color={theme.colors.primary}
+									/>
+								</TouchableOpacity>
+
+								{/* Additional Statuses - Collapsible */}
+								{showAdditionalStatuses && (
+									<>
+										{/* Alimentación */}
+										<View
+											style={[
+												styles.statusItem,
+												isStudentAbsent() && styles.statusItemDisabled,
+											]}
+										>
+											<Text
+												style={[
+													styles.statusLabel,
+													isStudentAbsent() && styles.statusLabelDisabled,
+												]}
+											>
+												Alimentación
+											</Text>
+											<View style={styles.statusOptions}>
+												{getStatusOptions("meal").map((option) => (
+													<TouchableOpacity
+														key={option.alias}
+														style={[
+															styles.statusOption,
+															mealStatus === option.alias &&
+																styles.statusOptionSelected,
+															isStudentAbsent() && styles.statusOptionDisabled,
+														]}
+														onPress={() =>
+															!isStudentAbsent() && setMealStatus(option.alias)
+														}
+														activeOpacity={1}
+														disabled={isStudentAbsent() || status === "busy"}
+													>
+														<Text
+															style={[
+																styles.statusOptionText,
+																mealStatus === option.alias &&
+																	styles.statusOptionTextSelected,
+															]}
+														>
+															{option.description}
+														</Text>
+													</TouchableOpacity>
+												))}
+											</View>
+										</View>
+
+										{/* Ánimo */}
+										<View
+											style={[
+												styles.statusItem,
+												isStudentAbsent() && styles.statusItemDisabled,
+											]}
+										>
+											<Text
+												style={[
+													styles.statusLabel,
+													isStudentAbsent() && styles.statusLabelDisabled,
+												]}
+											>
+												Ánimo
+											</Text>
+											<View style={styles.statusOptions}>
+												{getStatusOptions("mood").map((option) => (
+													<TouchableOpacity
+														key={option.alias}
+														style={[
+															styles.statusOption,
+															moodStatus === option.alias &&
+																styles.statusOptionSelected,
+															isStudentAbsent() && styles.statusOptionDisabled,
+														]}
+														onPress={() =>
+															!isStudentAbsent() && setMoodStatus(option.alias)
+														}
+														activeOpacity={1}
+														disabled={isStudentAbsent() || status === "busy"}
+													>
+														<Text
+															style={[
+																styles.statusOptionText,
+																moodStatus === option.alias &&
+																	styles.statusOptionTextSelected,
+															]}
+														>
+															{option.description}
+														</Text>
+													</TouchableOpacity>
+												))}
+											</View>
+										</View>
+
+										{/* Orina */}
+										<View
+											style={[
+												styles.statusItem,
+												isStudentAbsent() && styles.statusItemDisabled,
+											]}
+										>
+											<Text
+												style={[
+													styles.statusLabel,
+													isStudentAbsent() && styles.statusLabelDisabled,
+												]}
+											>
+												Orina
+											</Text>
+											<View style={styles.statusOptions}>
+												{getStatusOptions("pee").map((option) => (
+													<TouchableOpacity
+														key={option.alias}
+														style={[
+															styles.statusOption,
+															peeStatus === option.alias &&
+																styles.statusOptionSelected,
+															isStudentAbsent() && styles.statusOptionDisabled,
+														]}
+														onPress={() =>
+															!isStudentAbsent() && setPeeStatus(option.alias)
+														}
+														activeOpacity={1}
+														disabled={isStudentAbsent() || status === "busy"}
+													>
+														<Text
+															style={[
+																styles.statusOptionText,
+																peeStatus === option.alias &&
+																	styles.statusOptionTextSelected,
+															]}
+														>
+															{option.description}
+														</Text>
+													</TouchableOpacity>
+												))}
+											</View>
+										</View>
+
+										{/* Heces */}
+										<View
+											style={[
+												styles.statusItem,
+												isStudentAbsent() && styles.statusItemDisabled,
+											]}
+										>
+											<Text
+												style={[
+													styles.statusLabel,
+													isStudentAbsent() && styles.statusLabelDisabled,
+												]}
+											>
+												Heces
+											</Text>
+											<View style={styles.statusOptions}>
+												{getStatusOptions("poop").map((option) => (
+													<TouchableOpacity
+														key={option.alias}
+														style={[
+															styles.statusOption,
+															poopStatus === option.alias &&
+																styles.statusOptionSelected,
+															isStudentAbsent() && styles.statusOptionDisabled,
+														]}
+														onPress={() =>
+															!isStudentAbsent() && setPoopStatus(option.alias)
+														}
+														activeOpacity={1}
+														disabled={isStudentAbsent() || status === "busy"}
+													>
+														<Text
+															style={[
+																styles.statusOptionText,
+																poopStatus === option.alias &&
+																	styles.statusOptionTextSelected,
+															]}
+														>
+															{option.description}
+														</Text>
+													</TouchableOpacity>
+												))}
+											</View>
+										</View>
+									</>
+								)}
+							</View>
+
+							{/* Save Button */}
+							<TouchableOpacity
+								style={[
+									styles.saveButton,
+									!hasChanges() && styles.saveButtonDisabled,
+								]}
+								onPress={handleSaveAttendance}
+								activeOpacity={0.7}
+								disabled={!hasChanges() || status === "busy"}
+							>
+								<Ionicons
+									name="checkmark"
+									size={20}
+									color={hasChanges() ? theme.colors.white : theme.colors.muted}
+								/>
+								<Text
+									style={[
+										styles.saveButtonText,
+										!hasChanges() && styles.saveButtonTextDisabled,
+									]}
+								>
+									{status === "busy" ? "Guardando..." : "Guardar Registros"}
+								</Text>
+							</TouchableOpacity>
+						</SchoolCard>
+
 						{/* Basic Information Section */}
 						<SchoolCard style={styles.cardSpacing}>
 							<Text style={styles.sectionTitle}>Información Básica</Text>
@@ -513,295 +852,6 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 								</TouchableOpacity>
 							</SchoolCard>
 						)}
-
-						{/* Attendance Records Form */}
-						<SchoolCard style={styles.cardSpacing}>
-							<Text style={styles.sectionTitle}>Registros de Asistencia</Text>
-
-							{/* Date Navigation */}
-							<View style={styles.dateNavigation}>
-								<TouchableOpacity
-									style={[
-										styles.dateNavButton,
-										isPrevDisabled && styles.dateNavButtonDisabled,
-									]}
-									onPress={() => !isPrevDisabled && navigateDate("prev")}
-									disabled={isPrevDisabled}
-								>
-									<Ionicons
-										name="chevron-back"
-										size={24}
-										color={
-											isPrevDisabled ? theme.colors.muted : theme.colors.primary
-										}
-									/>
-								</TouchableOpacity>
-
-								<Text style={styles.selectedDate}>
-									{formatSelectedDate(selectedDate)}
-								</Text>
-
-								<TouchableOpacity
-									style={[
-										styles.dateNavButton,
-										isNextDisabled && styles.dateNavButtonDisabled,
-									]}
-									onPress={() => !isNextDisabled && navigateDate("next")}
-									disabled={isNextDisabled}
-								>
-									<Ionicons
-										name="chevron-forward"
-										size={24}
-										color={
-											isNextDisabled ? theme.colors.muted : theme.colors.primary
-										}
-									/>
-								</TouchableOpacity>
-							</View>
-
-							{/* Status Selection Items */}
-							<View style={styles.statusContainer}>
-								{/* Asistencia */}
-								<View style={styles.statusItem}>
-									<Text style={styles.statusLabel}>Asistencia</Text>
-									<View style={styles.statusOptions}>
-										{getStatusOptions("attendance")
-											.slice()
-
-											.map((option) => (
-												<TouchableOpacity
-													key={option.alias}
-													style={[
-														styles.statusOption,
-														attendanceStatus === option.alias &&
-															styles.statusOptionSelected,
-													]}
-													onPress={() =>
-														handleAttendanceStatusChange(option.alias)
-													}
-													activeOpacity={1}
-													disabled={status === "busy"}
-												>
-													<Text
-														style={[
-															styles.statusOptionText,
-															attendanceStatus === option.alias &&
-																styles.statusOptionTextSelected,
-														]}
-													>
-														{option.description}
-													</Text>
-												</TouchableOpacity>
-											))}
-									</View>
-								</View>
-
-								{/* Alimentación */}
-								<View
-									style={[
-										styles.statusItem,
-										isStudentAbsent() && styles.statusItemDisabled,
-									]}
-								>
-									<Text
-										style={[
-											styles.statusLabel,
-											isStudentAbsent() && styles.statusLabelDisabled,
-										]}
-									>
-										Alimentación
-									</Text>
-									<View style={styles.statusOptions}>
-										{getStatusOptions("meal").map((option) => (
-											<TouchableOpacity
-												key={option.alias}
-												style={[
-													styles.statusOption,
-													mealStatus === option.alias &&
-														styles.statusOptionSelected,
-													isStudentAbsent() && styles.statusOptionDisabled,
-												]}
-												onPress={() =>
-													!isStudentAbsent() && setMealStatus(option.alias)
-												}
-												activeOpacity={1}
-												disabled={isStudentAbsent() || status === "busy"}
-											>
-												<Text
-													style={[
-														styles.statusOptionText,
-														mealStatus === option.alias &&
-															styles.statusOptionTextSelected,
-													]}
-												>
-													{option.description}
-												</Text>
-											</TouchableOpacity>
-										))}
-									</View>
-								</View>
-
-								{/* Ánimo */}
-								<View
-									style={[
-										styles.statusItem,
-										isStudentAbsent() && styles.statusItemDisabled,
-									]}
-								>
-									<Text
-										style={[
-											styles.statusLabel,
-											isStudentAbsent() && styles.statusLabelDisabled,
-										]}
-									>
-										Ánimo
-									</Text>
-									<View style={styles.statusOptions}>
-										{getStatusOptions("mood").map((option) => (
-											<TouchableOpacity
-												key={option.alias}
-												style={[
-													styles.statusOption,
-													moodStatus === option.alias &&
-														styles.statusOptionSelected,
-													isStudentAbsent() && styles.statusOptionDisabled,
-												]}
-												onPress={() =>
-													!isStudentAbsent() && setMoodStatus(option.alias)
-												}
-												activeOpacity={1}
-												disabled={isStudentAbsent() || status === "busy"}
-											>
-												<Text
-													style={[
-														styles.statusOptionText,
-														moodStatus === option.alias &&
-															styles.statusOptionTextSelected,
-													]}
-												>
-													{option.description}
-												</Text>
-											</TouchableOpacity>
-										))}
-									</View>
-								</View>
-
-								{/* Orina */}
-								<View
-									style={[
-										styles.statusItem,
-										isStudentAbsent() && styles.statusItemDisabled,
-									]}
-								>
-									<Text
-										style={[
-											styles.statusLabel,
-											isStudentAbsent() && styles.statusLabelDisabled,
-										]}
-									>
-										Orina
-									</Text>
-									<View style={styles.statusOptions}>
-										{getStatusOptions("pee").map((option) => (
-											<TouchableOpacity
-												key={option.alias}
-												style={[
-													styles.statusOption,
-													peeStatus === option.alias &&
-														styles.statusOptionSelected,
-													isStudentAbsent() && styles.statusOptionDisabled,
-												]}
-												onPress={() =>
-													!isStudentAbsent() && setPeeStatus(option.alias)
-												}
-												activeOpacity={1}
-												disabled={isStudentAbsent() || status === "busy"}
-											>
-												<Text
-													style={[
-														styles.statusOptionText,
-														peeStatus === option.alias &&
-															styles.statusOptionTextSelected,
-													]}
-												>
-													{option.description}
-												</Text>
-											</TouchableOpacity>
-										))}
-									</View>
-								</View>
-
-								{/* Heces */}
-								<View
-									style={[
-										styles.statusItem,
-										isStudentAbsent() && styles.statusItemDisabled,
-									]}
-								>
-									<Text
-										style={[
-											styles.statusLabel,
-											isStudentAbsent() && styles.statusLabelDisabled,
-										]}
-									>
-										Heces
-									</Text>
-									<View style={styles.statusOptions}>
-										{getStatusOptions("poop").map((option) => (
-											<TouchableOpacity
-												key={option.alias}
-												style={[
-													styles.statusOption,
-													poopStatus === option.alias &&
-														styles.statusOptionSelected,
-													isStudentAbsent() && styles.statusOptionDisabled,
-												]}
-												onPress={() =>
-													!isStudentAbsent() && setPoopStatus(option.alias)
-												}
-												activeOpacity={1}
-												disabled={isStudentAbsent() || status === "busy"}
-											>
-												<Text
-													style={[
-														styles.statusOptionText,
-														poopStatus === option.alias &&
-															styles.statusOptionTextSelected,
-													]}
-												>
-													{option.description}
-												</Text>
-											</TouchableOpacity>
-										))}
-									</View>
-								</View>
-							</View>
-
-							{/* Save Button */}
-							<TouchableOpacity
-								style={[
-									styles.saveButton,
-									!hasChanges() && styles.saveButtonDisabled,
-								]}
-								onPress={handleSaveAttendance}
-								activeOpacity={0.7}
-								disabled={!hasChanges() || status === "busy"}
-							>
-								<Ionicons
-									name="checkmark"
-									size={20}
-									color={hasChanges() ? theme.colors.white : theme.colors.muted}
-								/>
-								<Text
-									style={[
-										styles.saveButtonText,
-										!hasChanges() && styles.saveButtonTextDisabled,
-									]}
-								>
-									{status === "busy" ? "Guardando..." : "Guardar Registros"}
-								</Text>
-							</TouchableOpacity>
-						</SchoolCard>
 					</>
 				) : (
 					<View style={styles.errorContainer}>
@@ -1140,5 +1190,48 @@ const styles = StyleSheet.create({
 		backgroundColor: theme.colors.background,
 		borderColor: theme.colors.muted,
 		opacity: 0.5,
+	},
+	toggleButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		paddingVertical: theme.spacing.sm,
+		paddingHorizontal: theme.spacing.md,
+		borderRadius: theme.radius.md,
+		borderWidth: 1,
+		borderColor: theme.colors.border,
+		backgroundColor: theme.colors.surface,
+		marginBottom: theme.spacing.md,
+		gap: theme.spacing.xs,
+	},
+	toggleButtonText: {
+		fontSize: theme.typography.size.sm,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.primary,
+	},
+	quickActionsContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: theme.spacing.md,
+		marginTop: theme.spacing.md,
+	},
+	quickActionButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		paddingVertical: theme.spacing.sm,
+		paddingHorizontal: theme.spacing.md,
+		borderRadius: theme.radius.md,
+		backgroundColor: theme.colors.surface,
+		borderWidth: 1,
+		borderColor: theme.colors.border,
+		gap: theme.spacing.xs,
+		...theme.shadow.card,
+	},
+	quickActionText: {
+		fontSize: theme.typography.size.sm,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.primary,
 	},
 })
