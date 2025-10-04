@@ -26,8 +26,8 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 	}>(loggedIn ? "/mobile/profile" : null)
 
 	const academic_year_id =
-		data?.students?.[0]?.academic_year_classroom_students?.[0]?.id ||
-		data?.classrooms?.[0]?.academic_year_id
+		data?.students?.[0]?.academic_year_classroom_students?.[0]?.classrooms
+			?.academic_years?.id || data?.classrooms?.[0]?.academic_year_id
 
 	// Set up notification listeners when app is authenticated
 	useEffect(() => {
