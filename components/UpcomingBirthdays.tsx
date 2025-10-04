@@ -1,6 +1,8 @@
 import React, { useMemo } from "react"
 import { StyleSheet, Text, View } from "react-native"
+import { displayShortName } from "../helpers/students"
 import { theme } from "../helpers/theme"
+import { student } from "../types/students"
 import { ClassroomData } from "../types/teacher"
 import SchoolCard from "./SchoolCard"
 
@@ -98,13 +100,17 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 							>
 								{isToday ? (
 									<>
-										<Text style={styles.todayName}>🎉 {student.name} 🎉</Text>
+										<Text style={styles.todayName}>
+											🎉 {displayShortName(student as unknown as student)}
+										</Text>
 										<Text style={styles.todayLabel}>¡HOY!</Text>
 									</>
 								) : (
 									<>
 										<View style={styles.studentInfo}>
-											<Text style={styles.studentName}>{student.name}</Text>
+											<Text style={styles.studentName}>
+												{displayShortName(student as unknown as student)}
+											</Text>
 											<Text style={styles.birthdateText}>
 												{formatDate(birthdate)}
 											</Text>
