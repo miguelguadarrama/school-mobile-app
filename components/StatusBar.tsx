@@ -1,6 +1,13 @@
 import { Ionicons } from "@expo/vector-icons"
 import React, { useContext, useEffect, useState } from "react"
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import {
+	Image,
+	Modal,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native"
 import AppContext from "../contexts/AppContext"
 import { displayName } from "../helpers/students"
 import { theme } from "../helpers/theme"
@@ -8,9 +15,10 @@ import LogoutButton from "./common/LogoutButton"
 import StudentPhoto from "./ui/studentPhoto"
 
 const StatusBar: React.FC = () => {
-	const { roles, students, selectedStudent, setSelectedStudent } =
+	const { roles, user, students, selectedStudent, setSelectedStudent } =
 		useContext(AppContext)!
 	const [modalVisible, setModalVisible] = useState(false)
+	const [teacherPhotoError, setTeacherPhotoError] = useState(false)
 
 	useEffect(() => {
 		if (selectedStudent === null && students.length) {
@@ -23,6 +31,11 @@ const StatusBar: React.FC = () => {
 	}
 
 	const is_guardian = roles.includes("guardian") && selectedStudent
+	const is_staff = roles.includes("staff")
+	const teacherPhotoUrl =
+		is_staff && user?.id
+			? `${process.env.EXPO_PUBLIC_STORAGE_URL}/app/users/${user.id}.jpg`
+			: null
 
 	//const gender = selectedStudent.gender_alias === "gender_male" ? "boy" : "girl"
 
@@ -52,9 +65,26 @@ const StatusBar: React.FC = () => {
 						</>
 					)}
 					{!is_guardian && (
-						<View>
-							<Text style={styles.name}>Docente</Text>
-						</View>
+						<>
+							{teacherPhotoUrl && !teacherPhotoError ? (
+								<Image
+									source={{ uri: teacherPhotoUrl }}
+									style={styles.profileImage}
+									onError={() => setTeacherPhotoError(true)}
+								/>
+							) : (
+								<View style={styles.teacherPhotoPlaceholder}>
+									<Ionicons
+										name="person"
+										size={24}
+										color={theme.colors.primary}
+									/>
+								</View>
+							)}
+							<View style={styles.teacherNameContainer}>
+								<Text style={styles.name}>{user?.full_name.toLowerCase()}</Text>
+							</View>
+						</>
 					)}
 				</TouchableOpacity>
 			</View>
@@ -101,6 +131,27 @@ const StatusBar: React.FC = () => {
 							</>
 						)}
 
+						{is_staff && (
+							<>
+								<Text style={styles.modalName}>{user?.full_name}</Text>
+								{teacherPhotoUrl && !teacherPhotoError ? (
+									<Image
+										source={{ uri: teacherPhotoUrl }}
+										style={styles.modalImage}
+										onError={() => setTeacherPhotoError(true)}
+									/>
+								) : (
+									<View style={styles.teacherModalPhotoPlaceholder}>
+										<Ionicons
+											name="person"
+											size={48}
+											color={theme.colors.primary}
+										/>
+									</View>
+								)}
+							</>
+						)}
+
 						<LogoutButton />
 					</View>
 				</View>
@@ -142,11 +193,37 @@ const styles = StyleSheet.create({
 		borderWidth: 2,
 		borderColor: theme.colors.primary,
 	},
+	teacherPhotoPlaceholder: {
+		width: 44,
+		height: 44,
+		borderRadius: 22,
+		marginRight: theme.spacing.sm,
+		backgroundColor: theme.colors.surface,
+		borderWidth: 2,
+		borderColor: theme.colors.primary,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	teacherNameContainer: {
+		justifyContent: "center",
+	},
+	teacherModalPhotoPlaceholder: {
+		width: 90,
+		height: 90,
+		borderRadius: 45,
+		marginBottom: theme.spacing.md,
+		backgroundColor: theme.colors.surface,
+		borderWidth: 3,
+		borderColor: theme.colors.primary,
+		justifyContent: "center",
+		alignItems: "center",
+	},
 	name: {
 		fontFamily: theme.typography.family.bold,
 		fontSize: theme.typography.size.md,
 		fontWeight: "bold",
 		color: theme.colors.text,
+		textTransform: "capitalize",
 	},
 	classroom: {
 		fontFamily: theme.typography.family.regular,

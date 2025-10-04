@@ -6,6 +6,7 @@ import { ChatProvider } from "../contexts/ChatContext"
 import { setupNotificationListeners } from "../services/notifications"
 import { attendanceStatus, student } from "../types/students"
 import { ClassroomData } from "../types/teacher"
+import { SessionUser } from "../types/user"
 import LoadingScreen from "./Loading"
 
 const AppContainer = ({ children }: { children: ReactNode }) => {
@@ -17,11 +18,16 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		isLoading,
 		mutate: refreshAppData,
 	} = useSWR<{
+		user: SessionUser
 		students: student[]
 		attendance: attendanceStatus[]
 		roles: ("admin" | "guardian" | "staff")[]
 		classrooms?: ClassroomData[]
 	}>(loggedIn ? "/mobile/profile" : null)
+
+	const academic_year_id =
+		data?.students?.[0]?.academic_year_classroom_students?.[0]?.id ||
+		data?.classrooms?.[0]?.academic_year_id
 
 	// Set up notification listeners when app is authenticated
 	useEffect(() => {
@@ -55,6 +61,8 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 				selectedDate,
 				setSelectedDate: handleSetDate,
 				classrooms: data?.classrooms,
+				user: data?.user,
+				academic_year_id,
 			}}
 		>
 			<ChatProvider selectedStudentId={selectedStudent?.id}>

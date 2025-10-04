@@ -1,7 +1,8 @@
 import React from "react"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { displayName } from "../helpers/students"
 import { theme } from "../helpers/theme"
-import { StudentData } from "../types/students"
+import { student, StudentData } from "../types/students"
 import { ClassroomData } from "../types/teacher"
 import SchoolCard from "./SchoolCard"
 
@@ -149,12 +150,9 @@ export default function ClassroomStudentsList({
 													numberOfLines={1}
 													ellipsizeMode="tail"
 												>
-													{student.last_name}
-													{student.second_last_name
-														? ` ${student.second_last_name}`
-														: ""}
-													, {student.first_name}
-													{student.middle_name ? ` ${student.middle_name}` : ""}
+													{displayName(
+														student as unknown as student
+													).toLowerCase()}
 												</Text>
 												<AttendanceIndicator status={attendanceStatus} />
 											</View>
@@ -209,6 +207,7 @@ const styles = StyleSheet.create({
 		color: theme.colors.text,
 		flex: 1,
 		marginRight: theme.spacing.sm,
+		textTransform: "capitalize",
 	},
 	attendanceIndicator: {
 		width: 24,

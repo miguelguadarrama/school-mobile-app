@@ -1,5 +1,5 @@
-import React from "react"
-import { Text, View, TouchableOpacity, StyleSheet } from "react-native"
+import React, { useState } from "react"
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { theme } from "../../helpers/theme"
 import { chats } from "../../types/chat"
 import { Avatar } from "./Avatar"
@@ -10,20 +10,37 @@ interface ChatroomItemProps {
 	onPress: () => void
 }
 
-export const ChatroomItem: React.FC<ChatroomItemProps> = ({ item, onPress }) => {
+export const ChatroomItem: React.FC<ChatroomItemProps> = ({
+	item,
+	onPress,
+}) => {
 	const lastMessage = item.messages[item.messages.length - 1]
 	const unreadCount = item.messages.filter(
 		(message) => message.sender_alias === "staff" && message.read_at === null
 	).length
+	const [imageError, setImageError] = useState(false)
+
+	const userPhotoUrl = `${process.env.EXPO_PUBLIC_API_BASE_URL?.replace(
+		"/api",
+		""
+	)}/blob/users/${item.userInfo.id}.jpg`
 
 	return (
 		<TouchableOpacity style={styles.chatroomItem} onPress={onPress}>
 			<View style={styles.avatarContainer}>
-				<Avatar
-					name={item.userInfo.full_name}
-					size="large"
-					variant="primary"
-				/>
+				{!imageError ? (
+					<Image
+						source={{ uri: userPhotoUrl }}
+						style={styles.userPhoto}
+						onError={() => setImageError(true)}
+					/>
+				) : (
+					<Avatar
+						name={item.userInfo.full_name}
+						size="large"
+						variant="primary"
+					/>
+				)}
 			</View>
 			<View style={styles.chatroomContent}>
 				<Text style={styles.staffName}>{item.userInfo.full_name}</Text>
@@ -47,6 +64,11 @@ const styles = StyleSheet.create({
 	},
 	avatarContainer: {
 		marginRight: theme.spacing.md,
+	},
+	userPhoto: {
+		width: 48,
+		height: 48,
+		borderRadius: 24,
 	},
 	chatroomContent: {
 		flex: 1,

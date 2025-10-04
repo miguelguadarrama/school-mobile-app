@@ -31,7 +31,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 						numberOfLines={1}
 						ellipsizeMode="tail"
 					>
-						{staffName}
+						{staffName.toLowerCase()}
 					</Text>
 					<Text style={styles.roleHeader}>
 						{role === "admin"
@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
 		fontSize: theme.typography.size.lg,
 		color: theme.colors.text,
 		fontWeight: "600",
+		textTransform: "capitalize",
 	},
 	roleHeader: {
 		fontFamily: theme.typography.family.regular,

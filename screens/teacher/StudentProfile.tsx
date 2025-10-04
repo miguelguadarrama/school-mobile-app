@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons"
 import React, { useContext, useEffect, useState } from "react"
 import {
 	BackHandler,
+	Image,
 	ScrollView,
 	StyleSheet,
 	Text,
@@ -13,6 +14,7 @@ import useSWR from "swr"
 import SchoolCard from "../../components/SchoolCard"
 import AppContext from "../../contexts/AppContext"
 import { useTeacherChatContext } from "../../contexts/TeacherChatContext"
+import { studentPhotoUri } from "../../helpers/students"
 import { theme } from "../../helpers/theme"
 import { fetcher } from "../../services/api"
 import { StudentProfileData, StudentStatusItems } from "../../types/students"
@@ -36,7 +38,7 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 	student,
 	onBack,
 }) => {
-	const { refreshAppData } = useContext(AppContext)!
+	const { refreshAppData, academic_year_id } = useContext(AppContext)!
 	const insets = useSafeAreaInsets()
 	const {
 		data: studentProfile,
@@ -55,6 +57,7 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 	const [moodStatus, setMoodStatus] = useState<string>("")
 	const [peeStatus, setPeeStatus] = useState<string>("")
 	const [poopStatus, setPoopStatus] = useState<string>("")
+	const [imageError, setImageError] = useState(false)
 
 	// Track original state to detect changes
 	const [originalAttendanceState, setOriginalAttendanceState] = useState({
@@ -392,6 +395,8 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 		return () => backHandler.remove()
 	}, [onBack])
 
+	const studentPhotoUrl = studentPhotoUri(academic_year_id, student.id)
+
 	return (
 		<View style={styles.profileContainer}>
 			{/* Header */}
@@ -429,9 +434,17 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 				{/* Avatar Section */}
 				<View style={styles.avatarSection}>
 					<View style={styles.avatarContainer}>
-						<Ionicons name="person" size={60} color={theme.colors.muted} />
+						{!imageError ? (
+							<Image
+								source={{ uri: studentPhotoUrl }}
+								style={styles.studentPhoto}
+								onError={() => setImageError(true)}
+							/>
+						) : (
+							<Ionicons name="person" size={60} color={theme.colors.muted} />
+						)}
 					</View>
-					<Text style={styles.fullName}>{fullName}</Text>
+					<Text style={styles.fullName}>{fullName.toLowerCase()}</Text>
 
 					{/* Quick Actions */}
 					<View style={styles.quickActionsContainer}>
@@ -780,12 +793,12 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 
 							<View style={styles.infoItem}>
 								<Text style={styles.infoLabel}>Nombre Completo</Text>
-								<Text style={styles.infoValue}>{fullName}</Text>
+								<Text style={styles.infoValue}>{fullName.toLowerCase()}</Text>
 							</View>
 
 							<View style={styles.infoItem}>
 								<Text style={styles.infoLabel}>Fecha de Nacimiento</Text>
-								<Text style={styles.infoValue}>
+								<Text style={styles.infoValueNormal}>
 									{formatDate(studentProfile.birthdate)}
 								</Text>
 							</View>
@@ -820,7 +833,7 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 									<View key={guardian.guardian_id} style={styles.guardianItem}>
 										<View style={styles.guardianHeader}>
 											<Text style={styles.guardianName}>
-												{guardian.users.full_name}
+												{guardian.users.full_name.toLowerCase()}
 											</Text>
 											{guardian.is_primary && (
 												<View style={styles.primaryBadge}>
@@ -831,9 +844,9 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 										<Text style={styles.guardianRelationship}>
 											{getRelationshipLabel(guardian.relationship_type_alias)}
 										</Text>
-										<Text style={styles.guardianEmail}>
+										{/* <Text style={styles.guardianEmail}>
 											{guardian.users.email}
-										</Text>
+										</Text> */}
 									</View>
 								))}
 
@@ -934,6 +947,11 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		marginBottom: theme.spacing.md,
 		...theme.shadow.card,
+		overflow: "hidden",
+	},
+	studentPhoto: {
+		width: 120,
+		height: 120,
 	},
 	fullName: {
 		fontSize: theme.typography.size.xl,
@@ -941,6 +959,7 @@ const styles = StyleSheet.create({
 		color: theme.colors.text,
 		textAlign: "center",
 		marginBottom: theme.spacing.xs,
+		textTransform: "capitalize",
 	},
 	subtitle: {
 		fontSize: theme.typography.size.md,
@@ -971,6 +990,12 @@ const styles = StyleSheet.create({
 		textTransform: "uppercase",
 	},
 	infoValue: {
+		fontSize: theme.typography.size.md,
+		fontFamily: theme.typography.family.regular,
+		color: theme.colors.text,
+		textTransform: "capitalize",
+	},
+	infoValueNormal: {
 		fontSize: theme.typography.size.md,
 		fontFamily: theme.typography.family.regular,
 		color: theme.colors.text,
@@ -1018,6 +1043,7 @@ const styles = StyleSheet.create({
 		fontFamily: theme.typography.family.bold,
 		color: theme.colors.text,
 		flex: 1,
+		textTransform: "capitalize",
 	},
 	primaryBadge: {
 		backgroundColor: theme.colors.primary,
@@ -1041,6 +1067,7 @@ const styles = StyleSheet.create({
 		fontSize: theme.typography.size.sm,
 		fontFamily: theme.typography.family.regular,
 		color: theme.colors.text,
+		textTransform: "lowercase",
 	},
 	attendanceItem: {
 		paddingBottom: theme.spacing.md,

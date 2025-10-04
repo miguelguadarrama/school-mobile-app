@@ -24,3 +24,10 @@ export const displayShortName = (student: student) => {
   }
   return name
 }
+
+export const studentPhotoUri = (academic_year_id: string | undefined, student_id: string) => {
+  return `${process.env.EXPO_PUBLIC_API_BASE_URL.replace(
+    "/api",
+    ""
+  )}/blob/students/${academic_year_id}/${student_id}.jpg`
+}
