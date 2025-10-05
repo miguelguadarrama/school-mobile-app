@@ -33,8 +33,9 @@ const StatusBar: React.FC = () => {
 	const hasMultipleRoles = roles.length > 1
 	const is_guardian = (selectedRole === "guardian" || (!selectedRole && roles.includes("guardian"))) && selectedStudent
 	const is_staff = selectedRole === "staff" || (!selectedRole && roles.includes("staff"))
+	const is_admin = selectedRole === "admin" || (!selectedRole && roles.includes("admin"))
 	const teacherPhotoUrl =
-		is_staff && user?.id
+		(is_staff || is_admin) && user?.id
 			? `${process.env.EXPO_PUBLIC_STORAGE_URL}/app/users/${user.id}.jpg`
 			: null
 
@@ -132,7 +133,7 @@ const StatusBar: React.FC = () => {
 							</>
 						)}
 
-						{is_staff && (
+						{(is_staff || is_admin) && (
 							<>
 								<Text style={styles.modalName}>{user?.full_name}</Text>
 								{teacherPhotoUrl && !teacherPhotoError ? (

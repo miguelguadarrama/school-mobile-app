@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons"
-import React, { useContext, useEffect, useState } from "react"
+import React, { useContext } from "react"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import useSWR from "swr"
@@ -10,36 +10,20 @@ import { theme } from "../helpers/theme"
 import { SocialPostModal } from "./teacher/SocialPostModal"
 
 export default function SocialScreen() {
-	const { selectedStudent, roles } = useContext(AppContext)!
+	const { selectedRole } = useContext(AppContext)!
 	const { isSocialPostModalActive, setIsSocialPostModalActive } =
 		useContext(TabContext)
-	const is_teacher = roles.includes("staff")
-	const [classroom, setClassroom] = useState<{
-		id: string
-		name: string
-	} | null>(null)
-	useEffect(() => {
-		setClassroom(
-			selectedStudent?.academic_year_classroom_students?.[0]?.classrooms as {
-				id: string
-				name: string
-			} | null
-		)
-	}, [selectedStudent])
 
-	const { data, isLoading, mutate } = useSWR(`/mobile/posts/classroom`)
-
-	// Handle refresh action
-	const handleRefresh = async () => {
-		await mutate()
-	}
+	const { data, isLoading, mutate } = useSWR(
+		selectedRole === "admin" ? `/mobile/posts/admin` : `/mobile/posts/classroom`
+	)
 
 	return (
 		<View style={styles.container}>
 			<SafeAreaView edges={["top"]} style={styles.headerContainer}>
 				<View style={styles.headerContent}>
 					<Text style={styles.heading}>Social</Text>
-					{is_teacher && (
+					{selectedRole === "staff" && (
 						<TouchableOpacity
 							style={styles.createPostButton}
 							onPress={() => setIsSocialPostModalActive(true)}
@@ -55,7 +39,7 @@ export default function SocialScreen() {
 				emptyTitle="No hay publicaciones"
 				emptySubtitle="Las publicaciones de tu salón de clases aparecerán aquí"
 				posts={data}
-				onRefresh={handleRefresh}
+				onRefresh={mutate}
 				isRefreshing={isLoading}
 			/>
 
