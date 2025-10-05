@@ -9,6 +9,7 @@ export interface BlogPost {
   published_at?: string
   post_media?: BlogPostMedia[]
   users: {
+    id: string
     full_name: string
     email: string
   },

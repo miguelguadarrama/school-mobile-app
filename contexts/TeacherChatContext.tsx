@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useState } from "react"
 import useSWR from "swr"
 import { fetcher } from "../services/api"
 import { chat_message, chats } from "../types/chat"
+import AppContext from "./AppContext"
 
 interface TeacherChatContextType {
 	// UI State
@@ -41,7 +42,7 @@ export const TeacherChatProvider: React.FC<{
 	// UI State
 	const [isChatWindowOpen, setIsChatWindowOpen] = useState(false)
 	const [selectedChat, setSelectedChat] = useState<chats | null>(null)
-
+	const { selectedRole } = useContext(AppContext)!
 	// Optimistic messages state
 	const [optimisticMessages, setOptimisticMessages] = useState<{
 		[key: string]: chat_message[]
@@ -52,11 +53,14 @@ export const TeacherChatProvider: React.FC<{
 		data: rawChats,
 		isLoading,
 		mutate: refreshChats,
-	} = useSWR<chats[]>("/mobile/chat/teacher", {
-		refreshInterval: 15000,
-		dedupingInterval: 10000,
-		revalidateOnFocus: true,
-	})
+	} = useSWR<chats[]>(
+		selectedRole === "admin" ? "/mobile/chat/admin" : "/mobile/chat/teacher",
+		{
+			refreshInterval: 15000,
+			dedupingInterval: 10000,
+			revalidateOnFocus: true,
+		}
+	)
 
 	// Merge real data with optimistic messages
 	const chats = rawChats

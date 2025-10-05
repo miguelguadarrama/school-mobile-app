@@ -6,12 +6,14 @@ import React, { memo, useCallback, useState } from "react"
 import {
 	Dimensions,
 	FlatList,
+	Image,
 	RefreshControl,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View,
 } from "react-native"
+import { getStaffPhotoUrl } from "../../helpers/staff"
 import dayjs from "../../lib/dayjs"
 import { SocialStackParamList } from "../../types/navigation"
 import { BlogPost } from "../../types/post"
@@ -44,7 +46,9 @@ const BlogPostItem = memo<{
 	navigation: BlogPostListNavigationProp
 }>(({ item, onCardPress, navigation }) => {
 	const [isExpanded, setIsExpanded] = useState(false)
+	const [photoError, setPhotoError] = useState(false)
 	const hasMedia = item.post_media && item.post_media.length > 0
+	const staffPhotoUrl = item.users?.id ? getStaffPhotoUrl(item.users.id) : null
 
 	const handlePress = useCallback(() => {
 		onCardPress?.(item)
@@ -83,9 +87,17 @@ const BlogPostItem = memo<{
 				<View style={styles.postContentFull}>
 					{/* Author Section - Now at the top */}
 					<View style={styles.authorSection}>
-						<View style={styles.avatar}>
-							<Ionicons name="person" size={20} color="#666" />
-						</View>
+						{staffPhotoUrl && !photoError ? (
+							<Image
+								source={{ uri: staffPhotoUrl }}
+								style={styles.avatar}
+								onError={() => setPhotoError(true)}
+							/>
+						) : (
+							<View style={styles.avatar}>
+								<Ionicons name="person" size={20} color="#666" />
+							</View>
+						)}
 						<View style={styles.authorInfo}>
 							<Text style={styles.authorName}>
 								{item.users.full_name.toLowerCase()}
@@ -124,6 +136,13 @@ const BlogPostItem = memo<{
 							postTitle={item.title}
 							onPress={handlePhotoPress}
 						/>
+					)}
+
+					{/* Footer with classroom info */}
+					{item.classrooms?.name && (
+						<View style={styles.footer}>
+							<Text style={styles.classroomText}>{item.classrooms.name}</Text>
+						</View>
 					)}
 				</View>
 			</SchoolCard>
@@ -285,6 +304,17 @@ const styles = StyleSheet.create({
 		color: "#333",
 		marginBottom: 2,
 		textTransform: "capitalize",
+	},
+	footer: {
+		marginTop: 12,
+		paddingTop: 12,
+		borderTopWidth: 1,
+		borderTopColor: "#f0f0f0",
+	},
+	classroomText: {
+		fontSize: 12,
+		color: "#888",
+		fontWeight: "500",
 	},
 	publishDate: {
 		fontSize: 12,

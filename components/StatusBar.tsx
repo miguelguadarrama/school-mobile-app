@@ -9,14 +9,22 @@ import {
 	View,
 } from "react-native"
 import AppContext from "../contexts/AppContext"
+import { getStaffPhotoUrl } from "../helpers/staff"
 import { displayName } from "../helpers/students"
 import { theme } from "../helpers/theme"
 import LogoutButton from "./common/LogoutButton"
 import StudentPhoto from "./ui/studentPhoto"
 
 const StatusBar: React.FC = () => {
-	const { roles, user, students, selectedStudent, setSelectedStudent, selectedRole, setSelectedRole } =
-		useContext(AppContext)!
+	const {
+		roles,
+		user,
+		students,
+		selectedStudent,
+		setSelectedStudent,
+		selectedRole,
+		setSelectedRole,
+	} = useContext(AppContext)!
 	const [modalVisible, setModalVisible] = useState(false)
 	const [teacherPhotoError, setTeacherPhotoError] = useState(false)
 
@@ -31,13 +39,16 @@ const StatusBar: React.FC = () => {
 	}
 
 	const hasMultipleRoles = roles.length > 1
-	const is_guardian = (selectedRole === "guardian" || (!selectedRole && roles.includes("guardian"))) && selectedStudent
-	const is_staff = selectedRole === "staff" || (!selectedRole && roles.includes("staff"))
-	const is_admin = selectedRole === "admin" || (!selectedRole && roles.includes("admin"))
+	const is_guardian =
+		(selectedRole === "guardian" ||
+			(!selectedRole && roles.includes("guardian"))) &&
+		selectedStudent
+	const is_staff =
+		selectedRole === "staff" || (!selectedRole && roles.includes("staff"))
+	const is_admin =
+		selectedRole === "admin" || (!selectedRole && roles.includes("admin"))
 	const teacherPhotoUrl =
-		(is_staff || is_admin) && user?.id
-			? `${process.env.EXPO_PUBLIC_STORAGE_URL}/app/users/${user.id}.jpg`
-			: null
+		(is_staff || is_admin) && user?.id ? getStaffPhotoUrl(user.id) : null
 
 	//const gender = selectedStudent.gender_alias === "gender_male" ? "boy" : "girl"
 
