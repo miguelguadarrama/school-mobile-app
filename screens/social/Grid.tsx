@@ -1,5 +1,5 @@
 // PhotoGridScreen.tsx
-import React from "react"
+import React, { useState } from "react"
 import {
 	View,
 	Text,
@@ -9,6 +9,7 @@ import {
 	Dimensions,
 	TouchableOpacity,
 	Alert,
+	Animated,
 } from "react-native"
 import { useRoute, useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
@@ -25,6 +26,42 @@ type PhotoGridScreenNavigationProp = NativeStackNavigationProp<
 const { width: screenWidth } = Dimensions.get("window")
 const imageWidth = screenWidth / 2
 
+const PhotoPlaceholder = () => {
+	const pulseAnim = React.useRef(new Animated.Value(0)).current
+
+	React.useEffect(() => {
+		const pulse = Animated.loop(
+			Animated.sequence([
+				Animated.timing(pulseAnim, {
+					toValue: 1,
+					duration: 1000,
+					useNativeDriver: true,
+				}),
+				Animated.timing(pulseAnim, {
+					toValue: 0,
+					duration: 1000,
+					useNativeDriver: true,
+				}),
+			])
+		)
+		pulse.start()
+		return () => pulse.stop()
+	}, [])
+
+	const opacity = pulseAnim.interpolate({
+		inputRange: [0, 1],
+		outputRange: [0.4, 0.8],
+	})
+
+	return (
+		<View style={styles.placeholder}>
+			<Animated.View style={{ opacity }}>
+				<Ionicons name="image-outline" size={48} color="#999" />
+			</Animated.View>
+		</View>
+	)
+}
+
 const PhotoGridScreen = () => {
 	const route = useRoute()
 	const navigation = useNavigation<PhotoGridScreenNavigationProp>()
@@ -33,6 +70,8 @@ const PhotoGridScreen = () => {
 		photos: BlogPostMedia[]
 		title?: string
 	}
+
+	const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
 
 	const handleImagePress = (index: number) => {
 		navigation.navigate("PhotoViewer", {
@@ -44,6 +83,10 @@ const PhotoGridScreen = () => {
 
 	const handleImageError = (photoId: string) => {
 		console.warn(`Failed to load image with ID: ${photoId}`)
+	}
+
+	const handleImageLoad = (photoId: string) => {
+		setLoadedImages((prev) => new Set([...prev, photoId]))
 	}
 
 	const handleGoBack = () => {
@@ -65,10 +108,12 @@ const PhotoGridScreen = () => {
 						onPress={() => handleImagePress(i)}
 						activeOpacity={0.8}
 					>
+						{!loadedImages.has(leftPhoto.id) && <PhotoPlaceholder />}
 						<Image
 							source={{ uri: leftPhoto.file_url }}
 							style={styles.gridImage}
 							onError={() => handleImageError(leftPhoto.id)}
+							onLoad={() => handleImageLoad(leftPhoto.id)}
 							resizeMode="cover"
 						/>
 					</TouchableOpacity>
@@ -79,10 +124,12 @@ const PhotoGridScreen = () => {
 							onPress={() => handleImagePress(i + 1)}
 							activeOpacity={0.8}
 						>
+							{!loadedImages.has(rightPhoto.id) && <PhotoPlaceholder />}
 							<Image
 								source={{ uri: rightPhoto.file_url }}
 								style={styles.gridImage}
 								onError={() => handleImageError(rightPhoto.id)}
+								onLoad={() => handleImageLoad(rightPhoto.id)}
 								resizeMode="cover"
 							/>
 						</TouchableOpacity>
@@ -95,7 +142,7 @@ const PhotoGridScreen = () => {
 	}
 
 	return (
-		<SafeAreaView style={styles.container} edges={["top"]}>
+		<SafeAreaView style={styles.container} edges={["top", "bottom"]}>
 			<View style={styles.header}>
 				<TouchableOpacity
 					style={styles.backButton}
@@ -185,7 +232,18 @@ const styles = StyleSheet.create({
 	gridImage: {
 		width: "100%",
 		height: "100%",
-		backgroundColor: "#222", // Dark placeholder while loading
+		backgroundColor: "#e5e5e5", // Light gray placeholder while loading
+	},
+	placeholder: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		backgroundColor: "#e5e5e5",
+		justifyContent: "center",
+		alignItems: "center",
+		zIndex: 1,
 	},
 })
 
