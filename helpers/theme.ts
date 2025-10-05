@@ -60,6 +60,6 @@ export const theme = {
   },
   typography: {
     family: { regular: "Nunito_400Regular", bold: "Nunito_700Bold" },
-    size: { sm: 14, md: 16, lg: 18, xl: 22, xxl: 28 },
+    size: { xs: 12, sm: 14, md: 16, lg: 18, xl: 22, xxl: 28 },
   },
 };
