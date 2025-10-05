@@ -25,6 +25,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const NOTIFICATION_PREFERENCE_KEY = "user_notification_preference"
+const SELECTED_ROLE_KEY = "user_selected_role"
 
 const shouldRegisterForNotifications = async (): Promise<boolean> => {
 	try {
@@ -85,6 +86,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const logout = async () => {
 		// Unregister push notifications before logout
 		await unregisterPushToken()
+		// Clear saved role preference
+		try {
+			await SecureStore.deleteItemAsync(SELECTED_ROLE_KEY)
+		} catch (error) {
+			console.error("Error clearing saved role:", error)
+		}
 		await authLogout()
 		setUser(null)
 		setLoggedIn(false)

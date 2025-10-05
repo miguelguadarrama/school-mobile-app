@@ -1,3 +1,4 @@
+import * as SecureStore from "expo-secure-store"
 import { ReactNode, useEffect, useState } from "react"
 import useSWR from "swr"
 import AppContext from "../contexts/AppContext"
@@ -9,11 +10,14 @@ import { ClassroomData } from "../types/teacher"
 import { SessionUser } from "../types/user"
 import LoadingScreen from "./Loading"
 
+const SELECTED_ROLE_KEY = "user_selected_role"
+
 const AppContainer = ({ children }: { children: ReactNode }) => {
 	const { loggedIn } = useAuth()
 	const [selectedDate, setSelectedDate] = useState(new Date())
 	const [selectedStudent, setSelectedStudent] = useState<student | null>(null)
 	const [selectedRole, setSelectedRole] = useState<"admin" | "guardian" | "staff" | null>(null)
+	const [isRoleLoaded, setIsRoleLoaded] = useState(false)
 	const {
 		data,
 		isLoading,
@@ -30,6 +34,29 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		data?.students?.[0]?.academic_year_classroom_students?.[0]?.classrooms
 			?.academic_years?.id || data?.classrooms?.[0]?.academic_year_id
 
+	// Load saved role when user logs in
+	useEffect(() => {
+		const loadSavedRole = async () => {
+			if (loggedIn && data?.roles) {
+				try {
+					const savedRole = await SecureStore.getItemAsync(SELECTED_ROLE_KEY)
+					if (savedRole && data.roles.includes(savedRole as any)) {
+						// Only set saved role if user still has that role
+						setSelectedRole(savedRole as "admin" | "guardian" | "staff")
+					}
+				} catch (error) {
+					console.error("Error loading saved role:", error)
+				} finally {
+					setIsRoleLoaded(true)
+				}
+			} else if (!loggedIn) {
+				setIsRoleLoaded(false)
+			}
+		}
+
+		loadSavedRole()
+	}, [loggedIn, data?.roles])
+
 	// Set up notification listeners when app is authenticated
 	useEffect(() => {
 		if (loggedIn) {
@@ -38,7 +65,7 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		}
 	}, [loggedIn])
 
-	if (loggedIn && isLoading) {
+	if (loggedIn && (isLoading || !isRoleLoaded)) {
 		return <LoadingScreen />
 	}
 
@@ -52,6 +79,20 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		data?.students?.[0]?.academic_year_classroom_students?.[0]?.classrooms
 			?.academic_years
 
+	// Handler to persist role selection
+	const handleSetSelectedRole = async (role: "admin" | "guardian" | "staff" | null) => {
+		setSelectedRole(role)
+		try {
+			if (role) {
+				await SecureStore.setItemAsync(SELECTED_ROLE_KEY, role)
+			} else {
+				await SecureStore.deleteItemAsync(SELECTED_ROLE_KEY)
+			}
+		} catch (error) {
+			console.error("Error saving role:", error)
+		}
+	}
+
 	//console.log({ id: data?.students?.[0]?.id, attendance: data?.attendance })
 	return (
 		<AppContext.Provider
@@ -60,7 +101,7 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 				refreshAppData,
 				roles: data?.roles || [],
 				selectedRole,
-				setSelectedRole,
+				setSelectedRole: handleSetSelectedRole,
 				students: data?.students || [],
 				selectedStudent,
 				setSelectedStudent,

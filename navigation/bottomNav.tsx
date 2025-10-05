@@ -72,6 +72,14 @@ const teacherTabScreens: TabScreen[] = [
 	{ name: "Opciones", component: OptionsScreen },
 ]
 
+const adminTabScreens: TabScreen[] = [
+	{ name: "Anuncios", component: AnnouncementsScreen },
+	{ name: "Social", component: SocialScreen },
+	{ name: "Inicio", component: HomeTeacherScreen },
+	{ name: "Mensajería", component: TeacherMessagingScreen },
+	{ name: "Opciones", component: OptionsScreen },
+]
+
 // Custom hook to check teacher chat context (now always available)
 const useTeacherChatWindowState = () => {
 	const context = useTeacherChatContext()
@@ -195,8 +203,11 @@ function SwipeableTabContent(): JSX.Element {
 	)
 
 	// Determine which screens to show based on selected role (or single role)
-	const effectiveRole = selectedRole || (roles.includes("staff") ? "staff" : "guardian")
-	const appScreens = effectiveRole === "staff" ? teacherTabScreens : tabScreens
+	const effectiveRole = selectedRole || (roles.includes("staff") ? "staff" : roles.includes("admin") ? "admin" : "guardian")
+	const appScreens =
+		effectiveRole === "staff" ? teacherTabScreens :
+		effectiveRole === "admin" ? adminTabScreens :
+		tabScreens
 
 	// Handle Android back button
 	useEffect(() => {

@@ -16,10 +16,6 @@ export default function RoleSelector() {
 	const { roles, setSelectedRole } = useContext(AppContext)!
 
 	const handleRoleSelection = (role: "admin" | "guardian" | "staff") => {
-		if (role === "admin") {
-			// Admin screens not implemented yet
-			return
-		}
 		setSelectedRole(role)
 	}
 
@@ -122,34 +118,30 @@ export default function RoleSelector() {
 						</TouchableOpacity>
 					)}
 
-					{/* Admin button - always show but disabled */}
-					<TouchableOpacity
-						style={[styles.roleCard, styles.roleCardDisabled]}
-						onPress={() => handleRoleSelection("admin")}
-						disabled={true}
-					>
-						<View
-							style={[
-								styles.iconContainer,
-								{ backgroundColor: theme.colors.muted },
-							]}
+					{/* Admin button - show if user has admin role */}
+					{roles.includes("admin") && (
+						<TouchableOpacity
+							style={styles.roleCard}
+							onPress={() => handleRoleSelection("admin")}
 						>
-							<Ionicons
-								name={getRoleIcon("admin")}
-								size={32}
-								color={theme.colors.white}
-							/>
-						</View>
-						<Text style={[styles.roleTitle, styles.roleTextDisabled]}>
-							{getRoleTitle("admin")}
-						</Text>
-						<Text style={[styles.roleDescription, styles.roleTextDisabled]}>
-							{getRoleDescription("admin")}
-						</Text>
-						<View style={styles.comingSoonBadge}>
-							<Text style={styles.comingSoonText}>Próximamente</Text>
-						</View>
-					</TouchableOpacity>
+							<View
+								style={[
+									styles.iconContainer,
+									{ backgroundColor: theme.colors.accent1 },
+								]}
+							>
+								<Ionicons
+									name={getRoleIcon("admin")}
+									size={32}
+									color={theme.colors.white}
+								/>
+							</View>
+							<Text style={styles.roleTitle}>{getRoleTitle("admin")}</Text>
+							<Text style={styles.roleDescription}>
+								{getRoleDescription("admin")}
+							</Text>
+						</TouchableOpacity>
+					)}
 				</View>
 
 				{/* Bottom spacing for safe area */}

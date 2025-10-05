@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
 	noDataText: {
 		fontSize: theme.typography.size.md,
 		fontFamily: theme.typography.family.regular,
-		color: theme.colors.secondary,
+		color: theme.colors.muted,
 		textAlign: "center",
 		padding: theme.spacing.lg,
 	},
