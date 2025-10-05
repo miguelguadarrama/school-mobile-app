@@ -4,8 +4,8 @@ import {
 	LucideClock,
 	LucideX,
 } from "lucide-react-native"
-import React, { useContext, useEffect, useMemo } from "react"
-import { BackHandler, FlatList, StyleSheet, Text, View } from "react-native"
+import React, { useContext, useEffect, useMemo, useState } from "react"
+import { BackHandler, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import useSWR from "swr"
 import AppContext from "../../contexts/AppContext"
 import { theme } from "../../helpers/theme"
@@ -49,6 +49,7 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 			? `/mobile/students/${selectedStudent.id}/attendance`
 			: null
 	)
+	const [expandedDay, setExpandedDay] = useState<string | null>(null)
 
 	useEffect(() => {
 		const handleBackPress = () => {
@@ -259,6 +260,49 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 		}
 	}
 
+	const getStatusLabel = (type: string, value?: string) => {
+		if (!value) return "Sin registro"
+
+		switch (type) {
+			case "attendance":
+				switch (value) {
+					case "attendance_status_present": return "Presente"
+					case "attendance_status_late": return "Llegó tarde"
+					case "attendance_status_absent": return "Ausente"
+					default: return "Sin registro"
+				}
+			case "mood":
+				switch (value) {
+					case "mood_status_happy": return "Feliz"
+					case "mood_status_tired": return "Cansado/a"
+					case "mood_status_sad": return "Triste"
+					case "mood_status_sick": return "Enfermo/a"
+					default: return "Sin registro"
+				}
+			case "meal":
+				switch (value) {
+					case "meal_status_ok": return "Comió bien"
+					case "meal_status_little": return "Comió poco"
+					case "meal_status_no": return "No comió"
+					default: return "Sin registro"
+				}
+			case "pee":
+				switch (value) {
+					case "pee_status_yes": return "Sí"
+					case "pee_status_no": return "No"
+					default: return "Sin registro"
+				}
+			case "poop":
+				switch (value) {
+					case "poop_status_yes": return "Sí"
+					case "poop_status_no": return "No"
+					default: return "Sin registro"
+				}
+			default:
+				return "Sin registro"
+		}
+	}
+
 	const renderWeek = ({ item: week }: { item: WeekItem }) => {
 		return (
 			<View style={styles.weekCard}>
@@ -272,10 +316,15 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 					const pee = getPeeIcon(day.peeStatus as PeeStatus)
 					const poop = getPoopIcon(day.poopStatus as PoopStatus)
 					const isLastDay = index === week.days.length - 1
+					const isExpanded = expandedDay === day.date
 
 					return (
 						<View key={day.date}>
-							<View style={[styles.dayRow, day.isWeekend && styles.weekendDay]}>
+							<TouchableOpacity
+								style={[styles.dayRow, day.isWeekend && styles.weekendDay]}
+								onPress={() => setExpandedDay(isExpanded ? null : day.date)}
+								activeOpacity={0.7}
+							>
 								<View style={styles.dayInfo}>
 									<Text style={[styles.dayName, day.isWeekend && styles.weekendText]}>
 										{day.dayName}
@@ -306,7 +355,87 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 										<Ionicons name={poop.icon} size={18} color={poop.color} />
 									</View>
 								</View>
-							</View>
+							</TouchableOpacity>
+
+							{/* Expanded Details */}
+							{isExpanded && (
+								<View style={styles.expandedSection}>
+									{/* Attendance */}
+									<View style={styles.statusDetail}>
+										<View style={styles.statusDetailIcon}>
+											<View
+												style={[
+													styles.largeAttendanceIndicator,
+													{ backgroundColor: getAttendanceStatusColor(day.attendanceStatus) },
+												]}
+											>
+												{AttendanceIcon && (
+													<AttendanceIcon size={24} color={theme.colors.white} />
+												)}
+											</View>
+										</View>
+										<View style={styles.statusDetailText}>
+											<Text style={styles.statusDetailLabel}>Asistencia</Text>
+											<Text style={styles.statusDetailValue}>
+												{getStatusLabel("attendance", day.attendanceStatus)}
+											</Text>
+										</View>
+									</View>
+
+									{/* Mood */}
+									<View style={styles.statusDetail}>
+										<View style={styles.statusDetailIcon}>
+											<Ionicons name={mood.icon} size={32} color={mood.color} />
+										</View>
+										<View style={styles.statusDetailText}>
+											<Text style={styles.statusDetailLabel}>Estado de ánimo</Text>
+											<Text style={styles.statusDetailValue}>
+												{getStatusLabel("mood", day.moodStatus)}
+											</Text>
+										</View>
+									</View>
+
+									{/* Meal */}
+									<View style={styles.statusDetail}>
+										<View style={styles.statusDetailIcon}>
+											<Ionicons name={meal.icon} size={32} color={meal.color} />
+										</View>
+										<View style={styles.statusDetailText}>
+											<Text style={styles.statusDetailLabel}>Comida</Text>
+											<Text style={styles.statusDetailValue}>
+												{getStatusLabel("meal", day.mealStatus)}
+											</Text>
+										</View>
+									</View>
+
+									{/* Pee */}
+									<View style={styles.statusDetail}>
+										<View style={styles.statusDetailIcon}>
+											<Ionicons name={pee.icon} size={32} color={pee.color} />
+										</View>
+										<View style={styles.statusDetailText}>
+											<Text style={styles.statusDetailLabel}>Orina</Text>
+											<Text style={styles.statusDetailValue}>
+												{getStatusLabel("pee", day.peeStatus)}
+											</Text>
+										</View>
+									</View>
+
+									{/* Poop */}
+									<View style={styles.statusDetail}>
+										<View style={styles.statusDetailIcon}>
+											<Ionicons name={poop.icon} size={32} color={poop.color} />
+										</View>
+										<View style={styles.statusDetailText}>
+											<Text style={styles.statusDetailLabel}>Heces</Text>
+											<Text style={styles.statusDetailValue}>
+												{getStatusLabel("poop", day.poopStatus)}
+											</Text>
+										</View>
+									</View>
+								</View>
+							)}
+
 							{!isLastDay && <View style={styles.daySeparator} />}
 						</View>
 					)
@@ -421,5 +550,43 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		gap: 6,
+	},
+	expandedSection: {
+		padding: theme.spacing.md,
+		backgroundColor: theme.colors.surface,
+		borderTopWidth: 1,
+		borderTopColor: theme.colors.border,
+	},
+	statusDetail: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: theme.spacing.sm,
+	},
+	statusDetailIcon: {
+		width: 48,
+		alignItems: "center",
+		justifyContent: "center",
+		marginRight: theme.spacing.sm,
+	},
+	largeAttendanceIndicator: {
+		width: 40,
+		height: 40,
+		borderRadius: 20,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	statusDetailText: {
+		flex: 1,
+	},
+	statusDetailLabel: {
+		fontFamily: theme.typography.family.bold,
+		fontSize: theme.typography.size.sm,
+		color: theme.colors.muted,
+		marginBottom: 2,
+	},
+	statusDetailValue: {
+		fontFamily: theme.typography.family.regular,
+		fontSize: theme.typography.size.md,
+		color: theme.colors.text,
 	},
 })
