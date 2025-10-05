@@ -47,6 +47,10 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		setSelectedDate(date)
 	}
 
+	const academic_year =
+		data?.students?.[0]?.academic_year_classroom_students?.[0]?.classrooms
+			?.academic_years
+
 	//console.log({ id: data?.students?.[0]?.id, attendance: data?.attendance })
 	return (
 		<AppContext.Provider
@@ -63,6 +67,7 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 				classrooms: data?.classrooms,
 				user: data?.user,
 				academic_year_id,
+				academic_year,
 			}}
 		>
 			<ChatProvider selectedStudentId={selectedStudent?.id}>

@@ -83,6 +83,7 @@ function SwipeableTabContent(): JSX.Element {
 	const [isPhotoViewerActive, setIsPhotoViewerActive] = useState<boolean>(false)
 	const [isStudentProfileActive, setIsStudentProfileActive] = useState<boolean>(false)
 	const [isSocialPostModalActive, setIsSocialPostModalActive] = useState<boolean>(false)
+	const [isAttendanceModalActive, setIsAttendanceModalActive] = useState<boolean>(false)
 	const isSwipingRef = useRef<boolean>(false)
 	const targetIndexRef = useRef<number>(2)
 	const { isChatWindowOpen } = useChatContext()
@@ -152,14 +153,15 @@ function SwipeableTabContent(): JSX.Element {
 				!isPhotoViewerActive &&
 				!isChatWindowOpen &&
 				!isTeacherChatWindowOpen &&
-				!isStudentProfileActive
+				!isStudentProfileActive &&
+				!isAttendanceModalActive
 			) {
 				targetIndexRef.current = index
 				setCurrentIndex(index)
 				pagerRef.current?.setPage(index)
 			}
 		},
-		[currentIndex, isPhotoViewerActive, isChatWindowOpen, isTeacherChatWindowOpen, isStudentProfileActive]
+		[currentIndex, isPhotoViewerActive, isChatWindowOpen, isTeacherChatWindowOpen, isStudentProfileActive, isAttendanceModalActive]
 	)
 
 	// Render screens with performance optimization
@@ -191,6 +193,8 @@ function SwipeableTabContent(): JSX.Element {
 				setIsStudentProfileActive,
 				isSocialPostModalActive,
 				setIsSocialPostModalActive,
+				isAttendanceModalActive,
+				setIsAttendanceModalActive,
 			}}
 		>
 			<View style={styles.container}>
@@ -202,7 +206,7 @@ function SwipeableTabContent(): JSX.Element {
 					onPageScrollStateChanged={onPageScrollStateChanged}
 					orientation="horizontal"
 					overdrag={false}
-					scrollEnabled={!isPhotoViewerActive && !isChatWindowOpen && !isTeacherChatWindowOpen && !isStudentProfileActive && !isSocialPostModalActive} // Disable scrolling when PhotoViewer, ChatWindow, StudentProfile, or SocialPostModal is active
+					scrollEnabled={!isPhotoViewerActive && !isChatWindowOpen && !isTeacherChatWindowOpen && !isStudentProfileActive && !isSocialPostModalActive && !isAttendanceModalActive} // Disable scrolling when PhotoViewer, ChatWindow, StudentProfile, SocialPostModal, or AttendanceModal is active
 					pageMargin={0}
 				>
 					{appScreens
@@ -221,7 +225,7 @@ function SwipeableTabContent(): JSX.Element {
 
 // Custom tab bar component
 function CustomTabBar(): JSX.Element | null {
-	const { currentIndex, navigateToTab, isPhotoViewerActive, isStudentProfileActive, isSocialPostModalActive } =
+	const { currentIndex, navigateToTab, isPhotoViewerActive, isStudentProfileActive, isSocialPostModalActive, isAttendanceModalActive } =
 		useContext(TabContext)
 	const { isChatWindowOpen } = useChatContext()
 	const isTeacherChatWindowOpen = useTeacherChatWindowState()
@@ -246,8 +250,8 @@ function CustomTabBar(): JSX.Element | null {
 		}
 	}
 
-	// Hide tab bar when PhotoViewer, ChatWindow, StudentProfile, or SocialPostModal is active
-	if (isPhotoViewerActive || isChatWindowOpen || isTeacherChatWindowOpen || isStudentProfileActive || isSocialPostModalActive) {
+	// Hide tab bar when PhotoViewer, ChatWindow, StudentProfile, SocialPostModal, or AttendanceModal is active
+	if (isPhotoViewerActive || isChatWindowOpen || isTeacherChatWindowOpen || isStudentProfileActive || isSocialPostModalActive || isAttendanceModalActive) {
 		return null
 	}
 

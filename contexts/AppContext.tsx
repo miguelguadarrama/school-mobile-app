@@ -1,5 +1,5 @@
 import { createContext } from "react"
-import { attendanceStatus, student } from "../types/students"
+import { academic_year, attendanceStatus, student } from "../types/students"
 import { ClassroomData } from "../types/teacher"
 import { SessionUser } from "../types/user"
 
@@ -16,6 +16,7 @@ interface AppContextType {
 	isDataLoading: boolean
 	user?: SessionUser
 	academic_year_id?: string
+	academic_year?: academic_year
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)

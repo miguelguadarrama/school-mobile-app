@@ -5,8 +5,9 @@ import {
 	LucideX,
 } from "lucide-react-native"
 import React, { useContext } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import AppContext from "../../contexts/AppContext"
+import { TabContext } from "../../contexts/TabContext"
 import { theme } from "../../helpers/theme"
 
 interface AttendanceRecord {
@@ -25,8 +26,9 @@ interface AttendanceCardProps {
 export default function AttendanceCard({
 	locale = "es-VE",
 }: AttendanceCardProps) {
-	const { selectedStudent, attendance, selectedDate, setSelectedDate } =
+	const { selectedStudent, attendance, selectedDate } =
 		useContext(AppContext)!
+	const { setIsAttendanceModalActive } = useContext(TabContext)
 
 	if (!selectedStudent) {
 		return null
@@ -114,7 +116,7 @@ export default function AttendanceCard({
 	}
 
 	return (
-		<View style={styles.card}>
+		<TouchableOpacity style={styles.card} onPress={() => setIsAttendanceModalActive(true)}>
 			<View style={styles.weekContainer}>
 				{weekDates.map((date, index) => {
 					// Format date in local timezone
@@ -138,7 +140,6 @@ export default function AttendanceCard({
 						<View
 							key={index}
 							style={[styles.dayColumn, isToday && styles.todayColumn]}
-							onTouchEnd={() => setSelectedDate(date)}
 						>
 							<Text style={[styles.dayName, isToday && styles.todayText]}>
 								{dayName}
@@ -169,7 +170,7 @@ export default function AttendanceCard({
 					)
 				})}
 			</View>
-		</View>
+		</TouchableOpacity>
 	)
 }
 

@@ -1,5 +1,11 @@
 
 
+export interface academic_year {
+  id: string
+  name: string
+  starts_on: Date
+}
+
 export interface student {
   id: string
   last_name: string
@@ -13,10 +19,7 @@ export interface student {
     classrooms: {
       id: string
       name: string
-      academic_years?: {
-        id: string
-        name: string
-      }
+      academic_years?: academic_year
     }
   }[]
 }

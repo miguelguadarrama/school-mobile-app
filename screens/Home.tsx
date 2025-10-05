@@ -2,15 +2,18 @@ import React, { useContext, useMemo } from "react"
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import StatusBar from "../components/StatusBar"
+import { AttendanceModal } from "../components/home/AttendanceModal"
 import BirthdayCard from "../components/home/birthdayCard"
 import CommunicationCard from "../components/home/communication"
 import DayInfoCard from "../components/home/dayInfo"
 import JAC_H_Logo from "../components/logo"
 import AppContext from "../contexts/AppContext"
+import { TabContext } from "../contexts/TabContext"
 import { theme } from "../helpers/theme"
 
 export default function HomeScreen() {
 	const { refreshAppData, isDataLoading, selectedStudent, selectedDate } = useContext(AppContext)!
+	const { isAttendanceModalActive, setIsAttendanceModalActive } = useContext(TabContext)
 
 	const isBirthday = useMemo(() => {
 		if (!selectedStudent?.birthdate) return false
@@ -81,6 +84,11 @@ export default function HomeScreen() {
 					<View style={styles.bottomSpacing} />
 				</ScrollView>
 			</View>
+
+			{/* Attendance Modal */}
+			{isAttendanceModalActive && (
+				<AttendanceModal onBack={() => setIsAttendanceModalActive(false)} />
+			)}
 		</>
 	)
 }

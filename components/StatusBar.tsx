@@ -105,13 +105,13 @@ const StatusBar: React.FC = () => {
 									{displayName(selectedStudent!)}
 								</Text>
 
+								<StudentPhoto
+									student={selectedStudent!}
+									style={styles.modalImage}
+								/>
 								{students.length > 1 && (
 									<>
-										<StudentPhoto
-											student={selectedStudent!}
-											style={styles.modalImage}
-										/>
-										<Text style={styles.sectionTitle}>Switch Profile</Text>
+										<Text style={styles.sectionTitle}>Cambiar Perfil</Text>
 										{students.map((s) => (
 											<TouchableOpacity
 												style={styles.profileOption}
