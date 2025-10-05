@@ -1,7 +1,8 @@
-import React, { useContext } from "react"
+import React, { useContext, useMemo } from "react"
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import StatusBar from "../components/StatusBar"
+import BirthdayCard from "../components/home/birthdayCard"
 import CommunicationCard from "../components/home/communication"
 import DayInfoCard from "../components/home/dayInfo"
 import JAC_H_Logo from "../components/logo"
@@ -9,7 +10,37 @@ import AppContext from "../contexts/AppContext"
 import { theme } from "../helpers/theme"
 
 export default function HomeScreen() {
-	const { refreshAppData, isDataLoading } = useContext(AppContext)!
+	const { refreshAppData, isDataLoading, selectedStudent, selectedDate } = useContext(AppContext)!
+
+	const isBirthday = useMemo(() => {
+		if (!selectedStudent?.birthdate) return false
+
+		const birthdate = new Date(selectedStudent.birthdate)
+		const normalizedBirthdate = new Date(
+			birthdate.getFullYear(),
+			birthdate.getMonth(),
+			birthdate.getDate(),
+			0,
+			0,
+			0,
+			0
+		)
+
+		const normalizedSelectedDate = new Date(
+			selectedDate.getFullYear(),
+			selectedDate.getMonth(),
+			selectedDate.getDate(),
+			0,
+			0,
+			0,
+			0
+		)
+
+		return (
+			normalizedBirthdate.getMonth() === normalizedSelectedDate.getMonth() &&
+			normalizedBirthdate.getDate() === normalizedSelectedDate.getDate()
+		)
+	}, [selectedStudent, selectedDate])
 
 	return (
 		<>
@@ -32,6 +63,9 @@ export default function HomeScreen() {
 				>
 					{/* School Header */}
 					<JAC_H_Logo />
+
+					{/* Birthday Card */}
+					{isBirthday && selectedStudent && <BirthdayCard student={selectedStudent} />}
 
 					{/* Day Information Card */}
 					<View style={styles.cardContainer}>
