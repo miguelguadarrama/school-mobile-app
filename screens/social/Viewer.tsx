@@ -2,13 +2,14 @@
 import { Ionicons } from "@expo/vector-icons"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import React, { useRef, useState } from "react"
+import * as FileSystem from "expo-file-system/legacy"
+import * as Sharing from "expo-sharing"
+import React, { useState } from "react"
 import {
 	ActivityIndicator,
 	Alert,
 	Dimensions,
 	Image,
-	Share,
 	StatusBar,
 	StyleSheet,
 	Text,
@@ -16,20 +17,18 @@ import {
 	View,
 } from "react-native"
 import {
-	GestureHandlerRootView,
 	Gesture,
 	GestureDetector,
+	GestureHandlerRootView,
 } from "react-native-gesture-handler"
 import Animated, {
-	useSharedValue,
+	runOnJS,
 	useAnimatedStyle,
+	useSharedValue,
 	withSpring,
 	withTiming,
-	runOnJS,
 } from "react-native-reanimated"
 import { SafeAreaView } from "react-native-safe-area-context"
-import * as FileSystem from 'expo-file-system/legacy'
-import * as Sharing from 'expo-sharing'
 import { BlogPostMedia } from "../../types/post"
 
 export type SocialStackParamList = {
@@ -96,13 +95,13 @@ const PhotoViewerScreen = () => {
 	}
 
 	const returnToCenter = () => {
-		'worklet'
+		"worklet"
 		translateX.value = withSpring(0)
 		opacity.value = withSpring(1)
 	}
 
 	const resetZoom = () => {
-		'worklet'
+		"worklet"
 		scale.value = withSpring(1)
 		translateY.value = withSpring(0)
 		offsetX.value = withSpring(0)
@@ -187,7 +186,12 @@ const PhotoViewerScreen = () => {
 			opacity.value = 1 - swipeProgress * 0.3
 		})
 		.onEnd((event) => {
-			const { translationX: gestureTranslationX, translationY, velocityX, velocityY } = event
+			const {
+				translationX: gestureTranslationX,
+				translationY,
+				velocityX,
+				velocityY,
+			} = event
 
 			// If image is zoomed in, handle pan end differently
 			if (scale.value > 1) {
@@ -216,7 +220,10 @@ const PhotoViewerScreen = () => {
 				Math.abs(translationY) > verticalCloseThreshold ||
 				Math.abs(velocityY) > verticalVelocityThreshold
 
-			if (shouldCloseVertically && Math.abs(translationY) > Math.abs(gestureTranslationX)) {
+			if (
+				shouldCloseVertically &&
+				Math.abs(translationY) > Math.abs(gestureTranslationX)
+			) {
 				runOnJS(navigation.goBack)()
 				return
 			}
@@ -224,16 +231,23 @@ const PhotoViewerScreen = () => {
 			const isFirstPhoto = currentIndex === 0
 			const isLastPhoto = currentIndex === photos.length - 1
 
-			const isSwipeRightValid = gestureTranslationX > swipeThreshold && !isFirstPhoto
-			const isSwipeLeftValid = gestureTranslationX < -swipeThreshold && !isLastPhoto
-			const isVelocityRightValid = velocityX > velocityThreshold && !isFirstPhoto
+			const isSwipeRightValid =
+				gestureTranslationX > swipeThreshold && !isFirstPhoto
+			const isSwipeLeftValid =
+				gestureTranslationX < -swipeThreshold && !isLastPhoto
+			const isVelocityRightValid =
+				velocityX > velocityThreshold && !isFirstPhoto
 			const isVelocityLeftValid = velocityX < -velocityThreshold && !isLastPhoto
 
 			// Check if user is trying to swipe beyond boundaries with enough force to close
-			const shouldCloseOnSwipeLeft = isLastPhoto &&
-				(gestureTranslationX < -closeThreshold || velocityX < -strongVelocityThreshold)
-			const shouldCloseOnSwipeRight = isFirstPhoto &&
-				(gestureTranslationX > closeThreshold || velocityX > strongVelocityThreshold)
+			const shouldCloseOnSwipeLeft =
+				isLastPhoto &&
+				(gestureTranslationX < -closeThreshold ||
+					velocityX < -strongVelocityThreshold)
+			const shouldCloseOnSwipeRight =
+				isFirstPhoto &&
+				(gestureTranslationX > closeThreshold ||
+					velocityX > strongVelocityThreshold)
 
 			if (shouldCloseOnSwipeLeft || shouldCloseOnSwipeRight) {
 				runOnJS(navigation.goBack)()
@@ -290,7 +304,8 @@ const PhotoViewerScreen = () => {
 			}
 
 			// Get file extension from URL or default to jpg
-			const fileExtension = currentPhoto.file_url.split('.').pop()?.toLowerCase() || 'jpg'
+			const fileExtension =
+				currentPhoto.file_url.split(".").pop()?.toLowerCase() || "jpg"
 			const fileName = `photo_${Date.now()}.${fileExtension}`
 			const fileUri = `${FileSystem.cacheDirectory}${fileName}`
 
@@ -308,7 +323,10 @@ const PhotoViewerScreen = () => {
 			// Check if sharing is available
 			const isAvailable = await Sharing.isAvailableAsync()
 			if (!isAvailable) {
-				Alert.alert("Error", "La función de compartir no está disponible en este dispositivo.")
+				Alert.alert(
+					"Error",
+					"La función de compartir no está disponible en este dispositivo."
+				)
 				return
 			}
 
@@ -325,7 +343,6 @@ const PhotoViewerScreen = () => {
 			FileSystem.deleteAsync(downloadResult.uri, { idempotent: true }).catch(
 				(error) => console.warn("Failed to clean up temporary file:", error)
 			)
-
 		} catch (error) {
 			console.error("Error sharing image:", error)
 			Alert.alert("Error", "No se pudo compartir la foto. Inténtalo de nuevo.")
@@ -371,9 +388,7 @@ const PhotoViewerScreen = () => {
 			</SafeAreaView>
 
 			<GestureDetector gesture={combinedGesture}>
-				<Animated.View
-					style={[styles.imageContainer, animatedStyle]}
-				>
+				<Animated.View style={[styles.imageContainer, animatedStyle]}>
 					{imageLoading && (
 						<View style={styles.loadingContainer}>
 							<ActivityIndicator size="large" color="#fff" />

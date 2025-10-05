@@ -1,11 +1,14 @@
 import { Ionicons } from "@expo/vector-icons"
-import {
-	LucideCheck,
-	LucideClock,
-	LucideX,
-} from "lucide-react-native"
+import { LucideCheck, LucideClock, LucideX } from "lucide-react-native"
 import React, { useContext, useEffect, useMemo, useState } from "react"
-import { BackHandler, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import {
+	BackHandler,
+	FlatList,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native"
 import useSWR from "swr"
 import AppContext from "../../contexts/AppContext"
 import { theme } from "../../helpers/theme"
@@ -101,32 +104,51 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 			const attendanceRecord = data?.find((a) => {
 				const recordDate = new Date(a.date)
 				recordDate.setHours(0, 0, 0, 0)
-				const recordDateString = `${recordDate.getFullYear()}-${String(recordDate.getMonth() + 1).padStart(2, "0")}-${String(recordDate.getDate()).padStart(2, "0")}`
-				return recordDateString === dateString && a.status_type === "attendance_status"
+				const recordDateString = `${recordDate.getFullYear()}-${String(
+					recordDate.getMonth() + 1
+				).padStart(2, "0")}-${String(recordDate.getDate()).padStart(2, "0")}`
+				return (
+					recordDateString === dateString &&
+					a.status_type === "attendance_status"
+				)
 			})
 			const moodRecord = data?.find((a) => {
 				const recordDate = new Date(a.date)
 				recordDate.setHours(0, 0, 0, 0)
-				const recordDateString = `${recordDate.getFullYear()}-${String(recordDate.getMonth() + 1).padStart(2, "0")}-${String(recordDate.getDate()).padStart(2, "0")}`
-				return recordDateString === dateString && a.status_type === "mood_status"
+				const recordDateString = `${recordDate.getFullYear()}-${String(
+					recordDate.getMonth() + 1
+				).padStart(2, "0")}-${String(recordDate.getDate()).padStart(2, "0")}`
+				return (
+					recordDateString === dateString && a.status_type === "mood_status"
+				)
 			})
 			const mealRecord = data?.find((a) => {
 				const recordDate = new Date(a.date)
 				recordDate.setHours(0, 0, 0, 0)
-				const recordDateString = `${recordDate.getFullYear()}-${String(recordDate.getMonth() + 1).padStart(2, "0")}-${String(recordDate.getDate()).padStart(2, "0")}`
-				return recordDateString === dateString && a.status_type === "meal_status"
+				const recordDateString = `${recordDate.getFullYear()}-${String(
+					recordDate.getMonth() + 1
+				).padStart(2, "0")}-${String(recordDate.getDate()).padStart(2, "0")}`
+				return (
+					recordDateString === dateString && a.status_type === "meal_status"
+				)
 			})
 			const peeRecord = data?.find((a) => {
 				const recordDate = new Date(a.date)
 				recordDate.setHours(0, 0, 0, 0)
-				const recordDateString = `${recordDate.getFullYear()}-${String(recordDate.getMonth() + 1).padStart(2, "0")}-${String(recordDate.getDate()).padStart(2, "0")}`
+				const recordDateString = `${recordDate.getFullYear()}-${String(
+					recordDate.getMonth() + 1
+				).padStart(2, "0")}-${String(recordDate.getDate()).padStart(2, "0")}`
 				return recordDateString === dateString && a.status_type === "pee_status"
 			})
 			const poopRecord = data?.find((a) => {
 				const recordDate = new Date(a.date)
 				recordDate.setHours(0, 0, 0, 0)
-				const recordDateString = `${recordDate.getFullYear()}-${String(recordDate.getMonth() + 1).padStart(2, "0")}-${String(recordDate.getDate()).padStart(2, "0")}`
-				return recordDateString === dateString && a.status_type === "poop_status"
+				const recordDateString = `${recordDate.getFullYear()}-${String(
+					recordDate.getMonth() + 1
+				).padStart(2, "0")}-${String(recordDate.getDate()).padStart(2, "0")}`
+				return (
+					recordDateString === dateString && a.status_type === "poop_status"
+				)
 			})
 
 			allDays.push({
@@ -155,7 +177,10 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 			currentWeek.push(day)
 
 			// If it's Saturday or the last day, complete the week
-			if (day.dateObj.getDay() === 6 || day.dateObj.getTime() === today.getTime()) {
+			if (
+				day.dateObj.getDay() === 6 ||
+				day.dateObj.getTime() === today.getTime()
+			) {
 				weekGroups.push({
 					weekNumber,
 					days: [...currentWeek],
@@ -169,7 +194,7 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 		weekGroups.reverse()
 
 		// Reverse days within each week so most recent day is first
-		weekGroups.forEach(week => {
+		weekGroups.forEach((week) => {
 			week.days.reverse()
 		})
 
@@ -228,9 +253,15 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 	const getMealIcon = (status?: EatingStatus) => {
 		switch (status) {
 			case "meal_status_ok":
-				return { icon: "checkmark-circle-outline" as const, color: colors.positive }
+				return {
+					icon: "checkmark-circle-outline" as const,
+					color: colors.positive,
+				}
 			case "meal_status_little":
-				return { icon: "radio-button-on-outline" as const, color: colors.neutral }
+				return {
+					icon: "radio-button-on-outline" as const,
+					color: colors.neutral,
+				}
 			case "meal_status_no":
 				return { icon: "close-circle-outline" as const, color: colors.negative }
 			default:
@@ -241,7 +272,10 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 	const getPeeIcon = (status?: PeeStatus) => {
 		switch (status) {
 			case "pee_status_yes":
-				return { icon: "checkmark-circle-outline" as const, color: colors.positive }
+				return {
+					icon: "checkmark-circle-outline" as const,
+					color: colors.positive,
+				}
 			case "pee_status_no":
 				return { icon: "close-circle-outline" as const, color: colors.negative }
 			default:
@@ -252,7 +286,10 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 	const getPoopIcon = (status?: PoopStatus) => {
 		switch (status) {
 			case "poop_status_yes":
-				return { icon: "checkmark-circle-outline" as const, color: colors.positive }
+				return {
+					icon: "checkmark-circle-outline" as const,
+					color: colors.positive,
+				}
 			case "poop_status_no":
 				return { icon: "close-circle-outline" as const, color: colors.negative }
 			default:
@@ -266,37 +303,56 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 		switch (type) {
 			case "attendance":
 				switch (value) {
-					case "attendance_status_present": return "Presente"
-					case "attendance_status_late": return "Llegó tarde"
-					case "attendance_status_absent": return "Ausente"
-					default: return "Sin registro"
+					case "attendance_status_present":
+						return "Presente"
+					case "attendance_status_late":
+						return "Llegó tarde"
+					case "attendance_status_absent":
+						return "Ausente"
+					default:
+						return "Sin registro"
 				}
 			case "mood":
 				switch (value) {
-					case "mood_status_happy": return "Feliz"
-					case "mood_status_tired": return "Cansado/a"
-					case "mood_status_sad": return "Triste"
-					case "mood_status_sick": return "Enfermo/a"
-					default: return "Sin registro"
+					case "mood_status_happy":
+						return "Feliz"
+					case "mood_status_tired":
+						return "Cansado/a"
+					case "mood_status_sad":
+						return "Triste"
+					case "mood_status_sick":
+						return "Enfermo/a"
+					default:
+						return "Sin registro"
 				}
 			case "meal":
 				switch (value) {
-					case "meal_status_ok": return "Comió bien"
-					case "meal_status_little": return "Comió poco"
-					case "meal_status_no": return "No comió"
-					default: return "Sin registro"
+					case "meal_status_ok":
+						return "Comió bien"
+					case "meal_status_little":
+						return "Comió poco"
+					case "meal_status_no":
+						return "No comió"
+					default:
+						return "Sin registro"
 				}
 			case "pee":
 				switch (value) {
-					case "pee_status_yes": return "Sí"
-					case "pee_status_no": return "No"
-					default: return "Sin registro"
+					case "pee_status_yes":
+						return "Sí"
+					case "pee_status_no":
+						return "No"
+					default:
+						return "Sin registro"
 				}
 			case "poop":
 				switch (value) {
-					case "poop_status_yes": return "Sí"
-					case "poop_status_no": return "No"
-					default: return "Sin registro"
+					case "poop_status_yes":
+						return "Sí"
+					case "poop_status_no":
+						return "No"
+					default:
+						return "Sin registro"
 				}
 			default:
 				return "Sin registro"
@@ -326,10 +382,20 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 								activeOpacity={0.7}
 							>
 								<View style={styles.dayInfo}>
-									<Text style={[styles.dayName, day.isWeekend && styles.weekendText]}>
+									<Text
+										style={[
+											styles.dayName,
+											day.isWeekend && styles.weekendText,
+										]}
+									>
 										{day.dayName}
 									</Text>
-									<Text style={[styles.dateText, day.isWeekend && styles.weekendText]}>
+									<Text
+										style={[
+											styles.dateText,
+											day.isWeekend && styles.weekendText,
+										]}
+									>
 										{day.dayNumber} de {day.monthName}
 									</Text>
 								</View>
@@ -339,7 +405,11 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 									<View
 										style={[
 											styles.attendanceIndicator,
-											{ backgroundColor: getAttendanceStatusColor(day.attendanceStatus) },
+											{
+												backgroundColor: getAttendanceStatusColor(
+													day.attendanceStatus
+												),
+											},
 										]}
 									>
 										{AttendanceIcon && (
@@ -366,11 +436,18 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 											<View
 												style={[
 													styles.largeAttendanceIndicator,
-													{ backgroundColor: getAttendanceStatusColor(day.attendanceStatus) },
+													{
+														backgroundColor: getAttendanceStatusColor(
+															day.attendanceStatus
+														),
+													},
 												]}
 											>
 												{AttendanceIcon && (
-													<AttendanceIcon size={24} color={theme.colors.white} />
+													<AttendanceIcon
+														size={24}
+														color={theme.colors.white}
+													/>
 												)}
 											</View>
 										</View>
@@ -388,7 +465,9 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 											<Ionicons name={mood.icon} size={32} color={mood.color} />
 										</View>
 										<View style={styles.statusDetailText}>
-											<Text style={styles.statusDetailLabel}>Estado de ánimo</Text>
+											<Text style={styles.statusDetailLabel}>
+												Estado de ánimo
+											</Text>
 											<Text style={styles.statusDetailValue}>
 												{getStatusLabel("mood", day.moodStatus)}
 											</Text>
@@ -508,7 +587,7 @@ const styles = StyleSheet.create({
 		backgroundColor: theme.colors.white,
 	},
 	weekendDay: {
-		backgroundColor: theme.colors.surface,
+		backgroundColor: theme.colors["light-gray"],
 	},
 	daySeparator: {
 		height: 1,
