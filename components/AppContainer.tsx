@@ -13,6 +13,7 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 	const { loggedIn } = useAuth()
 	const [selectedDate, setSelectedDate] = useState(new Date())
 	const [selectedStudent, setSelectedStudent] = useState<student | null>(null)
+	const [selectedRole, setSelectedRole] = useState<"admin" | "guardian" | "staff" | null>(null)
 	const {
 		data,
 		isLoading,
@@ -58,6 +59,8 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 				isDataLoading: isLoading,
 				refreshAppData,
 				roles: data?.roles || [],
+				selectedRole,
+				setSelectedRole,
 				students: data?.students || [],
 				selectedStudent,
 				setSelectedStudent,

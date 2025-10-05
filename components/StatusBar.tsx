@@ -15,7 +15,7 @@ import LogoutButton from "./common/LogoutButton"
 import StudentPhoto from "./ui/studentPhoto"
 
 const StatusBar: React.FC = () => {
-	const { roles, user, students, selectedStudent, setSelectedStudent } =
+	const { roles, user, students, selectedStudent, setSelectedStudent, selectedRole, setSelectedRole } =
 		useContext(AppContext)!
 	const [modalVisible, setModalVisible] = useState(false)
 	const [teacherPhotoError, setTeacherPhotoError] = useState(false)
@@ -30,8 +30,9 @@ const StatusBar: React.FC = () => {
 		setModalVisible(!modalVisible)
 	}
 
-	const is_guardian = roles.includes("guardian") && selectedStudent
-	const is_staff = roles.includes("staff")
+	const hasMultipleRoles = roles.length > 1
+	const is_guardian = (selectedRole === "guardian" || (!selectedRole && roles.includes("guardian"))) && selectedStudent
+	const is_staff = selectedRole === "staff" || (!selectedRole && roles.includes("staff"))
 	const teacherPhotoUrl =
 		is_staff && user?.id
 			? `${process.env.EXPO_PUBLIC_STORAGE_URL}/app/users/${user.id}.jpg`
@@ -149,6 +150,30 @@ const StatusBar: React.FC = () => {
 										/>
 									</View>
 								)}
+							</>
+						)}
+
+						{/* Role switching for users with multiple roles */}
+						{hasMultipleRoles && (
+							<>
+								<Text style={styles.sectionTitle}>Cambiar Rol</Text>
+								<TouchableOpacity
+									style={styles.profileOption}
+									onPress={() => {
+										setSelectedRole(null)
+										toggleModal()
+									}}
+								>
+									<Ionicons
+										name="swap-horizontal"
+										size={20}
+										color={theme.colors.primary}
+										style={{ marginRight: theme.spacing.xs }}
+									/>
+									<Text style={styles.profileOptionText}>
+										Seleccionar otro rol
+									</Text>
+								</TouchableOpacity>
 							</>
 						)}
 
@@ -277,12 +302,14 @@ const styles = StyleSheet.create({
 		color: theme.colors.text,
 	},
 	profileOption: {
+		flexDirection: "row",
 		padding: theme.spacing.sm,
 		backgroundColor: theme.colors.surface,
 		borderRadius: theme.radius.sm,
 		marginVertical: theme.spacing.xs / 2,
 		minWidth: 200,
 		alignItems: "center",
+		justifyContent: "center",
 	},
 	profileOptionText: {
 		fontFamily: theme.typography.family.regular,

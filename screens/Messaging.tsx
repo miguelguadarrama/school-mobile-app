@@ -88,14 +88,30 @@ export default function MessagingScreen() {
 					...(teacherChats.length > 0
 						? [{ type: "section" as const, title: "Docentes" }]
 						: []),
-					...teacherChats.map((chat) => ({
-						type: "chat" as const,
-						data: chat,
-					})),
+					...teacherChats
+						.reduce((acc, chat) => {
+							// Avoid duplicates based on staff_id
+							if (!acc.find((c) => c.staff_id === chat.staff_id)) {
+								acc.push(chat)
+							}
+							return acc
+						}, [] as chats[])
+						.map((chat) => ({
+							type: "chat" as const,
+							data: chat,
+						})),
 					...(adminChats.length > 0
 						? [{ type: "section" as const, title: "Administración" }]
 						: []),
-					...adminChats.map((chat) => ({ type: "chat" as const, data: chat })),
+					...adminChats
+						.reduce((acc, chat) => {
+							// Avoid duplicates based on staff_id
+							if (!acc.find((c) => c.staff_id === chat.staff_id)) {
+								acc.push(chat)
+							}
+							return acc
+						}, [] as chats[])
+						.map((chat) => ({ type: "chat" as const, data: chat })),
 				]}
 				keyExtractor={(item) =>
 					item.type === "section"

@@ -34,6 +34,7 @@ import AnnouncementsScreen from "../screens/Announcements"
 import HomeScreen from "../screens/Home"
 import MessagingScreen from "../screens/Messaging"
 import OptionsScreen from "../screens/Options"
+import RoleSelector from "../screens/RoleSelector"
 import SocialScreen from "../screens/social/Stack"
 import HomeTeacherScreen from "../screens/teacher/Home"
 import TeacherMessagingScreen from "../screens/teacher/messaging"
@@ -77,9 +78,24 @@ const useTeacherChatWindowState = () => {
 	return context.isChatWindowOpen
 }
 
+// Wrapper to handle role selection before rendering tabs
+function RoleAwareTabContent(): JSX.Element {
+	const { roles, selectedRole } = useContext(AppContext)!
+
+	// Determine if user has multiple roles
+	const hasMultipleRoles = roles.length > 1
+
+	// If user has multiple roles but hasn't selected one yet, show role selector
+	if (hasMultipleRoles && !selectedRole) {
+		return <RoleSelector />
+	}
+
+	return <SwipeableTabContent />
+}
+
 // Custom wrapper component that handles the swipe functionality
 function SwipeableTabContent(): JSX.Element {
-	const { roles } = useContext(AppContext)!
+	const { roles, selectedRole } = useContext(AppContext)!
 	const pagerRef = useRef<PagerView>(null)
 	const [currentIndex, setCurrentIndex] = useState<number>(2) // Start with Home (index 2)
 	const [isPhotoViewerActive, setIsPhotoViewerActive] = useState<boolean>(false)
@@ -178,10 +194,9 @@ function SwipeableTabContent(): JSX.Element {
 		[currentIndex]
 	)
 
-	const appScreens =
-		roles.includes("staff") && !roles.includes("guardian")
-			? teacherTabScreens
-			: tabScreens
+	// Determine which screens to show based on selected role (or single role)
+	const effectiveRole = selectedRole || (roles.includes("staff") ? "staff" : "guardian")
+	const appScreens = effectiveRole === "staff" ? teacherTabScreens : tabScreens
 
 	// Handle Android back button
 	useEffect(() => {
@@ -239,6 +254,7 @@ function SwipeableTabContent(): JSX.Element {
 				setIsSocialPostModalActive,
 				isAttendanceModalActive,
 				setIsAttendanceModalActive,
+				appScreens,
 			}}
 		>
 			<View style={styles.container}>
@@ -269,7 +285,7 @@ function SwipeableTabContent(): JSX.Element {
 
 // Custom tab bar component
 function CustomTabBar(): JSX.Element | null {
-	const { currentIndex, navigateToTab, isPhotoViewerActive, isStudentProfileActive, isSocialPostModalActive, isAttendanceModalActive } =
+	const { currentIndex, navigateToTab, isPhotoViewerActive, isStudentProfileActive, isSocialPostModalActive, isAttendanceModalActive, appScreens } =
 		useContext(TabContext)
 	const { isChatWindowOpen } = useChatContext()
 	const isTeacherChatWindowOpen = useTeacherChatWindowState()
@@ -302,7 +318,7 @@ function CustomTabBar(): JSX.Element | null {
 	return (
 		<SafeAreaView edges={["bottom"]} style={styles.safeAreaContainer}>
 			<View style={styles.tabBar}>
-				{tabScreens.map((screen, index) => {
+				{appScreens.map((screen, index) => {
 					const focused = currentIndex === index
 					const iconName = getIconName(screen.name, focused)
 
@@ -360,7 +376,7 @@ export default function BottomTabNavigator(): JSX.Element {
 			>
 				<Tab.Screen
 					name="SwipeableTabs"
-					component={SwipeableTabContent}
+					component={RoleAwareTabContent}
 					options={{ tabBarStyle: { display: "none" } }}
 				/>
 			</Tab.Navigator>

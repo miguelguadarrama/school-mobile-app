@@ -1,6 +1,12 @@
 import { createContext } from "react"
 import PagerView from "react-native-pager-view"
 
+interface TabScreen {
+	name: string
+	component: React.ComponentType<any>
+	disabled?: boolean
+}
+
 interface TabContextType {
 	currentIndex: number
 	setCurrentIndex: (index: number) => void
@@ -13,6 +19,7 @@ interface TabContextType {
 	setIsSocialPostModalActive: (active: boolean) => void
 	isAttendanceModalActive: boolean
 	setIsAttendanceModalActive: (active: boolean) => void
+	appScreens: TabScreen[]
 }
 
 // Context to share state between tab navigator and pager
@@ -28,4 +35,5 @@ export const TabContext = createContext<TabContextType>({
 	setIsSocialPostModalActive: () => {},
 	isAttendanceModalActive: false,
 	setIsAttendanceModalActive: () => {},
+	appScreens: [],
 })

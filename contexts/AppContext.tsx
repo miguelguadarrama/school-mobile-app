@@ -11,6 +11,8 @@ interface AppContextType {
 	selectedDate: Date
 	setSelectedDate: (date: Date) => void
 	roles: ("admin" | "guardian" | "staff")[]
+	selectedRole: "admin" | "guardian" | "staff" | null
+	setSelectedRole: (role: "admin" | "guardian" | "staff" | null) => void
 	refreshAppData: () => void
 	classrooms?: ClassroomData[]
 	isDataLoading: boolean
