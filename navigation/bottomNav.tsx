@@ -14,7 +14,9 @@ import React, {
 } from "react"
 import type { NativeSyntheticEvent } from "react-native"
 import {
+	BackHandler,
 	Dimensions,
+	Platform,
 	StyleSheet,
 	TouchableWithoutFeedback,
 	View,
@@ -180,6 +182,48 @@ function SwipeableTabContent(): JSX.Element {
 		roles.includes("staff") && !roles.includes("guardian")
 			? teacherTabScreens
 			: tabScreens
+
+	// Handle Android back button
+	useEffect(() => {
+		if (Platform.OS !== "android") return
+
+		const backHandler = BackHandler.addEventListener(
+			"hardwareBackPress",
+			() => {
+				// If any modal is active, don't handle the back button (let default behavior handle it)
+				if (
+					isPhotoViewerActive ||
+					isChatWindowOpen ||
+					isTeacherChatWindowOpen ||
+					isStudentProfileActive ||
+					isSocialPostModalActive ||
+					isAttendanceModalActive
+				) {
+					return false
+				}
+
+				// If not on Home screen (index 2), navigate to Home
+				if (currentIndex !== 2) {
+					navigateToTab(2)
+					return true // Prevent default behavior (exit app)
+				}
+
+				// On Home screen, allow default behavior (exit app)
+				return false
+			}
+		)
+
+		return () => backHandler.remove()
+	}, [
+		currentIndex,
+		isPhotoViewerActive,
+		isChatWindowOpen,
+		isTeacherChatWindowOpen,
+		isStudentProfileActive,
+		isSocialPostModalActive,
+		isAttendanceModalActive,
+		navigateToTab,
+	])
 
 	return (
 		<TabContext.Provider
