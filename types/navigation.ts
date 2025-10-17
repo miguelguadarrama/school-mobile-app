@@ -2,6 +2,7 @@ import { BlogPostMedia } from "./post";
 import { chats } from "./chat";
 
 export type AuthStackParamList = {
+  LoginSchoolCode: undefined
   LoginEmail: undefined
   LoginPassword: { email: string; sso_account: string }
   LoginVerifyEmail: { email: string }

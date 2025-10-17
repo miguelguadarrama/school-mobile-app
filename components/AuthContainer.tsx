@@ -2,6 +2,7 @@ import { NavigationContainer } from "@react-navigation/native"
 import { useAuth } from "../contexts/AuthContext"
 import LoadingScreen from "./Loading"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import LoginSchoolCode from "../screens/login/LoginSchoolCode"
 import LoginScreen from "../screens/login/LoginEmail"
 import LoginPassword from "../screens/login/LoginPassword"
 import LoginVerifyEmail from "../screens/login/LoginVerifyEmail"
@@ -27,9 +28,10 @@ const LoginContainer = () => {
 	return (
 		<NavigationContainer>
 			<Stack.Navigator
-				initialRouteName="LoginEmail"
+				initialRouteName="LoginSchoolCode"
 				screenOptions={{ headerShown: false }}
 			>
+				<Stack.Screen name="LoginSchoolCode" component={LoginSchoolCode} />
 				<Stack.Screen name="LoginEmail" component={LoginScreen} />
 				<Stack.Screen name="LoginPassword" component={LoginPassword} />
 				<Stack.Screen
