@@ -4,6 +4,9 @@
 *.aab
 secrets/*
 
+android/
+ios/
+
 # dependencies
 node_modules/
 
