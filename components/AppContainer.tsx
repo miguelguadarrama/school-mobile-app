@@ -39,10 +39,17 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		const loadSavedRole = async () => {
 			if (loggedIn && data?.roles) {
 				try {
-					const savedRole = await SecureStore.getItemAsync(SELECTED_ROLE_KEY)
-					if (savedRole && data.roles.includes(savedRole as any)) {
-						// Only set saved role if user still has that role
-						setSelectedRole(savedRole as "admin" | "guardian" | "staff")
+					// If user has only one role, automatically set it
+					if (data.roles.length === 1) {
+						setSelectedRole(data.roles[0])
+						await SecureStore.setItemAsync(SELECTED_ROLE_KEY, data.roles[0])
+					} else {
+						// For multiple roles, load saved preference
+						const savedRole = await SecureStore.getItemAsync(SELECTED_ROLE_KEY)
+						if (savedRole && data.roles.includes(savedRole as any)) {
+							// Only set saved role if user still has that role
+							setSelectedRole(savedRole as "admin" | "guardian" | "staff")
+						}
 					}
 				} catch (error) {
 					console.error("Error loading saved role:", error)
