@@ -1,7 +1,8 @@
 // src/screens/login/LoginSchoolCode.tsx
 import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import React, { useState } from "react"
+import * as SecureStore from "expo-secure-store"
+import React, { useEffect, useState } from "react"
 import {
 	Alert,
 	Image,
@@ -26,11 +27,32 @@ type LoginSchoolCodeNavigationProp = NativeStackNavigationProp<
 
 // Hard-coded school passcode
 const SCHOOL_CODE = "jac1610"
+const SCHOOL_CODE_VALIDATED_KEY = "school_code_validated"
 
 const LoginSchoolCode = () => {
 	const [code, setCode] = useState("")
-	const [status, setStatus] = useState<"IDLE" | "BUSY">("IDLE")
+	const [status, setStatus] = useState<"IDLE" | "BUSY" | "CHECKING">("CHECKING")
 	const navigation = useNavigation<LoginSchoolCodeNavigationProp>()
+
+	// Check if school code was previously validated
+	useEffect(() => {
+		const checkPreviousValidation = async () => {
+			try {
+				const validated = await SecureStore.getItemAsync(SCHOOL_CODE_VALIDATED_KEY)
+				if (validated === SCHOOL_CODE) {
+					// School code was previously validated, skip this screen
+					navigation.replace("LoginEmail")
+					return
+				}
+			} catch (error) {
+				console.error("Error checking school code validation:", error)
+			} finally {
+				setStatus("IDLE")
+			}
+		}
+
+		checkPreviousValidation()
+	}, [navigation])
 
 	const handleContinue = async () => {
 		setStatus("BUSY")
@@ -40,6 +62,13 @@ const LoginSchoolCode = () => {
 
 		// Validate the school code
 		if (code.toLowerCase() === SCHOOL_CODE) {
+			try {
+				// Save the validated school code to SecureStore
+				await SecureStore.setItemAsync(SCHOOL_CODE_VALIDATED_KEY, SCHOOL_CODE)
+			} catch (error) {
+				console.error("Error saving school code validation:", error)
+			}
+
 			// Code is correct, navigate to email entry
 			navigation.navigate("LoginEmail")
 		} else {
@@ -93,10 +122,10 @@ const LoginSchoolCode = () => {
 						/>
 
 						<AppButton
-							disabled={status === "BUSY" || code.length === 0}
+							disabled={status === "BUSY" || status === "CHECKING" || code.length === 0}
 							onPress={handleContinue}
 						>
-							{status === "BUSY" ? "Por favor espera..." : "Continuar"}
+							{status === "BUSY" ? "Por favor espera..." : status === "CHECKING" ? "Cargando..." : "Continuar"}
 						</AppButton>
 					</View>
 				</KeyboardAvoidingWrapper>

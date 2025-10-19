@@ -10,6 +10,8 @@ import InputPassword from "../../components/InputPassword"
 import AppButton from "../../components/ui/button"
 import CustomTextInput from "../../components/ui/textInput"
 import KeyboardAvoidingWrapper from "../../components/ui/KeyboardAvoidingWrapper"
+import { LoadingDialog } from "../../components/ui/LoadingDialog"
+import { useAuth } from "../../contexts/AuthContext"
 import { theme } from "../../helpers/theme"
 
 type SetNewPasswordScreenNavigationProp = NativeStackNavigationProp<
@@ -20,6 +22,7 @@ type SetNewPasswordScreenNavigationProp = NativeStackNavigationProp<
 const LoginNewPassword = () => {
 	const route = useRoute()
 	const navigation = useNavigation<SetNewPasswordScreenNavigationProp>()
+	const { login } = useAuth()
 	const { email, shouldReset } = route.params as {
 		email: string
 		shouldReset?: boolean
@@ -28,7 +31,7 @@ const LoginNewPassword = () => {
 	const [password, setPassword] = useState("")
 	const [confirmPassword, setConfirmPassword] = useState("")
 	const [isValid, setIsValid] = useState(false)
-	const [status, setStatus] = useState<"IDLE" | "BUSY">("IDLE")
+	const [status, setStatus] = useState<"IDLE" | "BUSY" | "LOGGING_IN">("IDLE")
 
 	useEffect(() => {
 		if (
@@ -57,16 +60,33 @@ const LoginNewPassword = () => {
 			const data = await registerUser(email, password, shouldReset)
 
 			if (data && data.result) {
-				Alert.alert(
-					"Success",
-					shouldReset
-						? "Su contraseña ha sido cambiada. Por favor inicia sesión."
-						: "Su cuenta ha sido creada. Por favor inicia sesión."
-				)
-				navigation.reset({
-					index: 0,
-					routes: [{ name: "LoginEmail" }],
-				})
+				// Password created successfully, now auto-login the user
+				setStatus("LOGGING_IN")
+
+				try {
+					await login(email, password)
+					// ✅ If successful, user is redirected automatically by auth state
+				} catch (loginError: any) {
+					if (__DEV__) {
+						console.error("Auto-login failed after registration:", loginError)
+					}
+					// If auto-login fails, show message and redirect to login screen
+					Alert.alert(
+						"Cuenta Creada",
+						shouldReset
+							? "Su contraseña ha sido cambiada. Por favor inicia sesión."
+							: "Su cuenta ha sido creada. Por favor inicia sesión.",
+						[{
+							text: "OK",
+							onPress: () => {
+								navigation.reset({
+									index: 0,
+									routes: [{ name: "LoginEmail" }],
+								})
+							}
+						}]
+					)
+				}
 				return
 			} else {
 				Alert.alert("Error", "No se pudo crear la cuenta.")
@@ -119,14 +139,19 @@ const LoginNewPassword = () => {
 				secureTextEntry
 			/>
 			<AppButton
-				disabled={status === "BUSY" || !isValid}
+				disabled={status === "BUSY" || status === "LOGGING_IN" || !isValid}
 				onPress={handleCreateAccount}
 			>
-				{status === "BUSY" ? "Creando..." : "Crear Cuenta"}
+				{status === "BUSY" ? "Creando..." : status === "LOGGING_IN" ? "Iniciando sesión..." : "Crear Cuenta"}
 			</AppButton>
 					</View>
 				</KeyboardAvoidingWrapper>
 			</SafeAreaView>
+
+			<LoadingDialog
+				visible={status === "BUSY" || status === "LOGGING_IN"}
+				message={status === "BUSY" ? "Creando cuenta..." : "Iniciando sesión..."}
+			/>
 	</>
 	)
 }
