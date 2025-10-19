@@ -1,10 +1,16 @@
-import React, { useEffect } from "react"
-import { FlatList, StyleSheet, Text, View } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
+import React, { useEffect, useState } from "react"
+import {
+	FlatList,
+	StyleSheet,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
+} from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import LoadingScreen from "../../components/Loading"
-import {
-	SectionHeader,
-} from "../../components/messaging"
+import { SectionHeader } from "../../components/messaging"
 import { TeacherChatroomItem } from "../../components/messaging/TeacherChatroomItem"
 import { useTeacherChatContext } from "../../contexts/TeacherChatContext"
 import { theme } from "../../helpers/theme"
@@ -37,6 +43,8 @@ export default function TeacherMessagingScreen() {
 		// Message Operations
 		sendMessage,
 	} = useTeacherChatContext()
+
+	const [searchQuery, setSearchQuery] = useState("")
 
 	const handleSendMessage = async (content: string) => {
 		if (!selectedChat) return
@@ -75,31 +83,83 @@ export default function TeacherMessagingScreen() {
 		)
 	}
 
-	// Sort chats by latest message timestamp (most recent first)
-	const allChats = (chats || []).sort((a, b) => {
+	// Separate chats into those with messages and those without
+	const chatsWithMessages: chats[] = []
+	const chatsWithoutMessages: chats[] = []
+
+	;(chats || []).forEach((chat) => {
+		const lastMessage = chat.messages[chat.messages.length - 1]
+		if (lastMessage) {
+			chatsWithMessages.push(chat)
+		} else {
+			chatsWithoutMessages.push(chat)
+		}
+	})
+
+	// Sort chats with messages by latest message timestamp (most recent first)
+	chatsWithMessages.sort((a, b) => {
 		const aLastMessage = a.messages[a.messages.length - 1]
 		const bLastMessage = b.messages[b.messages.length - 1]
+		return (
+			new Date(bLastMessage.created_at).getTime() -
+			new Date(aLastMessage.created_at).getTime()
+		)
+	})
 
-		// If either chat has no messages, put it at the end
-		if (!aLastMessage && !bLastMessage) return 0
-		if (!aLastMessage) return 1
-		if (!bLastMessage) return -1
+	// Sort chats without messages alphabetically by student name
+	chatsWithoutMessages.sort((a, b) => {
+		return a.userInfo.full_name.localeCompare(b.userInfo.full_name, "es")
+	})
 
-		// Sort by message timestamp (most recent first)
-		return new Date(bLastMessage.created_at).getTime() - new Date(aLastMessage.created_at).getTime()
+	// Combine: recent conversations first, then alphabetically sorted ones
+	const sortedChats = [...chatsWithMessages, ...chatsWithoutMessages]
+
+	// Filter by search query
+	const filteredChats = sortedChats.filter((chat) => {
+		if (!searchQuery.trim()) return true
+		return chat.userInfo.full_name
+			.toLowerCase()
+			.includes(searchQuery.toLowerCase())
 	})
 
 	return (
 		<View style={styles.container}>
 			<SafeAreaView edges={["top"]} style={styles.headerContainer}>
 				<Text style={styles.heading}>Mensajes</Text>
+				<View style={styles.searchContainer}>
+					<TextInput
+						style={styles.searchInput}
+						placeholder="Buscar..."
+						placeholderTextColor={theme.colors.muted}
+						value={searchQuery}
+						onChangeText={setSearchQuery}
+						autoCapitalize="none"
+						autoCorrect={false}
+					/>
+					{searchQuery.length > 0 && (
+						<TouchableOpacity
+							style={styles.clearButton}
+							onPress={() => setSearchQuery("")}
+							hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+						>
+							<Ionicons
+								name="close-circle"
+								size={20}
+								color={theme.colors.muted}
+							/>
+						</TouchableOpacity>
+					)}
+				</View>
 			</SafeAreaView>
 			<FlatList<ListItem>
 				data={[
-					...(allChats.length > 0
+					...(filteredChats.length > 0
 						? [{ type: "section" as const, title: "Estudiantes" }]
 						: []),
-					...allChats.map((chat) => ({ type: "chat" as const, data: chat })),
+					...filteredChats.map((chat) => ({
+						type: "chat" as const,
+						data: chat,
+					})),
 				]}
 				keyExtractor={(item) =>
 					item.type === "section"
@@ -142,6 +202,29 @@ const styles = StyleSheet.create({
 		marginTop: theme.spacing.md,
 		paddingHorizontal: theme.spacing.md,
 		paddingBottom: theme.spacing.sm,
+	},
+	searchContainer: {
+		paddingHorizontal: theme.spacing.md,
+		paddingBottom: theme.spacing.md,
+		position: "relative",
+	},
+	searchInput: {
+		backgroundColor: theme.colors.background,
+		borderWidth: 1,
+		borderColor: theme.colors.border,
+		borderRadius: 12,
+		paddingHorizontal: theme.spacing.md,
+		paddingVertical: theme.spacing.sm,
+		paddingRight: 40,
+		fontSize: theme.typography.size.md,
+		fontFamily: theme.typography.family.regular,
+		color: theme.colors.text,
+	},
+	clearButton: {
+		position: "absolute",
+		right: theme.spacing.md + 12,
+		top: "50%",
+		transform: [{ translateY: -10 }],
 	},
 	chatList: {
 		flex: 1,
