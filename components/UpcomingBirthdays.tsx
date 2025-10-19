@@ -161,8 +161,6 @@ const styles = StyleSheet.create({
 		justifyContent: "space-between",
 		alignItems: "center",
 		paddingVertical: theme.spacing.sm,
-		borderBottomWidth: 1,
-		borderBottomColor: theme.colors.border,
 	},
 	todayBirthday: {
 		backgroundColor: "#FFF9E6",

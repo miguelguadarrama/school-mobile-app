@@ -105,7 +105,7 @@ export default function ClassroomStudentsList({
 	onStudentPress,
 }: ClassroomStudentsListProps) {
 	const { selectedRole } = useContext(AppContext)!
-	if (selectedRole !== "staff" && !classrooms?.length) {
+	if (selectedRole !== "staff") {
 		return null
 	}
 	if (!classrooms || classrooms.length === 0) {
