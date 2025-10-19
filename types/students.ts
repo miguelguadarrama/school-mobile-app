@@ -73,7 +73,7 @@ export interface StudentProfileData {
   student_guardians: {
     student_id: string
     guardian_id: string
-    relationship_type_alias: "guardian_mother" | "guardian_father" | "guardian_other"
+    relationship_type_alias: "guardian_mother" | "guardian_father" | "guardian_grandparent" | "guardian_other"
     is_primary: boolean
     notes: string | null
     created_at: string

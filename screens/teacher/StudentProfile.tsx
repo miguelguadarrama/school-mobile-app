@@ -338,6 +338,8 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 				return "Madre"
 			case "guardian_father":
 				return "Padre"
+			case "guardian_grandparent":
+				return "Abuelo/a"
 			case "guardian_other":
 				return "Otro"
 			default:
