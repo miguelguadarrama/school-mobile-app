@@ -63,7 +63,14 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 	}, [classrooms])
 
 	if (upcomingBirthdays.length === 0) {
-		return null
+		return (
+			<SchoolCard>
+				<Text style={styles.title}>🎂 Próximos Cumpleaños</Text>
+				<Text style={styles.emptyMessage}>
+					No hay cumpleaños próximos en los siguientes 30 días
+				</Text>
+			</SchoolCard>
+		)
 	}
 
 	return (
@@ -139,6 +146,12 @@ const styles = StyleSheet.create({
 		fontWeight: "600",
 		color: theme.colors.primary,
 		marginBottom: theme.spacing.md,
+	},
+	emptyMessage: {
+		fontSize: 14,
+		color: theme.colors.muted,
+		textAlign: "center",
+		paddingVertical: theme.spacing.md,
 	},
 	birthdayList: {
 		gap: theme.spacing.sm,
