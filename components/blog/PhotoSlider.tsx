@@ -3,6 +3,7 @@ import {
 	Image,
 	ScrollView,
 	StyleSheet,
+	Text,
 	TouchableOpacity,
 	View,
 } from "react-native"
@@ -102,23 +103,33 @@ const PhotoSlider: React.FC<PhotoSliderProps> = memo(({ media, onPress }) => {
 				))}
 			</ScrollView>
 
-			{/* Indicators */}
+			{/* Indicators or Counter */}
 			{media.length > 1 && (
 				<View style={styles.indicatorContainer}>
-					{media.map((_, index) => (
-						<View
-							key={index}
-							style={[
-								styles.indicator,
-								{
-									backgroundColor:
-										index === currentIndex
-											? theme.colors.primary
-											: "rgba(255, 255, 255, 0.4)",
-								},
-							]}
-						/>
-					))}
+					{media.length > 5 ? (
+						// Show counter for more than 5 photos
+						<View style={styles.counterContainer}>
+							<Text style={styles.counterText}>
+								{currentIndex + 1} / {media.length}
+							</Text>
+						</View>
+					) : (
+						// Show dot indicators for 5 or fewer photos
+						media.map((_, index) => (
+							<View
+								key={index}
+								style={[
+									styles.indicator,
+									{
+										backgroundColor:
+											index === currentIndex
+												? theme.colors.primary
+												: "rgba(255, 255, 255, 0.4)",
+									},
+								]}
+							/>
+						))
+					)}
 				</View>
 			)}
 		</View>
@@ -174,6 +185,17 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.3,
 		shadowRadius: 2,
 		elevation: 2,
+	},
+	counterContainer: {
+		backgroundColor: "rgba(0, 0, 0, 0.6)",
+		paddingHorizontal: 12,
+		paddingVertical: 6,
+		borderRadius: 16,
+	},
+	counterText: {
+		color: "#fff",
+		fontSize: 13,
+		fontWeight: "600",
 	},
 })
 
