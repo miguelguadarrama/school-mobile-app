@@ -9,6 +9,7 @@ import AppContext from "../../contexts/AppContext"
 import { TabContext } from "../../contexts/TabContext"
 import { theme } from "../../helpers/theme"
 import { StudentData } from "../../types/students"
+import AdminClassroomList from "../admin/classrooms"
 import { StudentProfile } from "./StudentProfile"
 
 export default function HomeTeacherScreen() {
@@ -44,6 +45,8 @@ export default function HomeTeacherScreen() {
 
 					{/* Upcoming Birthdays */}
 					<UpcomingBirthdays classrooms={classrooms} />
+
+					<AdminClassroomList />
 
 					<ClassroomStudentsList
 						classrooms={classrooms}

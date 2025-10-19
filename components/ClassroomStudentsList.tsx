@@ -1,5 +1,6 @@
-import React from "react"
+import React, { useContext } from "react"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import AppContext from "../contexts/AppContext"
 import { displayName } from "../helpers/students"
 import { theme } from "../helpers/theme"
 import { student, StudentData } from "../types/students"
@@ -103,6 +104,10 @@ export default function ClassroomStudentsList({
 	selectedDate,
 	onStudentPress,
 }: ClassroomStudentsListProps) {
+	const { selectedRole } = useContext(AppContext)!
+	if (selectedRole !== "staff" && !classrooms?.length) {
+		return null
+	}
 	if (!classrooms || classrooms.length === 0) {
 		return (
 			<View style={styles.container}>

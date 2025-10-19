@@ -12,8 +12,10 @@ import { TabContext } from "../contexts/TabContext"
 import { theme } from "../helpers/theme"
 
 export default function HomeScreen() {
-	const { refreshAppData, isDataLoading, selectedStudent, selectedDate } = useContext(AppContext)!
-	const { isAttendanceModalActive, setIsAttendanceModalActive } = useContext(TabContext)
+	const { refreshAppData, isDataLoading, selectedStudent, selectedDate } =
+		useContext(AppContext)!
+	const { isAttendanceModalActive, setIsAttendanceModalActive } =
+		useContext(TabContext)
 
 	const isBirthday = useMemo(() => {
 		if (!selectedStudent?.birthdate) return false
@@ -68,7 +70,9 @@ export default function HomeScreen() {
 					<JAC_H_Logo />
 
 					{/* Birthday Card */}
-					{isBirthday && selectedStudent && <BirthdayCard student={selectedStudent} />}
+					{isBirthday && selectedStudent && (
+						<BirthdayCard student={selectedStudent} />
+					)}
 
 					{/* Day Information Card */}
 					<View style={styles.cardContainer}>

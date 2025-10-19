@@ -114,3 +114,12 @@ export interface StudentStatusItems {
   alias: "meal_status" | "mood_status" | "poop_status" | "pee_status" | EatingStatus | MoodStatus | PoopStatus | PeeStatus
   description: string
 }
+
+export interface admin_classrooms {
+  id: string;
+  name: string;
+  description: string | null;
+  student_count: number;
+  staff_count: number;
+  attendance_count: number;
+}
