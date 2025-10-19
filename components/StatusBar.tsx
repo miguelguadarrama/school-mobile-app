@@ -51,6 +51,14 @@ const StatusBar: React.FC = () => {
 		(is_staff || is_admin) && user?.id ? getStaffPhotoUrl(user.id) : null
 
 	//const gender = selectedStudent.gender_alias === "gender_male" ? "boy" : "girl"
+	const currentRole =
+		selectedRole === "admin"
+			? "Administrator"
+			: selectedRole === "staff"
+			? "Staff"
+			: selectedRole === "guardian"
+			? "Representante"
+			: "Usuario"
 
 	return (
 		<>
@@ -168,7 +176,7 @@ const StatusBar: React.FC = () => {
 						{/* Role switching for users with multiple roles */}
 						{hasMultipleRoles && (
 							<>
-								<Text style={styles.sectionTitle}>Cambiar Rol</Text>
+								<Text style={styles.sectionTitle}>Rol: {currentRole}</Text>
 								<TouchableOpacity
 									style={styles.profileOption}
 									onPress={() => {
