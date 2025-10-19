@@ -7,7 +7,7 @@ import { theme } from "../helpers/theme"
 
 export default function AnnouncementsScreen() {
 	const { data, isLoading, mutate } = useSWR(`/mobile/posts/announcements`)
-
+	console.log({ data })
 	// Handle refresh action
 	const handleRefresh = async () => {
 		// Trigger a revalidation of the data

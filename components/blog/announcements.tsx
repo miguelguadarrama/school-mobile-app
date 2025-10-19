@@ -126,6 +126,15 @@ const AnnouncementCard: React.FC<{ announcement: AnnouncementPost }> = ({
 	)
 }
 
+const EmptyState: React.FC = () => (
+	<View style={styles.emptyStateContainer}>
+		<Text style={styles.emptyStateTitle}>No hay anuncios</Text>
+		<Text style={styles.emptyStateText}>
+			Aún no hay anuncios publicados. Vuelve más tarde para ver las novedades.
+		</Text>
+	</View>
+)
+
 export default function AnnouncementList({
 	announcements,
 	onRefresh = () => {},
@@ -140,7 +149,11 @@ export default function AnnouncementList({
 			data={announcements}
 			renderItem={renderAnnouncement}
 			keyExtractor={(item) => item.id}
-			contentContainerStyle={styles.listContainer}
+			contentContainerStyle={[
+				styles.listContainer,
+				announcements.length === 0 && styles.emptyListContainer,
+			]}
+			ListEmptyComponent={<EmptyState />}
 			refreshControl={
 				<RefreshControl
 					refreshing={isRefreshing}
@@ -159,6 +172,11 @@ export default function AnnouncementList({
 const styles = StyleSheet.create({
 	listContainer: {
 		padding: theme.spacing.md,
+	},
+	emptyListContainer: {
+		flexGrow: 1,
+		justifyContent: "center",
+		alignItems: "center",
 	},
 	card: {
 		marginBottom: theme.spacing.lg,
@@ -204,5 +222,30 @@ const styles = StyleSheet.create({
 		fontFamily: theme.typography.family.bold,
 		color: theme.colors.primary,
 		fontWeight: "600",
+	},
+	emptyStateContainer: {
+		alignItems: "center",
+		justifyContent: "center",
+		paddingVertical: theme.spacing.xl * 2,
+		paddingHorizontal: theme.spacing.lg,
+	},
+	emptyStateIcon: {
+		fontSize: 64,
+		marginBottom: theme.spacing.lg,
+	},
+	emptyStateTitle: {
+		fontSize: theme.typography.size.xl,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.text,
+		marginBottom: theme.spacing.sm,
+		textAlign: "center",
+	},
+	emptyStateText: {
+		fontSize: theme.typography.size.md,
+		fontFamily: theme.typography.family.regular,
+		color: theme.colors.muted,
+		textAlign: "center",
+		lineHeight: 22,
+		maxWidth: 280,
 	},
 })
