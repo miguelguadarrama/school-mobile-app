@@ -1,5 +1,5 @@
-import React, { useMemo } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import React, { useMemo, useState } from "react"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { displayShortName } from "../helpers/students"
 import { theme } from "../helpers/theme"
 import { student } from "../types/students"
@@ -13,6 +13,8 @@ interface UpcomingBirthdaysProps {
 const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 	classrooms,
 }) => {
+	const [showAll, setShowAll] = useState(false)
+
 	const upcomingBirthdays = useMemo(() => {
 		const today = new Date()
 		today.setHours(0, 0, 0, 0) // Reset time to start of day
@@ -73,11 +75,16 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 		)
 	}
 
+	const displayedBirthdays = showAll
+		? upcomingBirthdays
+		: upcomingBirthdays.slice(0, 3)
+	const hiddenCount = upcomingBirthdays.length - 3
+
 	return (
 		<SchoolCard>
 			<Text style={styles.title}>🎂 Próximos Cumpleaños</Text>
 			<View style={styles.birthdayList}>
-				{upcomingBirthdays.map(
+				{displayedBirthdays.map(
 					({ student, daysUntilBirthday, isToday, birthdate }) => {
 						const formatDate = (date: Date) => {
 							const months = [
@@ -136,6 +143,19 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 					}
 				)}
 			</View>
+
+			{upcomingBirthdays.length > 3 && (
+				<TouchableOpacity
+					onPress={() => setShowAll(!showAll)}
+					style={styles.showMoreButton}
+				>
+					<Text style={styles.showMoreText}>
+						{showAll
+							? "Ver menos"
+							: `Ver ${hiddenCount} más ${hiddenCount === 1 ? "cumpleaños" : "cumpleaños"}`}
+					</Text>
+				</TouchableOpacity>
+			)}
 		</SchoolCard>
 	)
 }
@@ -196,6 +216,18 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		fontWeight: "700",
 		color: "#FF6B35",
+	},
+	showMoreButton: {
+		marginTop: theme.spacing.md,
+		paddingVertical: theme.spacing.sm,
+		alignItems: "center",
+		borderTopWidth: 1,
+		borderTopColor: theme.colors.border,
+	},
+	showMoreText: {
+		fontSize: 14,
+		color: theme.colors.primary,
+		fontWeight: "600",
 	},
 })
 
