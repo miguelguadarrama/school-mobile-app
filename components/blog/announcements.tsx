@@ -151,7 +151,7 @@ export default function AnnouncementList({
 			keyExtractor={(item) => item.id}
 			contentContainerStyle={[
 				styles.listContainer,
-				announcements.length === 0 && styles.emptyListContainer,
+				(announcements ?? []).length === 0 && styles.emptyListContainer,
 			]}
 			ListEmptyComponent={<EmptyState />}
 			refreshControl={
