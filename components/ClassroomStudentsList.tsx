@@ -104,10 +104,11 @@ export default function ClassroomStudentsList({
 	selectedDate,
 	onStudentPress,
 }: ClassroomStudentsListProps) {
-	const { selectedRole } = useContext(AppContext)!
+	const { selectedRole, user } = useContext(AppContext)!
 	if (selectedRole !== "staff") {
 		return null
 	}
+
 	if (!classrooms || classrooms.length === 0) {
 		return (
 			<View style={styles.container}>

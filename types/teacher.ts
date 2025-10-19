@@ -5,6 +5,11 @@ export interface ClassroomData {
   id: string
   name: string
   academic_year_id: string,
+  academic_year_classroom_staff: {
+    staff: {
+      user_id: string
+    }
+  }[]
   academic_year_classroom_students: ({
     id: string
     student_id: string

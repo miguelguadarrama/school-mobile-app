@@ -16,7 +16,9 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 	const { loggedIn } = useAuth()
 	const [selectedDate, setSelectedDate] = useState(new Date())
 	const [selectedStudent, setSelectedStudent] = useState<student | null>(null)
-	const [selectedRole, setSelectedRole] = useState<"admin" | "guardian" | "staff" | null>(null)
+	const [selectedRole, setSelectedRole] = useState<
+		"admin" | "guardian" | "staff" | null
+	>(null)
 	const [isRoleLoaded, setIsRoleLoaded] = useState(false)
 	const {
 		data,
@@ -87,7 +89,9 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 			?.academic_years
 
 	// Handler to persist role selection
-	const handleSetSelectedRole = async (role: "admin" | "guardian" | "staff" | null) => {
+	const handleSetSelectedRole = async (
+		role: "admin" | "guardian" | "staff" | null
+	) => {
 		setSelectedRole(role)
 		try {
 			if (role) {
@@ -115,7 +119,12 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 				attendance: data?.attendance || [],
 				selectedDate,
 				setSelectedDate: handleSetDate,
-				classrooms: data?.classrooms,
+				classrooms:
+					data?.classrooms?.filter((k) =>
+						k.academic_year_classroom_staff.some(
+							(s) => s.staff.user_id === data.user.id
+						)
+					) || [],
 				user: data?.user,
 				academic_year_id,
 				academic_year,
