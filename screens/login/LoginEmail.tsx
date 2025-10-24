@@ -31,12 +31,13 @@ const LoginScreen = () => {
 
 	const handleContinue = async () => {
 		setStatus("BUSY")
-
+		setEmail(email.toLowerCase().trim())
+		const _email = email.toLowerCase().trim()
 		try {
-			const data = await checkUserEmail(email)
+			const data = await checkUserEmail(_email)
 			if (data && data.sso_account) {
 				navigation.navigate("LoginPassword", {
-					email,
+					email: _email,
 					sso_account: data.sso_account,
 				})
 				return
@@ -47,7 +48,7 @@ const LoginScreen = () => {
 					console.log("User not registered")
 				}
 				// If the user is not registered, you can navigate to a different screen
-				navigation.navigate("LoginVerifyEmail", { email })
+				navigation.navigate("LoginVerifyEmail", { email: _email })
 				return
 			}
 		} catch (error) {
@@ -58,7 +59,7 @@ const LoginScreen = () => {
 			setStatus("IDLE")
 		}
 
-		navigation.navigate("LoginNoAccountFound", { email })
+		navigation.navigate("LoginNoAccountFound", { email: _email })
 	}
 
 	const handleLogoPress = () => {

@@ -1,5 +1,4 @@
 import { fetcher } from "./api"
-import { getToken } from "./auth"
 
 export const checkUserEmail = async (email: string) => {
   const response = await fetcher(`/users/email`, {
