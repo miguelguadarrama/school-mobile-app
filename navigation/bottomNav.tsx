@@ -103,7 +103,8 @@ function RoleAwareTabContent(): JSX.Element {
 
 // Custom wrapper component that handles the swipe functionality
 function SwipeableTabContent(): JSX.Element {
-	const { roles, selectedRole } = useContext(AppContext)!
+	const appContext = useContext(AppContext)!
+	const { roles, selectedRole } = appContext
 	const pagerRef = useRef<PagerView>(null)
 	const [currentIndex, setCurrentIndex] = useState<number>(2) // Start with Home (index 2)
 	const [isPhotoViewerActive, setIsPhotoViewerActive] = useState<boolean>(false)
@@ -189,6 +190,27 @@ function SwipeableTabContent(): JSX.Element {
 		},
 		[currentIndex, isPhotoViewerActive, isChatWindowOpen, isTeacherChatWindowOpen, isStudentProfileActive, isAttendanceModalActive]
 	)
+
+	// Expose tab navigation to AppContext for notification deep linking
+	useEffect(() => {
+		// Create a navigation function that bypasses modal/chat checks for notifications
+		const handleNotificationNavigation = (tabIndex: number) => {
+			if (__DEV__) {
+				console.log('Notification navigation to tab:', tabIndex)
+			}
+			targetIndexRef.current = tabIndex
+			setCurrentIndex(tabIndex)
+			pagerRef.current?.setPage(tabIndex)
+		}
+
+		// Store in AppContainer via a prop/callback mechanism
+		// We'll use a global ref pattern since AppContext doesn't re-render
+		;(window as any).__tabNavigationCallback = handleNotificationNavigation
+
+		return () => {
+			delete (window as any).__tabNavigationCallback
+		}
+	}, [])
 
 	// Render screens with performance optimization
 	const renderScreen = useCallback(

@@ -1,4 +1,5 @@
 import { createContext } from "react"
+import { NotificationData } from "../services/notifications"
 import { academic_year, attendanceStatus, student } from "../types/students"
 import { ClassroomData } from "../types/teacher"
 import { SessionUser } from "../types/user"
@@ -19,6 +20,9 @@ interface AppContextType {
 	user?: SessionUser
 	academic_year_id?: string
 	academic_year?: academic_year
+	pendingNotification: NotificationData | null
+	clearPendingNotification: () => void
+	requestTabNavigation?: (tabIndex: number) => void
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)

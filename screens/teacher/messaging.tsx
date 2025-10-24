@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons"
-import React, { useEffect, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import {
 	FlatList,
 	StyleSheet,
@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import LoadingScreen from "../../components/Loading"
 import { SectionHeader } from "../../components/messaging"
 import { TeacherChatroomItem } from "../../components/messaging/TeacherChatroomItem"
+import AppContext from "../../contexts/AppContext"
 import { useTeacherChatContext } from "../../contexts/TeacherChatContext"
 import { theme } from "../../helpers/theme"
 import { chats } from "../../types/chat"
@@ -30,6 +31,7 @@ type ChatItem = {
 type ListItem = SectionItem | ChatItem
 
 export default function TeacherMessagingScreen() {
+	const { pendingNotification, clearPendingNotification } = useContext(AppContext)!
 	const {
 		// UI State
 		setIsChatWindowOpen,
@@ -60,6 +62,21 @@ export default function TeacherMessagingScreen() {
 		setSelectedChat(null)
 		setIsChatWindowOpen(false)
 	}
+
+	// Handle notification tap - open the correct chat
+	useEffect(() => {
+		if (pendingNotification?.type === 'chat_message' &&
+		    (pendingNotification.targetRole === 'staff' || pendingNotification.targetRole === 'admin') &&
+		    pendingNotification.chatPartnerId &&
+		    chats) {
+			// Find the chat with the student (chatPartnerId is student_id for teachers)
+			const targetChat = chats.find(c => c.student_id === pendingNotification.chatPartnerId)
+			if (targetChat) {
+				handleChatPress(targetChat)
+				clearPendingNotification()
+			}
+		}
+	}, [pendingNotification, chats])
 
 	useEffect(() => {
 		// Clean up when component unmounts

@@ -4,7 +4,7 @@ import useSWR from "swr"
 import AppContext from "../contexts/AppContext"
 import { useAuth } from "../contexts/AuthContext"
 import { ChatProvider } from "../contexts/ChatContext"
-import { setupNotificationListeners } from "../services/notifications"
+import { NotificationData, setNotificationHandler, setupNotificationChannels, setupNotificationListeners } from "../services/notifications"
 import { attendanceStatus, student } from "../types/students"
 import { ClassroomData } from "../types/teacher"
 import { SessionUser } from "../types/user"
@@ -20,6 +20,7 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		"admin" | "guardian" | "staff" | null
 	>(null)
 	const [isRoleLoaded, setIsRoleLoaded] = useState(false)
+	const [pendingNotification, setPendingNotification] = useState<NotificationData | null>(null)
 	const {
 		data,
 		isLoading,
@@ -66,13 +67,61 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		loadSavedRole()
 	}, [loggedIn, data?.roles])
 
-	// Set up notification listeners when app is authenticated
+	// Set up notification channels and listeners when app is authenticated
 	useEffect(() => {
 		if (loggedIn) {
+			// Set up channels for Android notification grouping
+			setupNotificationChannels()
+
+			// Set up notification event listeners
 			const cleanup = setupNotificationListeners()
 			return cleanup
 		}
 	}, [loggedIn])
+
+	// Handle notification taps - switches role and stores notification data
+	useEffect(() => {
+		const handleNotification = async (notificationData: NotificationData) => {
+			if (__DEV__) {
+				console.log('Handling notification tap:', notificationData)
+			}
+
+			// Store the notification to process after role is set
+			setPendingNotification(notificationData)
+
+			// Switch to the target role if different from current
+			if (notificationData.targetRole !== selectedRole) {
+				await handleSetSelectedRole(notificationData.targetRole)
+			}
+		}
+
+		setNotificationHandler(handleNotification)
+	}, [selectedRole])
+
+	// Process pending notification after role change or data load
+	useEffect(() => {
+		if (pendingNotification && data?.students && isRoleLoaded) {
+			// For guardian role, switch to the correct student if needed
+			if (pendingNotification.targetRole === 'guardian' && pendingNotification.studentId) {
+				const targetStudent = data.students.find(s => s.id === pendingNotification.studentId)
+				if (targetStudent && targetStudent.id !== selectedStudent?.id) {
+					setSelectedStudent(targetStudent)
+				}
+			}
+
+			// Navigate to messaging tab (index 3) after role and student are set
+			if (pendingNotification.type === 'chat_message') {
+				// Small delay to ensure role/student switch completes
+				setTimeout(() => {
+					const navCallback = (window as any).__tabNavigationCallback
+					if (navCallback) {
+						navCallback(3) // Messaging tab is index 3
+					}
+				}, 100)
+			}
+			// Notification will be cleared by the messaging screen after it processes it
+		}
+	}, [pendingNotification, data?.students, isRoleLoaded, selectedStudent])
 
 	if (loggedIn && (isLoading || !isRoleLoaded)) {
 		return <LoadingScreen />
@@ -104,6 +153,17 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		}
 	}
 
+	const clearPendingNotification = () => {
+		setPendingNotification(null)
+	}
+
+	const requestTabNavigation = (tabIndex: number) => {
+		const navCallback = (window as any).__tabNavigationCallback
+		if (navCallback) {
+			navCallback(tabIndex)
+		}
+	}
+
 	//console.log({ id: data?.students?.[0]?.id, attendance: data?.attendance })
 	return (
 		<AppContext.Provider
@@ -128,6 +188,9 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 				user: data?.user,
 				academic_year_id,
 				academic_year,
+				pendingNotification,
+				clearPendingNotification,
+				requestTabNavigation,
 			}}
 		>
 			<ChatProvider selectedStudentId={selectedStudent?.id}>

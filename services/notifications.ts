@@ -6,6 +6,14 @@ import { AppState, Platform } from 'react-native'
 import { fetcher } from './api'
 import { saveToken } from "./auth"
 
+// Notification channel IDs for grouping
+export const NotificationChannels = {
+  CHAT_MESSAGES: 'chat-messages',
+  ANNOUNCEMENTS: 'announcements',
+  STUDENT_UPDATES: 'student-updates',
+  DEFAULT: 'default',
+} as const
+
 export interface PushToken {
   token: string
   type: 'expo' | 'ios' | 'android'
@@ -26,6 +34,78 @@ const getDeviceId = async (): Promise<string> => {
       console.warn('Failed to get device ID:', error)
     }
     return Constants.sessionId || Device.modelName || 'unknown-device'
+  }
+}
+
+/**
+ * Configure notification channels for Android (Android 8.0+)
+ * This allows grouping and customizing notification behavior by type
+ */
+export const setupNotificationChannels = async (): Promise<void> => {
+  if (Platform.OS !== 'android') {
+    return
+  }
+
+  try {
+    // Chat messages channel
+    await Notifications.setNotificationChannelAsync(NotificationChannels.CHAT_MESSAGES, {
+      name: 'Mensajes',
+      importance: Notifications.AndroidImportance.HIGH,
+      sound: 'default',
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF6B9D',
+      enableLights: true,
+      enableVibrate: true,
+      showBadge: true,
+      description: 'Notificaciones de nuevos mensajes de maestros',
+    })
+
+    // Announcements channel
+    await Notifications.setNotificationChannelAsync(NotificationChannels.ANNOUNCEMENTS, {
+      name: 'Anuncios',
+      importance: Notifications.AndroidImportance.DEFAULT,
+      sound: 'default',
+      vibrationPattern: [0, 250],
+      lightColor: '#FF6B9D',
+      enableLights: true,
+      enableVibrate: true,
+      showBadge: true,
+      description: 'Anuncios y publicaciones de la escuela',
+    })
+
+    // Student updates channel
+    await Notifications.setNotificationChannelAsync(NotificationChannels.STUDENT_UPDATES, {
+      name: 'Actualizaciones de Estudiante',
+      importance: Notifications.AndroidImportance.DEFAULT,
+      sound: 'default',
+      vibrationPattern: [0, 250],
+      lightColor: '#FF6B9D',
+      enableLights: true,
+      enableVibrate: true,
+      showBadge: true,
+      description: 'Actualizaciones sobre asistencia, estado y actividades del estudiante',
+    })
+
+    // Default channel
+    await Notifications.setNotificationChannelAsync(NotificationChannels.DEFAULT, {
+      name: 'General',
+      importance: Notifications.AndroidImportance.DEFAULT,
+      sound: 'default',
+      vibrationPattern: [0, 250],
+      lightColor: '#FF6B9D',
+      enableLights: true,
+      enableVibrate: true,
+      showBadge: true,
+      description: 'Notificaciones generales',
+    })
+
+    if (__DEV__) {
+      console.log('Notification channels configured successfully')
+    }
+  } catch (error) {
+    if (__DEV__) {
+      console.error('Error setting up notification channels:', error)
+    }
   }
 }
 
@@ -216,6 +296,30 @@ export const unregisterPushToken = async (): Promise<boolean> => {
   }
 }
 
+export interface NotificationData {
+  type: 'chat_message' | 'announcement' | 'student_update'
+  targetRole: 'guardian' | 'staff' | 'admin'
+  // For chat messages
+  chatPartnerId?: string  // staff_id for guardian, student_id for staff/admin
+  studentId?: string      // For guardian role to identify which student's chat
+  // For announcements and student updates
+  postId?: string
+  // Generic action
+  screen?: string
+}
+
+type NotificationHandler = (data: NotificationData) => void
+
+let notificationHandlerCallback: NotificationHandler | null = null
+
+/**
+ * Register a handler to process notification taps
+ * This should be called from your navigation/app container with logic to navigate
+ */
+export const setNotificationHandler = (handler: NotificationHandler) => {
+  notificationHandlerCallback = handler
+}
+
 export const setupNotificationListeners = () => {
   const notificationListener = Notifications.addNotificationReceivedListener(notification => {
     if (__DEV__) {
@@ -226,6 +330,15 @@ export const setupNotificationListeners = () => {
   const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
     if (__DEV__) {
       console.log('Notification response:', response)
+    }
+
+    // Handle notification tap
+    const data = response.notification.request.content.data
+    if (data && notificationHandlerCallback && typeof data === 'object') {
+      const notificationData = data as unknown as NotificationData
+      if (notificationData.type && notificationData.targetRole) {
+        notificationHandlerCallback(notificationData)
+      }
     }
   })
 

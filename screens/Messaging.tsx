@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useContext, useEffect } from "react"
 import { FlatList, StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import LoadingScreen from "../components/Loading"
@@ -7,6 +7,7 @@ import {
 	ChatroomItem,
 	SectionHeader,
 } from "../components/messaging"
+import AppContext from "../contexts/AppContext"
 import { useChatContext } from "../contexts/ChatContext"
 import { theme } from "../helpers/theme"
 import { chats } from "../types/chat"
@@ -24,6 +25,7 @@ type ChatItem = {
 type ListItem = SectionItem | ChatItem
 
 export default function MessagingScreen() {
+	const { pendingNotification, clearPendingNotification } = useContext(AppContext)!
 	const {
 		// UI State
 		setIsChatWindowOpen,
@@ -52,6 +54,21 @@ export default function MessagingScreen() {
 		setSelectedChat(null)
 		setIsChatWindowOpen(false)
 	}
+
+	// Handle notification tap - open the correct chat
+	useEffect(() => {
+		if (pendingNotification?.type === 'chat_message' &&
+		    pendingNotification.targetRole === 'guardian' &&
+		    pendingNotification.chatPartnerId &&
+		    chats) {
+			// Find the chat with the staff member
+			const targetChat = chats.find(c => c.staff_id === pendingNotification.chatPartnerId)
+			if (targetChat) {
+				handleChatPress(targetChat)
+				clearPendingNotification()
+			}
+		}
+	}, [pendingNotification, chats])
 
 	useEffect(() => {
 		// Clean up when component unmounts
