@@ -152,7 +152,9 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 					<Text style={styles.showMoreText}>
 						{showAll
 							? "Ver menos"
-							: `Ver ${hiddenCount} más ${hiddenCount === 1 ? "cumpleaños" : "cumpleaños"}`}
+							: `Ver ${hiddenCount} más ${
+									hiddenCount === 1 ? "cumpleaños" : "cumpleaños"
+							  }`}
 					</Text>
 				</TouchableOpacity>
 			)}

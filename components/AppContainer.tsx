@@ -4,7 +4,12 @@ import useSWR from "swr"
 import AppContext from "../contexts/AppContext"
 import { useAuth } from "../contexts/AuthContext"
 import { ChatProvider } from "../contexts/ChatContext"
-import { NotificationData, setNotificationHandler, setupNotificationChannels, setupNotificationListeners } from "../services/notifications"
+import {
+	NotificationData,
+	setNotificationHandler,
+	setupNotificationChannels,
+	setupNotificationListeners,
+} from "../services/notifications"
 import { attendanceStatus, student } from "../types/students"
 import { ClassroomData } from "../types/teacher"
 import { SessionUser } from "../types/user"
@@ -20,7 +25,8 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		"admin" | "guardian" | "staff" | null
 	>(null)
 	const [isRoleLoaded, setIsRoleLoaded] = useState(false)
-	const [pendingNotification, setPendingNotification] = useState<NotificationData | null>(null)
+	const [pendingNotification, setPendingNotification] =
+		useState<NotificationData | null>(null)
 	const {
 		data,
 		isLoading,
@@ -83,7 +89,7 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 	useEffect(() => {
 		const handleNotification = async (notificationData: NotificationData) => {
 			if (__DEV__) {
-				console.log('Handling notification tap:', notificationData)
+				console.log("Handling notification tap:", notificationData)
 			}
 
 			// Store the notification to process after role is set
@@ -102,15 +108,20 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 	useEffect(() => {
 		if (pendingNotification && data?.students && isRoleLoaded) {
 			// For guardian role, switch to the correct student if needed
-			if (pendingNotification.targetRole === 'guardian' && pendingNotification.studentId) {
-				const targetStudent = data.students.find(s => s.id === pendingNotification.studentId)
+			if (
+				pendingNotification.targetRole === "guardian" &&
+				pendingNotification.studentId
+			) {
+				const targetStudent = data.students.find(
+					(s) => s.id === pendingNotification.studentId
+				)
 				if (targetStudent && targetStudent.id !== selectedStudent?.id) {
 					setSelectedStudent(targetStudent)
 				}
 			}
 
 			// Navigate to messaging tab (index 3) after role and student are set
-			if (pendingNotification.type === 'chat_message') {
+			if (pendingNotification.type === "chat_message") {
 				// Small delay to ensure role/student switch completes
 				setTimeout(() => {
 					const navCallback = (window as any).__tabNavigationCallback
@@ -180,11 +191,12 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 				selectedDate,
 				setSelectedDate: handleSetDate,
 				classrooms:
-					data?.classrooms?.filter((k) =>
-						k.academic_year_classroom_staff.some(
+					data?.classrooms?.filter((k) => {
+						if (selectedRole === "admin") return true
+						return k.academic_year_classroom_staff.some(
 							(s) => s.staff.user_id === data.user.id
 						)
-					) || [],
+					}) || [],
 				user: data?.user,
 				academic_year_id,
 				academic_year,
