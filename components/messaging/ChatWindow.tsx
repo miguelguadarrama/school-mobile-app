@@ -117,12 +117,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 		return <LoadingScreen />
 	}
 
+	const userPhotoUrl = `${process.env.EXPO_PUBLIC_API_BASE_URL?.replace(
+		"/api",
+		""
+	)}/blob/users/${currentChat.userInfo.id}.jpg`
+
 	return (
 		<View style={styles.chatWindowContainer}>
 			<ChatHeader
 				staffName={currentChat.userInfo.full_name}
 				role={currentChat.role}
 				onBack={onBack}
+				photoUrl={userPhotoUrl}
 			/>
 
 			<View style={styles.chatContainer}>

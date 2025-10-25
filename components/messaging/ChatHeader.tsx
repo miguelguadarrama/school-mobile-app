@@ -1,20 +1,25 @@
 import { Ionicons } from "@expo/vector-icons"
-import React from "react"
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import React, { useState } from "react"
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { theme } from "../../helpers/theme"
+import { Avatar } from "./Avatar"
 
 interface ChatHeaderProps {
 	staffName: string
 	role: "admin" | "teacher" | "student"
 	onBack: () => void
+	photoUrl?: string
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
 	staffName,
 	role,
 	onBack,
+	photoUrl,
 }) => {
+	const [imageError, setImageError] = useState(false)
+
 	return (
 		<SafeAreaView edges={["top"]} style={styles.headerContainer}>
 			<View style={styles.header}>
@@ -25,6 +30,19 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 						color={theme.colors.primary}
 					/>
 				</TouchableOpacity>
+				{photoUrl && (
+					<View style={styles.avatarContainer}>
+						{!imageError ? (
+							<Image
+								source={{ uri: photoUrl }}
+								style={styles.photo}
+								onError={() => setImageError(true)}
+							/>
+						) : (
+							<Avatar name={staffName} size="medium" variant="primary" />
+						)}
+					</View>
+				)}
 				<View style={styles.headerInfo}>
 					<Text
 						style={styles.staffNameHeader}
@@ -61,6 +79,15 @@ const styles = StyleSheet.create({
 	backButton: {
 		marginRight: theme.spacing.md,
 		padding: theme.spacing.xs,
+	},
+	avatarContainer: {
+		marginRight: theme.spacing.md,
+	},
+	photo: {
+		width: 40,
+		height: 40,
+		borderRadius: 20,
+		backgroundColor: theme.colors.border,
 	},
 	headerInfo: {
 		flex: 1,

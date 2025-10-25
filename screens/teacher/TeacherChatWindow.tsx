@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
 import {
 	BackHandler,
 	FlatList,
@@ -13,7 +13,9 @@ import {
 	MessageBubble,
 	MessageInput,
 } from "../../components/messaging"
+import AppContext from "../../contexts/AppContext"
 import { useTeacherChatContext } from "../../contexts/TeacherChatContext"
+import { studentPhotoUri } from "../../helpers/students"
 import { theme } from "../../helpers/theme"
 import { fetcher } from "../../services/api"
 import { chat_message } from "../../types/chat"
@@ -30,6 +32,7 @@ export const TeacherChatWindow: React.FC<TeacherChatWindowProps> = ({
 	onSendMessage,
 }) => {
 	const flatListRef = useRef<FlatList<chat_message>>(null)
+	const { academic_year_id } = useContext(AppContext)!
 	const { chats } = useTeacherChatContext()
 	const [keyboardHeight, setKeyboardHeight] = useState(0)
 
@@ -115,10 +118,16 @@ export const TeacherChatWindow: React.FC<TeacherChatWindowProps> = ({
 
 	// For teachers, userInfo contains the student's information
 	const studentName = currentChat.userInfo.full_name
+	const studentPhotoUrl = studentPhotoUri(academic_year_id, studentId)
 
 	return (
 		<View style={styles.chatWindowContainer}>
-			<ChatHeader staffName={studentName} role="student" onBack={onBack} />
+			<ChatHeader
+				staffName={studentName}
+				role="student"
+				onBack={onBack}
+				photoUrl={studentPhotoUrl}
+			/>
 
 			<View style={styles.chatContainer}>
 				<FlatList
