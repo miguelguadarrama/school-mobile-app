@@ -1,22 +1,21 @@
 // PhotoGridScreen.tsx
-import React, { useState } from "react"
+import { Ionicons } from "@expo/vector-icons"
+import { useNavigation, useRoute } from "@react-navigation/native"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import React, { memo, useCallback, useState } from "react"
 import {
-	View,
-	Text,
+	Animated,
+	Dimensions,
+	FlatList,
 	Image,
 	StyleSheet,
-	ScrollView,
-	Dimensions,
+	Text,
 	TouchableOpacity,
-	Alert,
-	Animated,
+	View,
 } from "react-native"
-import { useRoute, useNavigation } from "@react-navigation/native"
-import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import { Ionicons } from "@expo/vector-icons"
-import { BlogPostMedia } from "../../types/post"
-import { SocialStackParamList } from "../../types/navigation"
 import { SafeAreaView } from "react-native-safe-area-context"
+import { SocialStackParamList } from "../../types/navigation"
+import { BlogPostMedia } from "../../types/post"
 
 type PhotoGridScreenNavigationProp = NativeStackNavigationProp<
 	SocialStackParamList,
@@ -24,9 +23,10 @@ type PhotoGridScreenNavigationProp = NativeStackNavigationProp<
 >
 
 const { width: screenWidth } = Dimensions.get("window")
-const imageWidth = screenWidth / 2
+const NUM_COLUMNS = 3
+const imageWidth = screenWidth / NUM_COLUMNS
 
-const PhotoPlaceholder = () => {
+const PhotoPlaceholder = memo(() => {
 	const pulseAnim = React.useRef(new Animated.Value(0)).current
 
 	React.useEffect(() => {
@@ -56,11 +56,38 @@ const PhotoPlaceholder = () => {
 	return (
 		<View style={styles.placeholder}>
 			<Animated.View style={{ opacity }}>
-				<Ionicons name="image-outline" size={48} color="#999" />
+				<Ionicons name="image-outline" size={32} color="#999" />
 			</Animated.View>
 		</View>
 	)
-}
+})
+
+// Memoized photo item component for better performance
+const PhotoItem = memo<{
+	photo: BlogPostMedia
+	index: number
+	onPress: (index: number) => void
+	isLoaded: boolean
+	onLoad: (id: string) => void
+	onError: (id: string) => void
+}>(({ photo, index, onPress, isLoaded, onLoad, onError }) => {
+	return (
+		<TouchableOpacity
+			style={styles.imageContainer}
+			onPress={() => onPress(index)}
+			activeOpacity={0.8}
+		>
+			{!isLoaded && <PhotoPlaceholder />}
+			<Image
+				source={{ uri: photo.file_url }}
+				style={styles.gridImage}
+				onError={() => onError(photo.id)}
+				onLoad={() => onLoad(photo.id)}
+				resizeMode="cover"
+			/>
+		</TouchableOpacity>
+	)
+})
 
 const PhotoGridScreen = () => {
 	const route = useRoute()
@@ -73,73 +100,44 @@ const PhotoGridScreen = () => {
 
 	const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
 
-	const handleImagePress = (index: number) => {
-		navigation.navigate("PhotoViewer", {
-			photos, // Pass all photos
-			initialIndex: index, // Starting photo index
-			title,
-		})
-	}
+	const handleImagePress = useCallback(
+		(index: number) => {
+			navigation.navigate("PhotoViewer", {
+				photos,
+				initialIndex: index,
+				title,
+			})
+		},
+		[navigation, photos, title]
+	)
 
-	const handleImageError = (photoId: string) => {
+	const handleImageError = useCallback((photoId: string) => {
 		console.warn(`Failed to load image with ID: ${photoId}`)
-	}
+	}, [])
 
-	const handleImageLoad = (photoId: string) => {
+	const handleImageLoad = useCallback((photoId: string) => {
 		setLoadedImages((prev) => new Set([...prev, photoId]))
-	}
+	}, [])
 
-	const handleGoBack = () => {
+	const handleGoBack = useCallback(() => {
 		navigation.goBack()
-	}
+	}, [navigation])
 
-	const renderPhotoGrid = () => {
-		const rows = []
+	const renderItem = useCallback(
+		({ item, index }: { item: BlogPostMedia; index: number }) => (
+			<PhotoItem
+				photo={item}
+				index={index}
+				onPress={handleImagePress}
+				isLoaded={loadedImages.has(item.id)}
+				onLoad={handleImageLoad}
+				onError={handleImageError}
+			/>
+		),
+		[handleImagePress, handleImageLoad, handleImageError, loadedImages]
+	)
 
-		// Group photos into pairs for 2-column layout
-		for (let i = 0; i < photos.length; i += 2) {
-			const leftPhoto = photos[i]
-			const rightPhoto = photos[i + 1]
-
-			rows.push(
-				<View key={`row-${i}`} style={styles.gridRow}>
-					<TouchableOpacity
-						style={styles.imageContainer}
-						onPress={() => handleImagePress(i)}
-						activeOpacity={0.8}
-					>
-						{!loadedImages.has(leftPhoto.id) && <PhotoPlaceholder />}
-						<Image
-							source={{ uri: leftPhoto.file_url }}
-							style={styles.gridImage}
-							onError={() => handleImageError(leftPhoto.id)}
-							onLoad={() => handleImageLoad(leftPhoto.id)}
-							resizeMode="cover"
-						/>
-					</TouchableOpacity>
-
-					{rightPhoto && (
-						<TouchableOpacity
-							style={styles.imageContainer}
-							onPress={() => handleImagePress(i + 1)}
-							activeOpacity={0.8}
-						>
-							{!loadedImages.has(rightPhoto.id) && <PhotoPlaceholder />}
-							<Image
-								source={{ uri: rightPhoto.file_url }}
-								style={styles.gridImage}
-								onError={() => handleImageError(rightPhoto.id)}
-								onLoad={() => handleImageLoad(rightPhoto.id)}
-								resizeMode="cover"
-							/>
-						</TouchableOpacity>
-					)}
-				</View>
-			)
-		}
-
-		return rows
-	}
+	const keyExtractor = useCallback((item: BlogPostMedia) => item.id, [])
 
 	return (
 		<SafeAreaView style={styles.container} edges={["top", "bottom"]}>
@@ -167,13 +165,19 @@ const PhotoGridScreen = () => {
 				<View style={styles.headerRight} />
 			</View>
 
-			<ScrollView
-				style={styles.scrollView}
-				contentContainerStyle={styles.scrollContent}
+			<FlatList
+				data={photos}
+				renderItem={renderItem}
+				keyExtractor={keyExtractor}
+				numColumns={NUM_COLUMNS}
 				showsVerticalScrollIndicator={false}
-			>
-				{renderPhotoGrid()}
-			</ScrollView>
+				removeClippedSubviews={true}
+				maxToRenderPerBatch={15}
+				updateCellsBatchingPeriod={50}
+				initialNumToRender={15}
+				windowSize={5}
+				contentContainerStyle={styles.listContent}
+			/>
 		</SafeAreaView>
 	)
 }
@@ -181,7 +185,7 @@ const PhotoGridScreen = () => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#FFF", // Black background for photo viewing
+		backgroundColor: "#FFF",
 	},
 	header: {
 		backgroundColor: "#FFF",
@@ -195,14 +199,14 @@ const styles = StyleSheet.create({
 	},
 	backButton: {
 		padding: 8,
-		marginLeft: -8, // Compensate for padding to align with edge
+		marginLeft: -8,
 	},
 	headerContent: {
 		flex: 1,
 		alignItems: "center",
 	},
 	headerRight: {
-		width: 40, // Same width as back button for centering
+		width: 40,
 	},
 	headerTitle: {
 		fontSize: 18,
@@ -216,23 +220,17 @@ const styles = StyleSheet.create({
 		color: "#666",
 		textAlign: "center",
 	},
-	scrollView: {
-		flex: 1,
-	},
-	scrollContent: {
+	listContent: {
 		flexGrow: 1,
-	},
-	gridRow: {
-		flexDirection: "row",
 	},
 	imageContainer: {
 		width: imageWidth,
-		aspectRatio: 1, // Square images
+		aspectRatio: 1,
 	},
 	gridImage: {
 		width: "100%",
 		height: "100%",
-		backgroundColor: "#e5e5e5", // Light gray placeholder while loading
+		backgroundColor: "#e5e5e5",
 	},
 	placeholder: {
 		position: "absolute",
