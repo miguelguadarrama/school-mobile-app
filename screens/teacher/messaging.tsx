@@ -1,5 +1,11 @@
 import { Ionicons } from "@expo/vector-icons"
-import React, { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from "react"
 import {
 	FlatList,
 	StyleSheet,
@@ -31,7 +37,8 @@ type ChatItem = {
 type ListItem = SectionItem | ChatItem
 
 export default function TeacherMessagingScreen() {
-	const { pendingNotification, clearPendingNotification } = useContext(AppContext)!
+	const { pendingNotification, clearPendingNotification } =
+		useContext(AppContext)!
 	const {
 		// UI State
 		setIsChatWindowOpen,
@@ -66,12 +73,17 @@ export default function TeacherMessagingScreen() {
 
 	// Handle notification tap - open the correct chat
 	useEffect(() => {
-		if (pendingNotification?.type === 'chat_message' &&
-		    (pendingNotification.targetRole === 'staff' || pendingNotification.targetRole === 'admin') &&
-		    pendingNotification.chatPartnerId &&
-		    chats) {
+		if (
+			pendingNotification?.type === "chat_message" &&
+			(pendingNotification.targetRole === "staff" ||
+				pendingNotification.targetRole === "admin") &&
+			pendingNotification.chatPartnerId &&
+			chats
+		) {
 			// Find the chat with the student (chatPartnerId is student_id for teachers)
-			const targetChat = chats.find(c => c.student_id === pendingNotification.chatPartnerId)
+			const targetChat = chats.find(
+				(c) => c.student_id === pendingNotification.chatPartnerId
+			)
 			if (targetChat) {
 				handleChatPress(targetChat)
 				clearPendingNotification()
@@ -134,7 +146,7 @@ export default function TeacherMessagingScreen() {
 	const flatListData = useMemo(() => {
 		return [
 			...(filteredChats.length > 0
-				? [{ type: "section" as const, title: "Estudiantes" }]
+				? [{ type: "section" as const, title: "Alumnos" }]
 				: []),
 			...filteredChats.map((chat) => ({
 				type: "chat" as const,

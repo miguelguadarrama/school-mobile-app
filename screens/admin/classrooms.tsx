@@ -97,7 +97,7 @@ const AdminClassroomList = () => {
 									size={20}
 									color={theme.colors.accent4}
 								/>
-								<Text style={styles.statLabel}>Estudiantes</Text>
+								<Text style={styles.statLabel}>Alumnos</Text>
 								<Text style={styles.statValue}>{classroom.student_count}</Text>
 							</View>
 

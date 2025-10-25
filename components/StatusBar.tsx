@@ -55,7 +55,7 @@ const StatusBar: React.FC = () => {
 		selectedRole === "admin"
 			? "Administrator"
 			: selectedRole === "staff"
-			? "Staff"
+			? "Docente"
 			: selectedRole === "guardian"
 			? "Representante"
 			: "Usuario"

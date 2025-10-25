@@ -166,7 +166,7 @@ export default function ClassroomStudentsList({
 									)
 								})
 							) : (
-								<Text style={styles.noStudentsText}>No hay estudiantes</Text>
+								<Text style={styles.noStudentsText}>No hay alumnos</Text>
 							)}
 						</View>
 					</SchoolCard>
