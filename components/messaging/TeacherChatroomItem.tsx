@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react"
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import AppContext from "../../contexts/AppContext"
-import { studentPhotoUri } from "../../helpers/students"
+import { formatName, studentPhotoUri } from "../../helpers/students"
 import { theme } from "../../helpers/theme"
 import { chats } from "../../types/chat"
 import { Avatar } from "./Avatar"
@@ -45,7 +45,7 @@ export const TeacherChatroomItem: React.FC<TeacherChatroomItemProps> = ({
 			</View>
 			<View style={styles.chatroomContent}>
 				<Text style={styles.studentName} numberOfLines={1} ellipsizeMode="tail">
-					{studentDisplayName.toLowerCase()}
+					{formatName(studentDisplayName)}
 				</Text>
 				<View style={styles.lastMessageContainer}>
 					<UnreadBadge count={unreadCount} />
@@ -87,7 +87,6 @@ const styles = StyleSheet.create({
 		color: theme.colors.text,
 		fontWeight: "600",
 		marginBottom: 2,
-		textTransform: "capitalize",
 	},
 	lastMessage: {
 		fontFamily: theme.typography.family.regular,

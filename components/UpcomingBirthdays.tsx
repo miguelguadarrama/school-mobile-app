@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import { displayShortName } from "../helpers/students"
+import { displayShortName, formatName } from "../helpers/students"
 import { theme } from "../helpers/theme"
 import { student } from "../types/students"
 import { ClassroomData } from "../types/teacher"
@@ -115,7 +115,10 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 								{isToday ? (
 									<>
 										<Text style={styles.todayName}>
-											🎉 {displayShortName(student as unknown as student)}
+											🎉{" "}
+											{formatName(
+												displayShortName(student as unknown as student)
+											)}
 										</Text>
 										<Text style={styles.todayLabel}>¡HOY!</Text>
 									</>
@@ -123,7 +126,9 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 									<>
 										<View style={styles.studentInfo}>
 											<Text style={styles.studentName}>
-												{displayShortName(student as unknown as student)}
+												{formatName(
+													displayShortName(student as unknown as student)
+												)}
 											</Text>
 											<Text style={styles.birthdateText}>
 												{formatDate(birthdate)}
@@ -148,6 +153,7 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 				<TouchableOpacity
 					onPress={() => setShowAll(!showAll)}
 					style={styles.showMoreButton}
+					activeOpacity={1}
 				>
 					<Text style={styles.showMoreText}>
 						{showAll

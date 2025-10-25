@@ -1,5 +1,18 @@
 import { student } from "../types/students";
 
+/**
+ * Formats a full name string to title case (e.g., "SAM SMITH" -> "Sam Smith")
+ * Handles names with multiple words and preserves Spanish names properly
+ */
+export const formatName = (fullName: string): string => {
+  if (!fullName) return ""
+
+  return fullName
+    .toLowerCase()
+    .split(" ")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ")
+}
 
 export const displayName = (student: student) => {
   let name = student.first_name;

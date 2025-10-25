@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { formatName } from "../../helpers/students"
 import { theme } from "../../helpers/theme"
 import { chats } from "../../types/chat"
 import { Avatar } from "./Avatar"
@@ -43,7 +44,7 @@ export const ChatroomItem: React.FC<ChatroomItemProps> = ({
 				)}
 			</View>
 			<View style={styles.chatroomContent}>
-				<Text style={styles.staffName}>{item.userInfo.full_name}</Text>
+				<Text style={styles.staffName}>{formatName(item.userInfo.full_name)}</Text>
 				<View style={styles.lastMessageContainer}>
 					<UnreadBadge count={unreadCount} />
 					<Text style={styles.lastMessage} numberOfLines={1}>
