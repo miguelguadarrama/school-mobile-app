@@ -83,19 +83,17 @@ export const SocialPostModal: React.FC<SocialPostModalProps> = ({
 	}
 
 	const handleSavePost = async (postData: PostFormData) => {
-		// TODO: Implement API call to save/update post
-		console.log("Saving post:", postData)
-		console.log("Editing post:", editingPost?.id)
-		console.log("Classroom:", selectedClassroom)
-
 		// Refresh posts list
 		if (refreshPosts) {
 			await refreshPosts()
 		}
 
-		// For now, just go back to list view
-		// In real implementation, you would make API call here
-		handleBackFromEditor()
+		// Only go back to list view if we're publishing (not creating/editing draft)
+		// When creating a draft, handleDraftCreated keeps us in edit mode
+		// Only navigate back when explicitly publishing
+		if (postData.published) {
+			handleBackFromEditor()
+		}
 	}
 
 	const handleDraftCreated = (createdPost: BlogPost) => {
