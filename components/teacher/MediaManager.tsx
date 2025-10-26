@@ -28,6 +28,8 @@ interface MediaManagerProps {
 	isAnnouncementMode?: boolean
 }
 
+type MediaSelectionMode = "photos" | "video" | null
+
 export const MediaManager: React.FC<MediaManagerProps> = ({
 	mediaFiles,
 	onMediaFilesChange,
@@ -39,6 +41,7 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 	const [compressionProgress, setCompressionProgress] = useState(0)
 	const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
 	const [totalVideos, setTotalVideos] = useState(0)
+	const [selectionMode, setSelectionMode] = useState<MediaSelectionMode>(null)
 
 	const processImage = async (uri: string): Promise<string> => {
 		try {
@@ -157,17 +160,37 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 				return
 			}
 
-			// Launch gallery picker - allow both images and videos
+			// Configure picker based on selection mode
+			const isPhotosMode = selectionMode === "photos"
 			const result = await ImagePicker.launchImageLibraryAsync({
-				mediaTypes: ["images", "videos"], // Allow images and videos
+				mediaTypes: isPhotosMode ? ["images"] : ["videos"],
 				allowsEditing: false,
 				quality: 0.8,
-				allowsMultipleSelection: true,
-				selectionLimit: 30 - mediaFiles.length,
+				allowsMultipleSelection: isPhotosMode,
+				selectionLimit: isPhotosMode ? 30 - mediaFiles.length : 1,
 				videoMaxDuration: 300, // 5 minutes max for videos
 			})
 
 			if (!result.canceled && result.assets && result.assets.length > 0) {
+				// Validate based on selection mode
+				const hasVideos = result.assets.some((asset) => asset.type === "video")
+				const hasPhotos = result.assets.some((asset) => asset.type === "image")
+
+				// If photos mode but got video, or vice versa (shouldn't happen but safety check)
+				if (selectionMode === "photos" && hasVideos) {
+					Alert.alert("Error", "Solo puedes agregar fotos en este modo", [
+						{ text: "OK" },
+					])
+					return
+				}
+
+				if (selectionMode === "video" && hasPhotos) {
+					Alert.alert("Error", "Solo puedes agregar un video en este modo", [
+						{ text: "OK" },
+					])
+					return
+				}
+
 				// Count how many videos need processing
 				const videoCount = result.assets.filter(
 					(asset) => asset.type === "video"
@@ -270,6 +293,10 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 					onPress: () => {
 						const updatedFiles = mediaFiles.filter((_, i) => i !== index)
 						onMediaFilesChange(updatedFiles)
+						// Reset selection mode if all files are removed
+						if (updatedFiles.length === 0) {
+							setSelectionMode(null)
+						}
 					},
 				},
 			]
@@ -299,6 +326,87 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 
 	return (
 		<View style={styles.container}>
+			{/* Media Selection Mode Buttons - Only show when no files uploaded and not in announcement mode */}
+			{!isAnnouncementMode && mediaFiles.length === 0 && (
+				<View style={styles.selectionModeContainer}>
+					<View style={styles.selectionModeButtons}>
+						<TouchableOpacity
+							activeOpacity={1}
+							style={[
+								styles.selectionModeButton,
+								selectionMode === "photos" && styles.selectionModeButtonActive,
+							]}
+							onPress={() => setSelectionMode("photos")}
+						>
+							<Ionicons
+								name="images"
+								size={24}
+								color={
+									selectionMode === "photos"
+										? theme.colors.white
+										: theme.colors.primary
+								}
+							/>
+							<Text
+								style={[
+									styles.selectionModeButtonText,
+									selectionMode === "photos" &&
+										styles.selectionModeButtonTextActive,
+								]}
+							>
+								Fotos
+							</Text>
+							<Text
+								style={[
+									styles.selectionModeButtonSubtext,
+									selectionMode === "photos" &&
+										styles.selectionModeButtonSubtextActive,
+								]}
+							>
+								(hasta 30)
+							</Text>
+						</TouchableOpacity>
+
+						<TouchableOpacity
+							activeOpacity={1}
+							style={[
+								styles.selectionModeButton,
+								selectionMode === "video" && styles.selectionModeButtonActive,
+							]}
+							onPress={() => setSelectionMode("video")}
+						>
+							<Ionicons
+								name="videocam"
+								size={24}
+								color={
+									selectionMode === "video"
+										? theme.colors.white
+										: theme.colors.primary
+								}
+							/>
+							<Text
+								style={[
+									styles.selectionModeButtonText,
+									selectionMode === "video" &&
+										styles.selectionModeButtonTextActive,
+								]}
+							>
+								Video
+							</Text>
+							<Text
+								style={[
+									styles.selectionModeButtonSubtext,
+									selectionMode === "video" &&
+										styles.selectionModeButtonSubtextActive,
+								]}
+							>
+								(solo 1)
+							</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+			)}
+
 			{/* Media Files Grid */}
 			<View style={styles.mediaGrid}>
 				{mediaFiles.map((file, index) => (
@@ -419,19 +527,31 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 				))}
 
 				{/* Add Media Button */}
-				<TouchableOpacity
-					style={styles.addMediaButton}
-					onPress={handleAddMedia}
-				>
-					<Ionicons
-						name={isAnnouncementMode ? "document-attach" : "add"}
-						size={32}
-						color={theme.colors.primary}
-					/>
-					<Text style={styles.addMediaText}>
-						{isAnnouncementMode ? "Agregar Documentos" : "Agregar Fotos/Videos"}
-					</Text>
-				</TouchableOpacity>
+				{(isAnnouncementMode || selectionMode !== null) && (
+					<TouchableOpacity
+						style={styles.addMediaButton}
+						onPress={handleAddMedia}
+					>
+						<Ionicons
+							name={
+								isAnnouncementMode
+									? "document-attach"
+									: selectionMode === "photos"
+									? "images"
+									: "videocam"
+							}
+							size={32}
+							color={theme.colors.primary}
+						/>
+						<Text style={styles.addMediaText}>
+							{isAnnouncementMode
+								? "Agregar\nDocumentos"
+								: selectionMode === "photos"
+								? "Agregar\nFotos"
+								: "Agregar\nVideo"}
+						</Text>
+					</TouchableOpacity>
+				)}
 			</View>
 
 			{mediaFiles.length > 0 && (
@@ -729,5 +849,54 @@ const styles = StyleSheet.create({
 		color: theme.colors.muted,
 		textAlign: "center",
 		marginTop: theme.spacing.sm,
+	},
+	// Selection mode styles
+	selectionModeContainer: {
+		marginBottom: theme.spacing.md,
+	},
+	selectionModeTitle: {
+		fontSize: theme.typography.size.md,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.text,
+		marginBottom: theme.spacing.sm,
+		textAlign: "center",
+	},
+	selectionModeButtons: {
+		flexDirection: "row",
+		gap: theme.spacing.sm,
+		justifyContent: "center",
+	},
+	selectionModeButton: {
+		flex: 1,
+		paddingVertical: theme.spacing.md,
+		paddingHorizontal: theme.spacing.sm,
+		borderRadius: theme.radius.md,
+		borderWidth: 2,
+		borderColor: theme.colors.primary,
+		backgroundColor: theme.colors.white,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	selectionModeButtonActive: {
+		backgroundColor: theme.colors.primary,
+		borderColor: theme.colors.primary,
+	},
+	selectionModeButtonText: {
+		fontSize: theme.typography.size.md,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.primary,
+		marginTop: theme.spacing.xs,
+	},
+	selectionModeButtonTextActive: {
+		color: theme.colors.white,
+	},
+	selectionModeButtonSubtext: {
+		fontSize: theme.typography.size.xs,
+		fontFamily: theme.typography.family.regular,
+		color: theme.colors.primary,
+		marginTop: 2,
+	},
+	selectionModeButtonSubtextActive: {
+		color: theme.colors.white,
 	},
 })

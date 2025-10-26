@@ -64,7 +64,7 @@ export const SocialPostModal: React.FC<SocialPostModalProps> = ({
 	}
 
 	const getPostStatusColor = (post: BlogPost) => {
-		return post.published_at ? theme.colors.success : theme.colors.warning
+		return post.published_at ? theme.colors.success : theme.colors.muted
 	}
 
 	const handleCreateNewPost = () => {

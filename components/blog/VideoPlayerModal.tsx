@@ -82,15 +82,29 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 				return
 			}
 
+			// Simulate progress with interval while downloading
+			let simulatedProgress = 0
+			const progressInterval = setInterval(() => {
+				simulatedProgress += 5
+				if (simulatedProgress <= 90) {
+					setDownloadProgress(simulatedProgress)
+				}
+			}, 200)
+
 			// Download the video using fetch
 			const response = await fetch(videoUrl)
 			if (!response.ok) {
+				clearInterval(progressInterval)
 				throw new Error(`HTTP error! status: ${response.status}`)
 			}
 
 			// Convert response to ArrayBuffer, then to Uint8Array
 			const arrayBuffer = await response.arrayBuffer()
 			const uint8Array = new Uint8Array(arrayBuffer)
+
+			// Clear progress interval
+			clearInterval(progressInterval)
+			setDownloadProgress(100)
 
 			// Write the downloaded content to the file
 			videoFile.write(uint8Array)
@@ -173,7 +187,11 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 							{isSharing ? (
 								<ActivityIndicator size="small" color={theme.colors.white} />
 							) : (
-								<Ionicons name="share-outline" size={24} color={theme.colors.white} />
+								<Ionicons
+									name="share-outline"
+									size={24}
+									color={theme.colors.white}
+								/>
 							)}
 						</TouchableOpacity>
 					</View>
@@ -183,6 +201,9 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 							<View style={styles.loadingContainer}>
 								<ActivityIndicator size="large" color={theme.colors.primary} />
 								<Text style={styles.loadingText}>Descargando video...</Text>
+								{downloadProgress > 0 && (
+									<Text style={styles.progressText}>{downloadProgress}%</Text>
+								)}
 							</View>
 						) : error ? (
 							<View style={styles.errorContainer}>
@@ -265,6 +286,12 @@ const styles = StyleSheet.create({
 		fontSize: theme.typography.size.md,
 		fontFamily: theme.typography.family.regular,
 		color: theme.colors.white,
+		textAlign: "center",
+	},
+	progressText: {
+		fontSize: theme.typography.size.sm,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.primary,
 		textAlign: "center",
 	},
 	errorContainer: {
