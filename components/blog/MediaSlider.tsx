@@ -97,10 +97,16 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 					setIsDownloading(true)
 
 					// Extract filename from URL if not provided
-					const docFileName = fileName || url.split("/").pop() || "documento.pdf"
+					const docFileName =
+						fileName && fileName.endsWith(".pdf")
+							? fileName
+							: url.split("/").pop() || "documento.pdf"
 
 					// Create file destination in cache directory
-					const destination = new FileSystem.File(FileSystem.Paths.cache, docFileName)
+					const destination = new FileSystem.File(
+						FileSystem.Paths.cache,
+						docFileName
+					)
 
 					// Download file to cache directory
 					const file = await FileSystem.File.downloadFileAsync(
@@ -115,11 +121,14 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 					if (Platform.OS === "android") {
 						// On Android, use IntentLauncher to open the file
 						const contentUri = await getContentUriAsync(file.uri)
-						await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
-							data: contentUri,
-							flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
-							type: "application/pdf",
-						})
+						await IntentLauncher.startActivityAsync(
+							"android.intent.action.VIEW",
+							{
+								data: contentUri,
+								flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
+								type: "application/pdf",
+							}
+						)
 					} else {
 						// On iOS, use Linking to open the file
 						const canOpen = await Linking.canOpenURL(file.uri)
@@ -290,9 +299,7 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 							<TouchableOpacity
 								key={doc.id}
 								style={styles.documentItem}
-								onPress={() =>
-									handleDocumentPress(doc.file_url, doc.file_url.split("/").pop())
-								}
+								onPress={() => handleDocumentPress(doc.file_url, doc.caption)}
 								activeOpacity={0.7}
 							>
 								<View style={styles.documentIcon}>
@@ -304,7 +311,7 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 								</View>
 								<View style={styles.documentInfo}>
 									<Text style={styles.documentName} numberOfLines={1}>
-										Documento #{index + 1}
+										{doc.caption || `Documento #${index + 1}`}
 									</Text>
 									{doc.file_size && (
 										<Text style={styles.documentSize}>
@@ -322,11 +329,7 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 					</View>
 
 					{/* Download Progress Modal */}
-					<Modal
-						visible={isDownloading}
-						transparent
-						animationType="fade"
-					>
+					<Modal visible={isDownloading} transparent animationType="fade">
 						<View style={styles.modalOverlay}>
 							<View style={styles.modalContent}>
 								<ActivityIndicator size="large" color={theme.colors.primary} />

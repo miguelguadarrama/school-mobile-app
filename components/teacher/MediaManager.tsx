@@ -115,7 +115,11 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 			// Generate thumbnail from the compressed video
 			const thumbnailUri = await generateVideoThumbnail(compressedUri)
 
-			return { uri: compressedUri, fileSize, thumbnailUri: thumbnailUri || undefined }
+			return {
+				uri: compressedUri,
+				fileSize,
+				thumbnailUri: thumbnailUri || undefined,
+			}
 		} catch (error) {
 			console.error("Error compressing video:", error)
 			// If compression fails, return original URI
@@ -146,7 +150,7 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 					mimeType: asset.mimeType || "application/pdf",
 					fileName: asset.name,
 					fileSize: asset.size,
-					caption: "",
+					caption: asset.name || "",
 				}))
 
 				onMediaFilesChange([...mediaFiles, ...documentFiles])
@@ -233,9 +237,11 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 
 						// Videos: compress before adding
 						try {
-							const { uri: compressedUri, fileSize, thumbnailUri } = await processVideo(
-								asset.uri
-							)
+							const {
+								uri: compressedUri,
+								fileSize,
+								thumbnailUri,
+							} = await processVideo(asset.uri)
 
 							// Add the video file
 							processedFiles.push({
@@ -253,7 +259,9 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 									uri: thumbnailUri,
 									type: "thumbnail",
 									mimeType: "image/jpeg",
-									fileName: `${asset.fileName?.replace(/\.[^.]+$/, '') || 'video'}_thumbnail.jpg`,
+									fileName: `${
+										asset.fileName?.replace(/\.[^.]+$/, "") || "video"
+									}_thumbnail.jpg`,
 									caption: "",
 								})
 							}
@@ -323,7 +331,9 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 						const updatedFiles = mediaFiles.filter((_, i) => i !== index)
 						onMediaFilesChange(updatedFiles)
 						// Reset selection mode if all visible files are removed (excluding thumbnails)
-						const visibleFiles = updatedFiles.filter((file) => file.type !== "thumbnail")
+						const visibleFiles = updatedFiles.filter(
+							(file) => file.type !== "thumbnail"
+						)
 						if (visibleFiles.length === 0) {
 							setSelectionMode(null)
 						}
@@ -355,7 +365,9 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 	}
 
 	// Filter out thumbnails for display (they're stored but not shown in UI)
-	const visibleMediaFiles = mediaFiles.filter((file) => file.type !== "thumbnail")
+	const visibleMediaFiles = mediaFiles.filter(
+		(file) => file.type !== "thumbnail"
+	)
 
 	return (
 		<View style={styles.container}>
@@ -446,121 +458,125 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 					// Find the original index in the full mediaFiles array
 					const originalIndex = mediaFiles.findIndex((f) => f.uri === file.uri)
 					return (
-					<View key={`${file.uri}-${index}`} style={styles.mediaItem}>
-						{/* Media Preview */}
-						<View style={styles.mediaPreview}>
-							{file.type === "document" ? (
-								<View style={styles.documentPreview}>
-									<Ionicons
-										name="document-text"
-										size={40}
-										color={theme.colors.primary}
-									/>
-									<Text style={styles.documentName} numberOfLines={2}>
-										{file.fileName || "Documento"}
-									</Text>
-									{file.fileSize && (
-										<Text style={styles.documentSize}>
-											{(file.fileSize / 1024 / 1024).toFixed(2)} MB
+						<View key={`${file.uri}-${index}`} style={styles.mediaItem}>
+							{/* Media Preview */}
+							<View style={styles.mediaPreview}>
+								{file.type === "document" ? (
+									<View style={styles.documentPreview}>
+										<Ionicons
+											name="document-text"
+											size={40}
+											color={theme.colors.primary}
+										/>
+										<Text style={styles.documentName} numberOfLines={2}>
+											{file.fileName || "Documento"}
 										</Text>
-									)}
-								</View>
-							) : file.type === "video" ? (
-								<View style={styles.videoPreview}>
+										{file.fileSize && (
+											<Text style={styles.documentSize}>
+												{(file.fileSize / 1024 / 1024).toFixed(2)} MB
+											</Text>
+										)}
+									</View>
+								) : file.type === "video" ? (
+									<View style={styles.videoPreview}>
+										<Image
+											source={{ uri: file.uri }}
+											style={styles.mediaImage}
+											resizeMode="cover"
+										/>
+										<View style={styles.videoOverlay}>
+											<Ionicons
+												name="play-circle"
+												size={48}
+												color="rgba(255,255,255,0.9)"
+											/>
+										</View>
+										{file.fileSize && (
+											<View style={styles.videoSizeBadge}>
+												<Text style={styles.videoSizeText}>
+													{(file.fileSize / 1024 / 1024).toFixed(1)} MB
+												</Text>
+											</View>
+										)}
+									</View>
+								) : (
 									<Image
 										source={{ uri: file.uri }}
 										style={styles.mediaImage}
 										resizeMode="cover"
 									/>
-									<View style={styles.videoOverlay}>
-										<Ionicons
-											name="play-circle"
-											size={48}
-											color="rgba(255,255,255,0.9)"
-										/>
-									</View>
-									{file.fileSize && (
-										<View style={styles.videoSizeBadge}>
-											<Text style={styles.videoSizeText}>
-												{(file.fileSize / 1024 / 1024).toFixed(1)} MB
-											</Text>
-										</View>
-									)}
-								</View>
-							) : (
-								<Image
-									source={{ uri: file.uri }}
-									style={styles.mediaImage}
-									resizeMode="cover"
-								/>
-							)}
-							<TouchableOpacity
-								style={styles.removeButton}
-								onPress={() => handleRemoveMedia(originalIndex)}
-							>
-								<Ionicons
-									name="close-circle"
-									size={24}
-									color={theme.colors.danger}
-								/>
-							</TouchableOpacity>
-						</View>
-
-						{/* Caption Section */}
-						<View style={styles.captionSection}>
-							{editingCaption === file.uri ? (
-								<View style={styles.captionEditor}>
-									<TextInput
-										style={styles.captionInput}
-										value={captionText}
-										onChangeText={setCaptionText}
-										placeholder="Descripción opcional..."
-										placeholderTextColor={theme.colors.muted}
-										multiline
-										maxLength={200}
-									/>
-									<View style={styles.captionActions}>
-										<TouchableOpacity
-											style={styles.captionActionButton}
-											onPress={handleCancelCaption}
-										>
-											<Text style={styles.captionActionCancel}>Cancelar</Text>
-										</TouchableOpacity>
-										<TouchableOpacity
-											style={[
-												styles.captionActionButton,
-												styles.captionActionSave,
-											]}
-											onPress={() => handleSaveCaption(originalIndex)}
-										>
-											<Text style={styles.captionActionSaveText}>Guardar</Text>
-										</TouchableOpacity>
-									</View>
-								</View>
-							) : (
+								)}
 								<TouchableOpacity
-									style={styles.captionDisplay}
-									onPress={() => handleEditCaption(originalIndex, file.caption || "")}
+									style={styles.removeButton}
+									onPress={() => handleRemoveMedia(originalIndex)}
 								>
-									{file.caption ? (
-										<Text style={styles.captionText} numberOfLines={2}>
-											{file.caption}
-										</Text>
-									) : (
-										<Text style={styles.captionPlaceholder}>
-											Toca para agregar descripción
-										</Text>
-									)}
 									<Ionicons
-										name="pencil"
-										size={16}
-										color={theme.colors.muted}
+										name="close-circle"
+										size={24}
+										color={theme.colors.danger}
 									/>
 								</TouchableOpacity>
-							)}
+							</View>
+
+							{/* Caption Section */}
+							<View style={styles.captionSection}>
+								{editingCaption === file.uri ? (
+									<View style={styles.captionEditor}>
+										<TextInput
+											style={styles.captionInput}
+											value={captionText}
+											onChangeText={setCaptionText}
+											placeholder="Descripción opcional..."
+											placeholderTextColor={theme.colors.muted}
+											multiline
+											maxLength={200}
+										/>
+										<View style={styles.captionActions}>
+											<TouchableOpacity
+												style={styles.captionActionButton}
+												onPress={handleCancelCaption}
+											>
+												<Text style={styles.captionActionCancel}>Cancelar</Text>
+											</TouchableOpacity>
+											<TouchableOpacity
+												style={[
+													styles.captionActionButton,
+													styles.captionActionSave,
+												]}
+												onPress={() => handleSaveCaption(originalIndex)}
+											>
+												<Text style={styles.captionActionSaveText}>
+													Guardar
+												</Text>
+											</TouchableOpacity>
+										</View>
+									</View>
+								) : (
+									<TouchableOpacity
+										style={styles.captionDisplay}
+										onPress={() =>
+											handleEditCaption(originalIndex, file.caption || "")
+										}
+									>
+										{file.caption ? (
+											<Text style={styles.captionText} numberOfLines={2}>
+												{file.caption}
+											</Text>
+										) : (
+											<Text style={styles.captionPlaceholder}>
+												Toca para agregar descripción
+											</Text>
+										)}
+										<Ionicons
+											name="pencil"
+											size={16}
+											color={theme.colors.muted}
+										/>
+									</TouchableOpacity>
+								)}
+							</View>
 						</View>
-					</View>
-				)
+					)
 				})}
 
 				{/* Add Media Button */}
