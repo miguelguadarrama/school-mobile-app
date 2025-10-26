@@ -9,6 +9,8 @@ import {
 	View,
 } from "react-native"
 import { theme } from "../../helpers/theme"
+import { BlogPostMedia } from "../../types/post"
+import MediaSlider from "./MediaSlider"
 import SchoolCard from "../SchoolCard"
 
 export interface AnnouncementPost {
@@ -24,12 +26,7 @@ export interface AnnouncementPost {
 		email: string
 		full_name: string
 	}
-	post_media: Array<{
-		id: string
-		url: string
-		type: string
-		thumbnail_url?: string
-	}>
+	post_media?: BlogPostMedia[]
 }
 
 interface AnnouncementListProps {
@@ -122,6 +119,17 @@ const AnnouncementCard: React.FC<{ announcement: AnnouncementPost }> = ({
 					</TouchableOpacity>
 				)}
 			</View>
+
+			{/* Media attachments (documents) */}
+			{announcement.post_media && announcement.post_media.length > 0 && (
+				<View style={styles.mediaContainer}>
+					<MediaSlider
+						media={announcement.post_media}
+						postTitle={announcement.title}
+						onPhotoPress={() => {}}
+					/>
+				</View>
+			)}
 		</SchoolCard>
 	)
 }
@@ -222,6 +230,9 @@ const styles = StyleSheet.create({
 		fontFamily: theme.typography.family.bold,
 		color: theme.colors.primary,
 		fontWeight: "600",
+	},
+	mediaContainer: {
+		marginTop: theme.spacing.md,
 	},
 	emptyStateContainer: {
 		alignItems: "center",

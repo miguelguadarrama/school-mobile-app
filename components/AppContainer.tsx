@@ -175,7 +175,6 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		}
 	}
 
-	//console.log({ id: data?.students?.[0]?.id, attendance: data?.attendance })
 	return (
 		<AppContext.Provider
 			value={{

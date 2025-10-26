@@ -14,7 +14,7 @@ export default function AnnouncementsScreen() {
 	const { isSocialPostModalActive, setIsSocialPostModalActive } =
 		useContext(TabContext)
 	const { data, isLoading, mutate } = useSWR(`/mobile/posts/announcements`)
-	console.log({ data })
+
 	// Handle refresh action
 	const handleRefresh = async () => {
 		// Trigger a revalidation of the data

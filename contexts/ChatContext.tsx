@@ -141,8 +141,6 @@ export const ChatProvider: React.FC<{
 					body: JSON.stringify({ content, staff_id: staffId }),
 				})
 
-				console.log({ res })
-
 				// Refresh to get real data - SWR will merge the real data seamlessly
 				refreshChats()
 			} catch (error) {

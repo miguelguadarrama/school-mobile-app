@@ -18,7 +18,8 @@ import dayjs from "../../lib/dayjs"
 import { SocialStackParamList } from "../../types/navigation"
 import { BlogPost } from "../../types/post"
 import SchoolCard from "../SchoolCard"
-import PhotoSlider from "./PhotoSlider"
+import MediaSlider from "./MediaSlider"
+import { VideoPlayerModal } from "./VideoPlayerModal"
 
 type BlogPostListNavigationProp = NativeStackNavigationProp<
 	SocialStackParamList,
@@ -47,6 +48,8 @@ const BlogPostItem = memo<{
 }>(({ item, onCardPress, navigation }) => {
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [photoError, setPhotoError] = useState(false)
+	const [videoModalVisible, setVideoModalVisible] = useState(false)
+	const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null)
 	const hasMedia = item.post_media && item.post_media.length > 0
 	const staffPhotoUrl = item.users?.id ? getStaffPhotoUrl(item.users.id) : null
 
@@ -55,11 +58,25 @@ const BlogPostItem = memo<{
 	}, [onCardPress, item])
 
 	const handlePhotoPress = useCallback(() => {
-		navigation.navigate("PhotoGrid", {
-			photos: item.post_media || [],
-			title: item.title,
-		})
+		// Only navigate to photo grid if there are photos
+		const photos = item.post_media?.filter((m) => m.media_type === "photo") || []
+		if (photos.length > 0) {
+			navigation.navigate("PhotoGrid", {
+				photos,
+				title: item.title,
+			})
+		}
 	}, [navigation, item.post_media, item.title])
+
+	const handleVideoPress = useCallback((videoUrl: string) => {
+		setSelectedVideoUrl(videoUrl)
+		setVideoModalVisible(true)
+	}, [])
+
+	const handleCloseVideoModal = useCallback(() => {
+		setVideoModalVisible(false)
+		setSelectedVideoUrl(null)
+	}, [])
 
 	const handleExpandPress = useCallback(
 		(e: any) => {
@@ -129,12 +146,13 @@ const BlogPostItem = memo<{
 						</View>
 					)}
 
-					{/* Photo Slider - Now at the bottom */}
+					{/* Media Slider - Now at the bottom */}
 					{hasMedia && (
-						<PhotoSlider
+						<MediaSlider
 							media={item.post_media || []}
 							postTitle={item.title}
-							onPress={handlePhotoPress}
+							onPhotoPress={handlePhotoPress}
+							onVideoPress={handleVideoPress}
 						/>
 					)}
 
@@ -146,6 +164,13 @@ const BlogPostItem = memo<{
 					)}
 				</View>
 			</SchoolCard>
+
+			{/* Video Player Modal */}
+			<VideoPlayerModal
+				visible={videoModalVisible}
+				videoUrl={selectedVideoUrl}
+				onClose={handleCloseVideoModal}
+			/>
 		</TouchableOpacity>
 	)
 })

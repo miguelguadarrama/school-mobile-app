@@ -1,5 +1,9 @@
 import { Ionicons } from "@expo/vector-icons"
-import { ImageManipulator as ExpoImageManipulator, SaveFormat } from "expo-image-manipulator"
+import * as DocumentPicker from "expo-document-picker"
+import {
+	ImageManipulator as ExpoImageManipulator,
+	SaveFormat,
+} from "expo-image-manipulator"
 import * as ImagePicker from "expo-image-picker"
 import React, { useState } from "react"
 import {
@@ -17,11 +21,13 @@ import { MediaFile } from "./PostEditor"
 interface MediaManagerProps {
 	mediaFiles: MediaFile[]
 	onMediaFilesChange: (files: MediaFile[]) => void
+	isAnnouncementMode?: boolean
 }
 
 export const MediaManager: React.FC<MediaManagerProps> = ({
 	mediaFiles,
 	onMediaFilesChange,
+	isAnnouncementMode = false,
 }) => {
 	const [editingCaption, setEditingCaption] = useState<string | null>(null)
 	const [captionText, setCaptionText] = useState("")
@@ -29,7 +35,9 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 	const processImage = async (uri: string): Promise<string> => {
 		try {
 			// Load the image to read its intrinsic dimensions
-			const originalImage = await ExpoImageManipulator.manipulate(uri).renderAsync()
+			const originalImage = await ExpoImageManipulator.manipulate(
+				uri
+			).renderAsync()
 
 			const { width, height } = originalImage
 			const maxDimension = 1600
@@ -60,7 +68,41 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 	}
 
 	const handleAddMedia = () => {
-		handleImagePicker()
+		if (isAnnouncementMode) {
+			handleDocumentPicker()
+		} else {
+			handleImagePicker()
+		}
+	}
+
+	const handleDocumentPicker = async () => {
+		try {
+			const result = await DocumentPicker.getDocumentAsync({
+				type: "application/pdf",
+				multiple: true,
+				copyToCacheDirectory: true,
+			})
+
+			if (!result.canceled && result.assets && result.assets.length > 0) {
+				const documentFiles: MediaFile[] = result.assets.map((asset) => ({
+					uri: asset.uri,
+					type: "document",
+					mimeType: asset.mimeType || "application/pdf",
+					fileName: asset.name,
+					fileSize: asset.size,
+					caption: "",
+				}))
+
+				onMediaFilesChange([...mediaFiles, ...documentFiles])
+			}
+		} catch (error) {
+			console.error("Error picking document:", error)
+			Alert.alert(
+				"Error",
+				"No se pudo seleccionar el documento. Inténtalo de nuevo.",
+				[{ text: "OK" }]
+			)
+		}
 	}
 
 	const handleImagePicker = async () => {
@@ -72,53 +114,69 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 			if (!permissionResult.granted) {
 				Alert.alert(
 					"Permisos Requeridos",
-					"Necesitamos permisos para acceder a la galería de fotos",
+					"Necesitamos permisos para acceder a la galería",
 					[{ text: "OK" }]
 				)
 				return
 			}
 
-			// Launch gallery picker
+			// Launch gallery picker - allow both images and videos
 			const result = await ImagePicker.launchImageLibraryAsync({
-				mediaTypes: "images",
-				allowsEditing: false, // Optional cropping
+				mediaTypes: ["images", "videos"], // Allow images and videos
+				allowsEditing: false,
 				quality: 0.8,
 				allowsMultipleSelection: true,
-				selectionLimit: 30 - mediaFiles.length, // Limit to 5 total files
+				selectionLimit: 30 - mediaFiles.length,
+				videoMaxDuration: 300, // 5 minutes max for videos
 			})
 
 			if (!result.canceled && result.assets && result.assets.length > 0) {
-				// Process each selected image
+				// Process each selected media file
 				const processedFiles: MediaFile[] = []
 
 				for (const asset of result.assets) {
-					try {
-						// Process image: resize, compress, convert to JPEG, remove metadata
-						const processedUri = await processImage(asset.uri)
+					const isVideo = asset.type === "video"
 
-						processedFiles.push({
-							uri: processedUri,
-							type: "image",
-							caption: "",
-						})
-					} catch (error) {
-						console.error("Error processing image:", error)
-						// If processing fails, use original image
+					if (isVideo) {
+						// Videos: no processing, just add as-is
 						processedFiles.push({
 							uri: asset.uri,
-							type: "image",
+							type: "video",
+							mimeType: asset.mimeType || "video/mp4",
+							fileName: asset.fileName || "video.mp4",
+							fileSize: asset.fileSize,
 							caption: "",
 						})
+					} else {
+						// Images: process (resize, compress)
+						try {
+							const processedUri = await processImage(asset.uri)
+							processedFiles.push({
+								uri: processedUri,
+								type: "photo",
+								mimeType: "image/jpeg",
+								caption: "",
+							})
+						} catch (error) {
+							console.error("Error processing image:", error)
+							// If processing fails, use original image
+							processedFiles.push({
+								uri: asset.uri,
+								type: "photo",
+								mimeType: "image/jpeg",
+								caption: "",
+							})
+						}
 					}
 				}
 
 				onMediaFilesChange([...mediaFiles, ...processedFiles])
 			}
 		} catch (error) {
-			console.error("Error picking image:", error)
+			console.error("Error picking media:", error)
 			Alert.alert(
 				"Error",
-				"No se pudo seleccionar la imagen. Inténtalo de nuevo.",
+				"No se pudo seleccionar el archivo. Inténtalo de nuevo.",
 				[{ text: "OK" }]
 			)
 		}
@@ -174,11 +232,51 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 					<View key={`${file.uri}-${index}`} style={styles.mediaItem}>
 						{/* Media Preview */}
 						<View style={styles.mediaPreview}>
-							<Image
-								source={{ uri: file.uri }}
-								style={styles.mediaImage}
-								resizeMode="cover"
-							/>
+							{file.type === "document" ? (
+								<View style={styles.documentPreview}>
+									<Ionicons
+										name="document-text"
+										size={40}
+										color={theme.colors.primary}
+									/>
+									<Text style={styles.documentName} numberOfLines={2}>
+										{file.fileName || "Documento"}
+									</Text>
+									{file.fileSize && (
+										<Text style={styles.documentSize}>
+											{(file.fileSize / 1024 / 1024).toFixed(2)} MB
+										</Text>
+									)}
+								</View>
+							) : file.type === "video" ? (
+								<View style={styles.videoPreview}>
+									<Image
+										source={{ uri: file.uri }}
+										style={styles.mediaImage}
+										resizeMode="cover"
+									/>
+									<View style={styles.videoOverlay}>
+										<Ionicons
+											name="play-circle"
+											size={48}
+											color="rgba(255,255,255,0.9)"
+										/>
+									</View>
+									{file.fileSize && (
+										<View style={styles.videoSizeBadge}>
+											<Text style={styles.videoSizeText}>
+												{(file.fileSize / 1024 / 1024).toFixed(1)} MB
+											</Text>
+										</View>
+									)}
+								</View>
+							) : (
+								<Image
+									source={{ uri: file.uri }}
+									style={styles.mediaImage}
+									resizeMode="cover"
+								/>
+							)}
 							<TouchableOpacity
 								style={styles.removeButton}
 								onPress={() => handleRemoveMedia(index)}
@@ -252,15 +350,24 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 					style={styles.addMediaButton}
 					onPress={handleAddMedia}
 				>
-					<Ionicons name="add" size={32} color={theme.colors.primary} />
-					<Text style={styles.addMediaText}>Agregar Fotos</Text>
+					<Ionicons
+						name={isAnnouncementMode ? "document-attach" : "add"}
+						size={32}
+						color={theme.colors.primary}
+					/>
+					<Text style={styles.addMediaText}>
+						{isAnnouncementMode ? "Agregar Documentos" : "Agregar Fotos/Videos"}
+					</Text>
 				</TouchableOpacity>
 			</View>
 
 			{mediaFiles.length > 0 && (
 				<Text style={styles.mediaInfo}>
-					{mediaFiles.length} foto{mediaFiles.length > 1 ? "s" : ""} agregada
-					{mediaFiles.length > 1 ? "s" : ""}
+					{mediaFiles.length}{" "}
+					{isAnnouncementMode
+						? `archivo${mediaFiles.length > 1 ? "s" : ""}`
+						: `archivo${mediaFiles.length > 1 ? "s" : ""}`}{" "}
+					agregado{mediaFiles.length > 1 ? "s" : ""}
 				</Text>
 			)}
 		</View>
@@ -291,6 +398,55 @@ const styles = StyleSheet.create({
 	mediaImage: {
 		width: "100%",
 		height: 120,
+	},
+	documentPreview: {
+		width: "100%",
+		height: 120,
+		justifyContent: "center",
+		alignItems: "center",
+		backgroundColor: theme.colors.background,
+		padding: theme.spacing.sm,
+	},
+	documentName: {
+		fontSize: 11,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.text,
+		textAlign: "center",
+		marginTop: theme.spacing.xs,
+	},
+	documentSize: {
+		fontSize: 10,
+		fontFamily: theme.typography.family.regular,
+		color: theme.colors.muted,
+		marginTop: 2,
+	},
+	videoPreview: {
+		position: "relative",
+		width: "100%",
+	},
+	videoOverlay: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		justifyContent: "center",
+		alignItems: "center",
+		backgroundColor: "rgba(0,0,0,0.2)",
+	},
+	videoSizeBadge: {
+		position: "absolute",
+		bottom: theme.spacing.xs,
+		left: theme.spacing.xs,
+		backgroundColor: "rgba(0,0,0,0.7)",
+		paddingHorizontal: theme.spacing.xs,
+		paddingVertical: 2,
+		borderRadius: theme.radius.sm,
+	},
+	videoSizeText: {
+		fontSize: 10,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.white,
 	},
 	removeButton: {
 		position: "absolute",

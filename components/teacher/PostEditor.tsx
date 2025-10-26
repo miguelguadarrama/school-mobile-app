@@ -36,8 +36,57 @@ export interface PostFormData {
 export interface MediaFile {
 	id?: string // existing media will have id
 	uri: string
-	type: "image" | "video"
+	type: "photo" | "video" | "document"
+	mimeType?: string // e.g., "application/pdf", "video/mp4", "image/jpeg"
+	fileName?: string // original file name
+	fileSize?: number // in bytes
 	caption?: string
+}
+
+// Media validation rules
+const validateMediaFiles = (
+	files: MediaFile[],
+	isAnnouncement: boolean
+): { valid: boolean; error?: string } => {
+	if (files.length === 0) {
+		return { valid: true }
+	}
+
+	const types = new Set(files.map((f) => f.type))
+
+	if (isAnnouncement) {
+		// Announcements: Only documents allowed
+		if (types.has("photo") || types.has("video")) {
+			return {
+				valid: false,
+				error: "Los anuncios solo pueden incluir documentos (PDF)",
+			}
+		}
+	} else {
+		// Social posts: Only photos or 1 video (no documents)
+		if (types.has("document")) {
+			return {
+				valid: false,
+				error: "Las publicaciones sociales no pueden incluir documentos",
+			}
+		}
+
+		if (types.has("video") && files.length > 1) {
+			return {
+				valid: false,
+				error: "Solo se permite un video por publicación",
+			}
+		}
+
+		if (types.has("video") && types.has("photo")) {
+			return {
+				valid: false,
+				error: "No se pueden mezclar fotos y videos",
+			}
+		}
+	}
+
+	return { valid: true }
 }
 
 export const PostEditor: React.FC<PostEditorProps> = ({
@@ -49,6 +98,7 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 	onDraftCreated,
 }) => {
 	const insets = useSafeAreaInsets()
+	const isAnnouncement = classroomId === null
 	const [status, setStatus] = useState<"idle" | "busy">("idle")
 	const [title, setTitle] = useState(post?.title || "")
 	const [content, setContent] = useState(post?.content || "")
@@ -57,14 +107,27 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 		post?.post_media?.map((media) => ({
 			id: media.id,
 			uri: media.file_url,
-			type:
-				media.file_url.includes(".mp4") || media.file_url.includes(".mov")
-					? "video"
-					: "image",
+			type: media.media_type || "photo", // Use media_type from database
+			mimeType: media.mime_type,
+			fileSize: media.file_size,
 			caption: media.caption || "",
 		})) || []
 	)
 	//const [isSaving, setIsSaving] = useState(false)
+
+	// Validated media files setter
+	const handleMediaFilesChange = (files: MediaFile[]) => {
+		const validation = validateMediaFiles(files, isAnnouncement)
+		if (!validation.valid) {
+			// Show error alert
+			if (__DEV__) {
+				console.warn("Media validation error:", validation.error)
+			}
+			alert(validation.error)
+			return
+		}
+		setMediaFiles(files)
+	}
 
 	const isEditing = !!post
 	const hasChanges = () => {
@@ -83,10 +146,9 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 					post?.post_media?.map((media) => ({
 						id: media.id,
 						uri: media.file_url,
-						type:
-							media.file_url.includes(".mp4") || media.file_url.includes(".mov")
-								? "video"
-								: "image",
+						type: media.media_type || "photo",
+						mimeType: media.mime_type,
+						fileSize: media.file_size,
 						caption: media.caption || "",
 					})) || []
 				)
@@ -161,6 +223,9 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 			.map((file) => ({
 				id: file.id!,
 				file_url: file.uri,
+				media_type: file.type,
+				mime_type: file.mimeType,
+				file_size: file.fileSize,
 				caption: file.caption || "",
 			}))
 
@@ -170,6 +235,9 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 			)
 			return {
 				file_url: uploadedFile.sasUrl.split("?")[0], // Remove SAS token from URL
+				media_type: originalFile?.type,
+				mime_type: originalFile?.mimeType,
+				file_size: originalFile?.fileSize,
 				caption: originalFile?.caption || "",
 			}
 		})
@@ -410,7 +478,8 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 						<Text style={styles.inputLabel}>Archivos Multimedia</Text>
 						<MediaManager
 							mediaFiles={mediaFiles}
-							onMediaFilesChange={setMediaFiles}
+							onMediaFilesChange={handleMediaFilesChange}
+							isAnnouncementMode={isAnnouncement}
 						/>
 					</View>
 				)}
