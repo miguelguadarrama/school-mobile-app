@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons"
 import * as DocumentPicker from "expo-document-picker"
+import { File } from "expo-file-system"
 import {
 	ImageManipulator as ExpoImageManipulator,
 	SaveFormat,
@@ -7,14 +8,17 @@ import {
 import * as ImagePicker from "expo-image-picker"
 import React, { useState } from "react"
 import {
+	ActivityIndicator,
 	Alert,
 	Image,
+	Modal,
 	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native"
+import { Video } from "react-native-compressor"
 import { theme } from "../../helpers/theme"
 import { MediaFile } from "./PostEditor"
 
@@ -31,6 +35,10 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 }) => {
 	const [editingCaption, setEditingCaption] = useState<string | null>(null)
 	const [captionText, setCaptionText] = useState("")
+	const [isCompressing, setIsCompressing] = useState(false)
+	const [compressionProgress, setCompressionProgress] = useState(0)
+	const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
+	const [totalVideos, setTotalVideos] = useState(0)
 
 	const processImage = async (uri: string): Promise<string> => {
 		try {
@@ -64,6 +72,35 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 		} catch (error) {
 			console.error("Error processing image:", error)
 			return uri
+		}
+	}
+
+	const processVideo = async (
+		uri: string
+	): Promise<{ uri: string; fileSize?: number }> => {
+		try {
+			// Compress video to reduce file size
+			const compressedUri = await Video.compress(
+				uri,
+				{
+					compressionMethod: "auto",
+					minimumFileSizeForCompress: 2, // Only compress if > 2MB
+				},
+				(progress) => {
+					// Update compression progress (0-1 scale)
+					setCompressionProgress(Math.round(progress * 100))
+				}
+			)
+
+			// Get the actual file size of the compressed video using new File API
+			const file = new File(compressedUri)
+			const fileSize = file.size
+
+			return { uri: compressedUri, fileSize }
+		} catch (error) {
+			console.error("Error compressing video:", error)
+			// If compression fails, return original URI
+			return { uri }
 		}
 	}
 
@@ -131,22 +168,55 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 			})
 
 			if (!result.canceled && result.assets && result.assets.length > 0) {
+				// Count how many videos need processing
+				const videoCount = result.assets.filter(
+					(asset) => asset.type === "video"
+				).length
+
+				// Show compression modal if there are videos
+				if (videoCount > 0) {
+					setIsCompressing(true)
+					setTotalVideos(videoCount)
+					setCurrentVideoIndex(0)
+				}
+
 				// Process each selected media file
 				const processedFiles: MediaFile[] = []
+				let videoIndex = 0
 
 				for (const asset of result.assets) {
 					const isVideo = asset.type === "video"
 
 					if (isVideo) {
-						// Videos: no processing, just add as-is
-						processedFiles.push({
-							uri: asset.uri,
-							type: "video",
-							mimeType: asset.mimeType || "video/mp4",
-							fileName: asset.fileName || "video.mp4",
-							fileSize: asset.fileSize,
-							caption: "",
-						})
+						videoIndex++
+						setCurrentVideoIndex(videoIndex)
+						setCompressionProgress(0)
+
+						// Videos: compress before adding
+						try {
+							const { uri: compressedUri, fileSize } = await processVideo(
+								asset.uri
+							)
+							processedFiles.push({
+								uri: compressedUri,
+								type: "video",
+								mimeType: asset.mimeType || "video/mp4",
+								fileName: asset.fileName || "video.mp4",
+								fileSize: fileSize || asset.fileSize, // Use compressed size or fallback to original
+								caption: "",
+							})
+						} catch (error) {
+							console.error("Error compressing video:", error)
+							// If compression fails, use original video
+							processedFiles.push({
+								uri: asset.uri,
+								type: "video",
+								mimeType: asset.mimeType || "video/mp4",
+								fileName: asset.fileName || "video.mp4",
+								fileSize: asset.fileSize,
+								caption: "",
+							})
+						}
 					} else {
 						// Images: process (resize, compress)
 						try {
@@ -169,6 +239,9 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 						}
 					}
 				}
+
+				// Hide compression modal
+				setIsCompressing(false)
 
 				onMediaFilesChange([...mediaFiles, ...processedFiles])
 			}
@@ -370,6 +443,54 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 					agregado{mediaFiles.length > 1 ? "s" : ""}
 				</Text>
 			)}
+
+			{/* Video Compression Modal */}
+			<Modal
+				visible={isCompressing}
+				transparent={true}
+				animationType="fade"
+				statusBarTranslucent
+			>
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContent}>
+						<View style={styles.modalHeader}>
+							<Ionicons
+								name="videocam"
+								size={40}
+								color={theme.colors.primary}
+							/>
+							<Text style={styles.modalTitle}>Procesando Videos</Text>
+						</View>
+
+						<View style={styles.modalBody}>
+							<Text style={styles.modalSubtitle}>
+								Video {currentVideoIndex} de {totalVideos}
+							</Text>
+
+							<View style={styles.progressBarContainer}>
+								<View
+									style={[
+										styles.progressBar,
+										{ width: `${compressionProgress}%` },
+									]}
+								/>
+							</View>
+
+							<Text style={styles.progressText}>{compressionProgress}%</Text>
+
+							<ActivityIndicator
+								size="large"
+								color={theme.colors.primary}
+								style={styles.spinner}
+							/>
+
+							<Text style={styles.modalHint}>
+								Por favor espera mientras se comprimen los videos...
+							</Text>
+						</View>
+					</View>
+				</View>
+			</Modal>
 		</View>
 	)
 }
@@ -541,5 +662,72 @@ const styles = StyleSheet.create({
 		color: theme.colors.muted,
 		marginTop: theme.spacing.sm,
 		textAlign: "center",
+	},
+	// Modal styles
+	modalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0, 0, 0, 0.7)",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	modalContent: {
+		backgroundColor: theme.colors.white,
+		borderRadius: theme.radius.lg,
+		padding: theme.spacing.xl,
+		width: "85%",
+		maxWidth: 400,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+		elevation: 8,
+	},
+	modalHeader: {
+		alignItems: "center",
+		marginBottom: theme.spacing.lg,
+	},
+	modalTitle: {
+		fontSize: theme.typography.size.lg,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.text,
+		marginTop: theme.spacing.sm,
+	},
+	modalBody: {
+		alignItems: "center",
+	},
+	modalSubtitle: {
+		fontSize: theme.typography.size.md,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.text,
+		marginBottom: theme.spacing.md,
+	},
+	progressBarContainer: {
+		width: "100%",
+		height: 8,
+		backgroundColor: theme.colors.border,
+		borderRadius: theme.radius.sm,
+		overflow: "hidden",
+		marginBottom: theme.spacing.sm,
+	},
+	progressBar: {
+		height: "100%",
+		backgroundColor: theme.colors.primary,
+		borderRadius: theme.radius.sm,
+	},
+	progressText: {
+		fontSize: theme.typography.size.lg,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.primary,
+		marginBottom: theme.spacing.md,
+	},
+	spinner: {
+		marginVertical: theme.spacing.md,
+	},
+	modalHint: {
+		fontSize: theme.typography.size.sm,
+		fontFamily: theme.typography.family.regular,
+		color: theme.colors.muted,
+		textAlign: "center",
+		marginTop: theme.spacing.sm,
 	},
 })
