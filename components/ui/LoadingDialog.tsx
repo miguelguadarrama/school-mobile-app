@@ -1,11 +1,5 @@
 import React from "react"
-import {
-	ActivityIndicator,
-	Modal,
-	StyleSheet,
-	Text,
-	View,
-} from "react-native"
+import { ActivityIndicator, Modal, StyleSheet, Text, View } from "react-native"
 import { theme } from "../../helpers/theme"
 
 interface LoadingDialogProps {
@@ -53,7 +47,7 @@ const styles = StyleSheet.create({
 	text: {
 		marginTop: theme.spacing.md,
 		fontSize: theme.typography.size.md,
-		fontFamily: theme.typography.family.medium,
+		fontFamily: theme.typography.family.bold,
 		color: theme.colors.text,
 		textAlign: "center",
 	},

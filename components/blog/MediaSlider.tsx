@@ -1,9 +1,15 @@
 import { Ionicons } from "@expo/vector-icons"
+import * as FileSystem from "expo-file-system"
+import { getContentUriAsync } from "expo-file-system/legacy"
+import * as IntentLauncher from "expo-intent-launcher"
 import React, { memo, useCallback, useState } from "react"
 import {
+	ActivityIndicator,
 	Alert,
 	Image,
-	Linking as RNLinking,
+	Linking,
+	Modal,
+	Platform,
 	ScrollView,
 	StyleSheet,
 	Text,
@@ -72,6 +78,7 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 	({ media, onPhotoPress, onVideoPress }) => {
 		const [currentIndex, setCurrentIndex] = useState(0)
 		const [containerWidth, setContainerWidth] = useState(0)
+		const [isDownloading, setIsDownloading] = useState(false)
 
 		const handleScroll = useCallback((event: any) => {
 			const { contentOffset, layoutMeasurement } = event.nativeEvent
@@ -87,17 +94,49 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 		const handleDocumentPress = useCallback(
 			async (url: string, fileName?: string) => {
 				try {
-					const canOpen = await RNLinking.canOpenURL(url)
-					if (canOpen) {
-						await RNLinking.openURL(url)
+					setIsDownloading(true)
+
+					// Extract filename from URL if not provided
+					const docFileName = fileName || url.split("/").pop() || "documento.pdf"
+
+					// Create file destination in cache directory
+					const destination = new FileSystem.File(FileSystem.Paths.cache, docFileName)
+
+					// Download file to cache directory
+					const file = await FileSystem.File.downloadFileAsync(
+						url,
+						destination,
+						{ idempotent: true }
+					)
+
+					setIsDownloading(false)
+
+					// Open file with default app based on platform
+					if (Platform.OS === "android") {
+						// On Android, use IntentLauncher to open the file
+						const contentUri = await getContentUriAsync(file.uri)
+						await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
+							data: contentUri,
+							flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
+							type: "application/pdf",
+						})
 					} else {
-						Alert.alert("Error", "No se pudo abrir el documento", [
-							{ text: "OK" },
-						])
+						// On iOS, use Linking to open the file
+						const canOpen = await Linking.canOpenURL(file.uri)
+						if (canOpen) {
+							await Linking.openURL(file.uri)
+						} else {
+							Alert.alert(
+								"Error",
+								"No se encontró una aplicación para abrir este documento",
+								[{ text: "OK" }]
+							)
+						}
 					}
 				} catch (error) {
-					console.error("Error opening document:", error)
-					Alert.alert("Error", "No se pudo abrir el documento", [
+					console.error("Error downloading document:", error)
+					setIsDownloading(false)
+					Alert.alert("Error", "No se pudo descargar el documento", [
 						{ text: "OK" },
 					])
 				}
@@ -245,41 +284,58 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 		// If only documents, show document list
 		if (documents.length > 0 && photos.length === 0 && videos.length === 0) {
 			return (
-				<View style={styles.documentsContainer}>
-					{documents.map((doc, index: number) => (
-						<TouchableOpacity
-							key={doc.id}
-							style={styles.documentItem}
-							onPress={() =>
-								handleDocumentPress(doc.file_url, doc.file_url.split("/").pop())
-							}
-							activeOpacity={0.7}
-						>
-							<View style={styles.documentIcon}>
+				<>
+					<View style={styles.documentsContainer}>
+						{documents.map((doc, index: number) => (
+							<TouchableOpacity
+								key={doc.id}
+								style={styles.documentItem}
+								onPress={() =>
+									handleDocumentPress(doc.file_url, doc.file_url.split("/").pop())
+								}
+								activeOpacity={0.7}
+							>
+								<View style={styles.documentIcon}>
+									<Ionicons
+										name="document-text"
+										size={24}
+										color={theme.colors.primary}
+									/>
+								</View>
+								<View style={styles.documentInfo}>
+									<Text style={styles.documentName} numberOfLines={1}>
+										Documento #{index + 1}
+									</Text>
+									{doc.file_size && (
+										<Text style={styles.documentSize}>
+											{(doc.file_size / 1024 / 1024).toFixed(2)} MB
+										</Text>
+									)}
+								</View>
 								<Ionicons
-									name="document-text"
-									size={24}
+									name="download-outline"
+									size={20}
 									color={theme.colors.primary}
 								/>
+							</TouchableOpacity>
+						))}
+					</View>
+
+					{/* Download Progress Modal */}
+					<Modal
+						visible={isDownloading}
+						transparent
+						animationType="fade"
+					>
+						<View style={styles.modalOverlay}>
+							<View style={styles.modalContent}>
+								<ActivityIndicator size="large" color={theme.colors.primary} />
+								<Text style={styles.modalTitle}>Descargando documento...</Text>
+								<Text style={styles.modalSubtitle}>Por favor espera...</Text>
 							</View>
-							<View style={styles.documentInfo}>
-								<Text style={styles.documentName} numberOfLines={1}>
-									Documento #{index + 1}
-								</Text>
-								{doc.file_size && (
-									<Text style={styles.documentSize}>
-										{(doc.file_size / 1024 / 1024).toFixed(2)} MB
-									</Text>
-								)}
-							</View>
-							<Ionicons
-								name="download-outline"
-								size={20}
-								color={theme.colors.primary}
-							/>
-						</TouchableOpacity>
-					))}
-				</View>
+						</View>
+					</Modal>
+				</>
 			)
 		}
 
@@ -426,6 +482,33 @@ const styles = StyleSheet.create({
 		fontSize: theme.typography.size.sm,
 		fontFamily: theme.typography.family.regular,
 		color: theme.colors.muted,
+	},
+	modalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0, 0, 0, 0.7)",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	modalContent: {
+		backgroundColor: theme.colors.white,
+		borderRadius: theme.radius.lg,
+		padding: theme.spacing.xl,
+		alignItems: "center",
+		minWidth: 200,
+	},
+	modalTitle: {
+		fontSize: theme.typography.size.md,
+		fontFamily: theme.typography.family.bold,
+		color: theme.colors.text,
+		marginTop: theme.spacing.md,
+		textAlign: "center",
+	},
+	modalSubtitle: {
+		fontSize: theme.typography.size.sm,
+		fontFamily: theme.typography.family.regular,
+		color: theme.colors.muted,
+		marginTop: theme.spacing.xs,
+		textAlign: "center",
 	},
 })
 
