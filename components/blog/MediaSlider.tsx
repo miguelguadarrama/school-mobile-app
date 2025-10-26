@@ -23,18 +23,22 @@ interface MediaSliderProps {
 // Video Preview Component with Thumbnail
 const VideoPreview: React.FC<{
 	video: BlogPostMedia
+	thumbnailUrl?: string
 	onPress: (url: string) => void
-}> = ({ video, onPress }) => {
+}> = ({ video, thumbnailUrl, onPress }) => {
+	// Use thumbnail from separate media item, fallback to video.thumbnail_url (legacy), then placeholder
+	const displayThumbnail = thumbnailUrl || video.thumbnail_url
+
 	return (
 		<TouchableOpacity
 			style={styles.videoContainer}
 			onPress={() => onPress(video.file_url)}
 			activeOpacity={0.8}
 		>
-			{video.thumbnail_url ? (
+			{displayThumbnail ? (
 				<>
 					<Image
-						source={{ uri: video.thumbnail_url }}
+						source={{ uri: displayThumbnail }}
 						style={styles.videoThumbnail}
 						resizeMode="cover"
 					/>
@@ -114,12 +118,13 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 			return null
 		}
 
-		// Separate media by type
+		// Separate media by type (exclude thumbnails - they're metadata for videos)
 		const photos = media.filter(
 			(m) => m.media_type === "photo" || !m.media_type
 		)
 		const videos = media.filter((m) => m.media_type === "video")
 		const documents = media.filter((m) => m.media_type === "document")
+		const thumbnails = media.filter((m) => m.media_type === "thumbnail")
 
 		// If only photos, render photo slider
 		if (photos.length > 0 && videos.length === 0 && documents.length === 0) {
@@ -226,14 +231,22 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 		// If only one video, show video player button with thumbnail
 		if (videos.length === 1 && photos.length === 0 && documents.length === 0) {
 			const video = videos[0]
-			return <VideoPreview video={video} onPress={handleVideoPress} />
+			// Find the associated thumbnail if it exists
+			const thumbnail = thumbnails.length > 0 ? thumbnails[0] : undefined
+			return (
+				<VideoPreview
+					video={video}
+					thumbnailUrl={thumbnail?.file_url}
+					onPress={handleVideoPress}
+				/>
+			)
 		}
 
 		// If only documents, show document list
 		if (documents.length > 0 && photos.length === 0 && videos.length === 0) {
 			return (
 				<View style={styles.documentsContainer}>
-					{documents.map((doc) => (
+					{documents.map((doc, index: number) => (
 						<TouchableOpacity
 							key={doc.id}
 							style={styles.documentItem}
@@ -251,7 +264,7 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 							</View>
 							<View style={styles.documentInfo}>
 								<Text style={styles.documentName} numberOfLines={1}>
-									{doc.file_url.split("/").pop()?.split("?")[0] || "Documento"}
+									Documento #{index + 1}
 								</Text>
 								{doc.file_size && (
 									<Text style={styles.documentSize}>

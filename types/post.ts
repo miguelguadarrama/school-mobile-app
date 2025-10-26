@@ -19,7 +19,7 @@ export interface BlogPost {
   }
 }
 
-export type MediaType = "photo" | "video" | "document"
+export type MediaType = "photo" | "video" | "document" | "thumbnail"
 
 export interface BlogPostMedia {
   id: string

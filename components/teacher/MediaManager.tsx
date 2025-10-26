@@ -18,7 +18,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native"
-import { Video } from "react-native-compressor"
+import { Video, createVideoThumbnail } from "react-native-compressor"
 import { theme } from "../../helpers/theme"
 import { MediaFile } from "./PostEditor"
 
@@ -78,9 +78,22 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 		}
 	}
 
+	const generateVideoThumbnail = async (
+		videoUri: string
+	): Promise<string | null> => {
+		try {
+			// Generate thumbnail from video
+			const result = await createVideoThumbnail(videoUri)
+			return result.path
+		} catch (error) {
+			console.error("Error generating video thumbnail:", error)
+			return null
+		}
+	}
+
 	const processVideo = async (
 		uri: string
-	): Promise<{ uri: string; fileSize?: number }> => {
+	): Promise<{ uri: string; fileSize?: number; thumbnailUri?: string }> => {
 		try {
 			// Compress video to reduce file size
 			const compressedUri = await Video.compress(
@@ -99,7 +112,10 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 			const file = new File(compressedUri)
 			const fileSize = file.size
 
-			return { uri: compressedUri, fileSize }
+			// Generate thumbnail from the compressed video
+			const thumbnailUri = await generateVideoThumbnail(compressedUri)
+
+			return { uri: compressedUri, fileSize, thumbnailUri: thumbnailUri || undefined }
 		} catch (error) {
 			console.error("Error compressing video:", error)
 			// If compression fails, return original URI
@@ -217,9 +233,11 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 
 						// Videos: compress before adding
 						try {
-							const { uri: compressedUri, fileSize } = await processVideo(
+							const { uri: compressedUri, fileSize, thumbnailUri } = await processVideo(
 								asset.uri
 							)
+
+							// Add the video file
 							processedFiles.push({
 								uri: compressedUri,
 								type: "video",
@@ -228,6 +246,17 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 								fileSize: fileSize || asset.fileSize, // Use compressed size or fallback to original
 								caption: "",
 							})
+
+							// Add the thumbnail file if generated successfully
+							if (thumbnailUri) {
+								processedFiles.push({
+									uri: thumbnailUri,
+									type: "thumbnail",
+									mimeType: "image/jpeg",
+									fileName: `${asset.fileName?.replace(/\.[^.]+$/, '') || 'video'}_thumbnail.jpg`,
+									caption: "",
+								})
+							}
 						} catch (error) {
 							console.error("Error compressing video:", error)
 							// If compression fails, use original video
@@ -293,8 +322,9 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 					onPress: () => {
 						const updatedFiles = mediaFiles.filter((_, i) => i !== index)
 						onMediaFilesChange(updatedFiles)
-						// Reset selection mode if all files are removed
-						if (updatedFiles.length === 0) {
+						// Reset selection mode if all visible files are removed (excluding thumbnails)
+						const visibleFiles = updatedFiles.filter((file) => file.type !== "thumbnail")
+						if (visibleFiles.length === 0) {
 							setSelectionMode(null)
 						}
 					},
@@ -324,10 +354,13 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 		setCaptionText("")
 	}
 
+	// Filter out thumbnails for display (they're stored but not shown in UI)
+	const visibleMediaFiles = mediaFiles.filter((file) => file.type !== "thumbnail")
+
 	return (
 		<View style={styles.container}>
 			{/* Media Selection Mode Buttons - Only show when no files uploaded and not in announcement mode */}
-			{!isAnnouncementMode && mediaFiles.length === 0 && (
+			{!isAnnouncementMode && visibleMediaFiles.length === 0 && (
 				<View style={styles.selectionModeContainer}>
 					<View style={styles.selectionModeButtons}>
 						<TouchableOpacity
@@ -409,7 +442,10 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 
 			{/* Media Files Grid */}
 			<View style={styles.mediaGrid}>
-				{mediaFiles.map((file, index) => (
+				{visibleMediaFiles.map((file, index) => {
+					// Find the original index in the full mediaFiles array
+					const originalIndex = mediaFiles.findIndex((f) => f.uri === file.uri)
+					return (
 					<View key={`${file.uri}-${index}`} style={styles.mediaItem}>
 						{/* Media Preview */}
 						<View style={styles.mediaPreview}>
@@ -460,7 +496,7 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 							)}
 							<TouchableOpacity
 								style={styles.removeButton}
-								onPress={() => handleRemoveMedia(index)}
+								onPress={() => handleRemoveMedia(originalIndex)}
 							>
 								<Ionicons
 									name="close-circle"
@@ -495,7 +531,7 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 												styles.captionActionButton,
 												styles.captionActionSave,
 											]}
-											onPress={() => handleSaveCaption(index)}
+											onPress={() => handleSaveCaption(originalIndex)}
 										>
 											<Text style={styles.captionActionSaveText}>Guardar</Text>
 										</TouchableOpacity>
@@ -504,7 +540,7 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 							) : (
 								<TouchableOpacity
 									style={styles.captionDisplay}
-									onPress={() => handleEditCaption(index, file.caption || "")}
+									onPress={() => handleEditCaption(originalIndex, file.caption || "")}
 								>
 									{file.caption ? (
 										<Text style={styles.captionText} numberOfLines={2}>
@@ -524,7 +560,8 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 							)}
 						</View>
 					</View>
-				))}
+				)
+				})}
 
 				{/* Add Media Button */}
 				{(isAnnouncementMode || selectionMode !== null) && (
@@ -554,13 +591,13 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 				)}
 			</View>
 
-			{mediaFiles.length > 0 && (
+			{visibleMediaFiles.length > 0 && (
 				<Text style={styles.mediaInfo}>
-					{mediaFiles.length}{" "}
+					{visibleMediaFiles.length}{" "}
 					{isAnnouncementMode
-						? `archivo${mediaFiles.length > 1 ? "s" : ""}`
-						: `archivo${mediaFiles.length > 1 ? "s" : ""}`}{" "}
-					agregado{mediaFiles.length > 1 ? "s" : ""}
+						? `archivo${visibleMediaFiles.length > 1 ? "s" : ""}`
+						: `archivo${visibleMediaFiles.length > 1 ? "s" : ""}`}{" "}
+					agregado{visibleMediaFiles.length > 1 ? "s" : ""}
 				</Text>
 			)}
 

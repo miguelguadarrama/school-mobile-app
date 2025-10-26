@@ -36,7 +36,7 @@ export interface PostFormData {
 export interface MediaFile {
 	id?: string // existing media will have id
 	uri: string
-	type: "photo" | "video" | "document"
+	type: "photo" | "video" | "document" | "thumbnail"
 	mimeType?: string // e.g., "application/pdf", "video/mp4", "image/jpeg"
 	fileName?: string // original file name
 	fileSize?: number // in bytes
@@ -48,11 +48,14 @@ const validateMediaFiles = (
 	files: MediaFile[],
 	isAnnouncement: boolean
 ): { valid: boolean; error?: string } => {
-	if (files.length === 0) {
+	// Filter out thumbnails for validation (they're metadata, not user-facing media)
+	const visibleFiles = files.filter((f) => f.type !== "thumbnail")
+
+	if (visibleFiles.length === 0) {
 		return { valid: true }
 	}
 
-	const types = new Set(files.map((f) => f.type))
+	const types = new Set(visibleFiles.map((f) => f.type))
 
 	if (isAnnouncement) {
 		// Announcements: Only documents allowed
@@ -71,7 +74,7 @@ const validateMediaFiles = (
 			}
 		}
 
-		if (types.has("video") && files.length > 1) {
+		if (types.has("video") && visibleFiles.length > 1) {
 			return {
 				valid: false,
 				error: "Solo se permite un video por publicación",
@@ -175,7 +178,7 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 				post_id: post?.id,
 				files: newMediaFiles.map((file) => ({
 					type: file.type,
-					name: file.uri.split("/").pop() || "image.jpg", // Extract filename from URI
+					name: file.fileName || file.uri.split("/").pop() || "file", // Use fileName if available, fallback to URI
 				})),
 			}),
 		})
@@ -231,7 +234,10 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 
 		const newMedia = uploadedFiles.map((uploadedFile) => {
 			const originalFile = mediaFiles.find(
-				(file) => !file.id && file.uri.split("/").pop() === uploadedFile.file
+				(file) =>
+					!file.id &&
+					(file.fileName === uploadedFile.file ||
+						file.uri.split("/").pop() === uploadedFile.file)
 			)
 			return {
 				file_url: uploadedFile.sasUrl.split("?")[0], // Remove SAS token from URL
@@ -338,7 +344,9 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 				// Step 2: Upload each file to its SAS URL
 				const uploadPromises = uploadUrls.map(async (urlData) => {
 					const mediaFile = newMediaFiles.find(
-						(file) => file.uri.split("/").pop() === urlData.file
+						(file) =>
+							file.fileName === urlData.file ||
+							file.uri.split("/").pop() === urlData.file
 					)
 					if (!mediaFile) {
 						throw new Error(`Media file not found for ${urlData.file}`)
