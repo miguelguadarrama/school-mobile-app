@@ -18,7 +18,7 @@ import { MediaManager } from "./MediaManager"
 
 interface PostEditorProps {
 	post?: BlogPost // undefined for new post, BlogPost for editing
-	classroomId: string
+	classroomId: string | null // null for announcements (no classroom)
 	classroomName: string
 	onBack: () => void
 	onSave: (postData: PostFormData) => void
@@ -64,7 +64,7 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 			caption: media.caption || "",
 		})) || []
 	)
-	const [isSaving, setIsSaving] = useState(false)
+	//const [isSaving, setIsSaving] = useState(false)
 
 	const isEditing = !!post
 	const hasChanges = () => {
@@ -101,22 +101,22 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 		if (newMediaFiles.length === 0) return []
 
 		// use this function to request upload URLs
-		const response = await fetcher(
-			`/mobile/posts/classroom/${classroomId}/sas`,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					post_id: post?.id,
-					files: newMediaFiles.map((file) => ({
-						type: file.type,
-						name: file.uri.split("/").pop() || "image.jpg", // Extract filename from URI
-					})),
-				}),
-			}
-		)
+		const endpoint = classroomId
+			? `/mobile/posts/classroom/${classroomId}/sas`
+			: `/mobile/admin/announcements/sas`
+		const response = await fetcher(endpoint, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				post_id: post?.id,
+				files: newMediaFiles.map((file) => ({
+					type: file.type,
+					name: file.uri.split("/").pop() || "image.jpg", // Extract filename from URI
+				})),
+			}),
+		})
 		if (!response || !Array.isArray(response)) {
 			throw new Error("Invalid response from server")
 		}
@@ -175,24 +175,24 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 		})
 
 		const allMedia = [...existingMedia, ...newMedia]
-		console.log({ allMedia })
 
 		// Save post with media
-		const response = await fetcher(
-			`/mobile/teacher/${classroomId}/posts/${post.id}`,
-			{
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					title: title.trim(),
-					content: content.trim(),
-					published,
-					media: allMedia,
-				}),
-			}
-		)
+		const endpoint = classroomId
+			? `/mobile/teacher/${classroomId}/posts/${post.id}`
+			: `/mobile/admin/announcements`
+		const response = await fetcher(endpoint, {
+			method: "PUT",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				id: post.id,
+				title: title.trim(),
+				content: content.trim(),
+				published_at: published ? new Date().toISOString() : null,
+				media: allMedia,
+			}),
+		})
 
 		return response
 	}
@@ -206,19 +206,19 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 		setStatus("busy")
 
 		try {
-			const response = (await fetcher(
-				`/mobile/posts/classroom/${classroomId}`,
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						title: title.trim(),
-						content: content.trim(),
-					}),
-				}
-			)) as BlogPost
+			const endpoint = classroomId
+				? `/mobile/posts/classroom/${classroomId}`
+				: `/mobile/admin/announcements`
+			const response = (await fetcher(endpoint, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					title: title.trim(),
+					content: content.trim(),
+				}),
+			})) as BlogPost
 
 			if (response?.id) {
 				// Draft created successfully
@@ -266,8 +266,6 @@ export const PostEditor: React.FC<PostEditorProps> = ({
 				if (!uploadUrls) {
 					throw new Error("Failed to get upload URLs")
 				}
-
-				console.log({ uploadUrls })
 
 				// Step 2: Upload each file to its SAS URL
 				const uploadPromises = uploadUrls.map(async (urlData) => {

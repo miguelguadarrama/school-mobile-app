@@ -20,9 +20,13 @@ import { BlogPost } from "../../types/post"
 
 interface SocialPostModalProps {
 	onBack: () => void
+	isAnnouncementMode?: boolean
 }
 
-export const SocialPostModal: React.FC<SocialPostModalProps> = ({ onBack }) => {
+export const SocialPostModal: React.FC<SocialPostModalProps> = ({
+	onBack,
+	isAnnouncementMode = false,
+}) => {
 	const { setIsSocialPostModalActive } = useContext(TabContext)
 	const { classrooms } = useContext(AppContext)!
 	const insets = useSafeAreaInsets()
@@ -39,7 +43,11 @@ export const SocialPostModal: React.FC<SocialPostModalProps> = ({ onBack }) => {
 		isValidating,
 		mutate: refreshPosts,
 	} = useSWR<BlogPost[]>(
-		selectedClassroom ? `/mobile/teacher/${selectedClassroom}/posts` : null
+		isAnnouncementMode
+			? `/mobile/admin/announcements`
+			: selectedClassroom
+			? `/mobile/teacher/${selectedClassroom}/posts`
+			: null
 	)
 
 	const formatDate = (dateString: string) => {
@@ -145,54 +153,62 @@ export const SocialPostModal: React.FC<SocialPostModalProps> = ({ onBack }) => {
 						/>
 					</TouchableOpacity>
 					<View style={styles.modalHeaderInfo}>
-						<Text style={styles.modalTitle}>Publicaciones</Text>
-						<Text style={styles.modalSubtitle}>Gestionar contenido social</Text>
+						<Text style={styles.modalTitle}>
+							{isAnnouncementMode ? "Anuncios" : "Publicaciones"}
+						</Text>
+						<Text style={styles.modalSubtitle}>
+							{isAnnouncementMode
+								? "Gestionar anuncios generales"
+								: "Gestionar contenido social"}
+						</Text>
 					</View>
 				</View>
 			</SafeAreaView>
 
 			{/* Content */}
 			<View style={styles.modalContent}>
-				{/* Classroom Selector */}
-				<View style={styles.classroomSection}>
-					<Text style={styles.sectionTitle}>Salón de Clases</Text>
-					{classrooms && classrooms.length > 1 ? (
-						<ScrollView
-							horizontal
-							showsHorizontalScrollIndicator={false}
-							style={styles.classroomSelector}
-						>
-							{classrooms.map((classroom) => (
-								<TouchableOpacity
-									key={classroom.id}
-									style={[
-										styles.classroomOption,
-										selectedClassroom === classroom.id &&
-											styles.classroomOptionSelected,
-									]}
-									activeOpacity={1}
-									onPress={() => setSelectedClassroom(classroom.id)}
-								>
-									<Text
+				{/* Classroom Selector - Only show for non-announcement mode */}
+				{!isAnnouncementMode && (
+					<View style={styles.classroomSection}>
+						<Text style={styles.sectionTitle}>Salón de Clases</Text>
+						{classrooms && classrooms.length > 1 ? (
+							<ScrollView
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								style={styles.classroomSelector}
+							>
+								{classrooms.map((classroom) => (
+									<TouchableOpacity
+										key={classroom.id}
 										style={[
-											styles.classroomOptionText,
+											styles.classroomOption,
 											selectedClassroom === classroom.id &&
-												styles.classroomOptionTextSelected,
+												styles.classroomOptionSelected,
 										]}
+										activeOpacity={1}
+										onPress={() => setSelectedClassroom(classroom.id)}
 									>
-										{classroom.name}
-									</Text>
-								</TouchableOpacity>
-							))}
-						</ScrollView>
-					) : (
-						<View style={styles.singleClassroom}>
-							<Text style={styles.singleClassroomText}>
-								{classrooms?.[0]?.name || "Sin salón asignado"}
-							</Text>
-						</View>
-					)}
-				</View>
+										<Text
+											style={[
+												styles.classroomOptionText,
+												selectedClassroom === classroom.id &&
+													styles.classroomOptionTextSelected,
+											]}
+										>
+											{classroom.name}
+										</Text>
+									</TouchableOpacity>
+								))}
+							</ScrollView>
+						) : (
+							<View style={styles.singleClassroom}>
+								<Text style={styles.singleClassroomText}>
+									{classrooms?.[0]?.name || "Sin salón asignado"}
+								</Text>
+							</View>
+						)}
+					</View>
+				)}
 
 				{/* Create New Post Button */}
 				<View style={styles.createPostSection}>
@@ -202,14 +218,18 @@ export const SocialPostModal: React.FC<SocialPostModalProps> = ({ onBack }) => {
 					>
 						<Ionicons name="add" size={20} color={theme.colors.white} />
 						<Text style={styles.createNewPostButtonText}>
-							Crear Nueva Publicación
+							{isAnnouncementMode
+								? "Crear Nuevo Anuncio"
+								: "Crear Nueva Publicación"}
 						</Text>
 					</TouchableOpacity>
 				</View>
 
 				{/* Posts List */}
 				<View style={styles.postsSection}>
-					<Text style={styles.sectionTitle}>Publicaciones</Text>
+					<Text style={styles.sectionTitle}>
+						{isAnnouncementMode ? "Anuncios" : "Publicaciones"}
+					</Text>
 
 					{isLoading || isValidating ? (
 						<View
@@ -289,9 +309,15 @@ export const SocialPostModal: React.FC<SocialPostModalProps> = ({ onBack }) => {
 								size={48}
 								color={theme.colors.muted}
 							/>
-							<Text style={styles.emptyTitle}>No hay publicaciones</Text>
+							<Text style={styles.emptyTitle}>
+								{isAnnouncementMode
+									? "No hay anuncios"
+									: "No hay publicaciones"}
+							</Text>
 							<Text style={styles.emptySubtitle}>
-								Crea tu primera publicación para este salón
+								{isAnnouncementMode
+									? "Crea tu primer anuncio general"
+									: "Crea tu primera publicación para este salón"}
 							</Text>
 						</View>
 					)}
@@ -302,8 +328,10 @@ export const SocialPostModal: React.FC<SocialPostModalProps> = ({ onBack }) => {
 			{currentView === "editor" && (
 				<PostEditor
 					post={editingPost}
-					classroomId={selectedClassroom || ""}
-					classroomName={getSelectedClassroomName()}
+					classroomId={isAnnouncementMode ? null : selectedClassroom || ""}
+					classroomName={
+						isAnnouncementMode ? "Anuncio General" : getSelectedClassroomName()
+					}
 					onBack={handleBackFromEditor}
 					onSave={handleSavePost}
 					onDraftCreated={handleDraftCreated}
