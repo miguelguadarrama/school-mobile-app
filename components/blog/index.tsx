@@ -14,6 +14,7 @@ import {
 	View,
 } from "react-native"
 import { getStaffPhotoUrl } from "../../helpers/staff"
+import { theme } from "../../helpers/theme"
 import dayjs from "../../lib/dayjs"
 import { SocialStackParamList } from "../../types/navigation"
 import { BlogPost } from "../../types/post"
@@ -334,19 +335,18 @@ const styles = StyleSheet.create({
 		textTransform: "capitalize",
 	},
 	footer: {
-		marginTop: 12,
-		paddingTop: 12,
-		borderTopWidth: 1,
-		borderTopColor: "#f0f0f0",
+		marginTop: 0,
+		paddingTop: theme.spacing.xs,
 	},
 	classroomText: {
 		fontSize: 12,
-		color: "#888",
+		color: theme.colors.muted,
 		fontWeight: "500",
 	},
 	publishDate: {
 		fontSize: 12,
-		color: "#888",
+		color: theme.colors.muted,
+		textTransform: "capitalize",
 	},
 	title: {
 		fontSize: 18,
