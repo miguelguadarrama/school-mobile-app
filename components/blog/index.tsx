@@ -59,7 +59,10 @@ const BlogPostItem = memo<{
 
 	const handlePhotoPress = useCallback(() => {
 		// Only navigate to photo grid if there are photos
-		const photos = item.post_media?.filter((m) => m.media_type === "photo") || []
+		const photos =
+			item.post_media?.filter(
+				(m) => !m.media_type || m.media_type === "photo"
+			) || []
 		if (photos.length > 0) {
 			navigation.navigate("PhotoGrid", {
 				photos,
