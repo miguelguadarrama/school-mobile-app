@@ -44,7 +44,8 @@
         {
           "photosPermission": "La aplicación accede a tus fotos para permitirte compartir imágenes en las publicaciones."
         }
-      ]
+      ],
+      "expo-video"
     ],
     "extra": {
       "eas": {
