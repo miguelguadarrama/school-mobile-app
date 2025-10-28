@@ -29,7 +29,16 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 
 		const studentsWithBirthdays = allStudents
 			.map((student) => {
-				const birthdate = new Date(student.birthdate)
+				// Parse birthdate in a timezone-safe way
+				// Extract year, month, day from the date string to avoid timezone conversion
+				const birthdateStr = typeof student.birthdate === 'string'
+					? student.birthdate
+					: student.birthdate.toISOString()
+				const [year, month, day] = birthdateStr.split('T')[0].split('-').map(Number)
+
+				// Create date using local timezone (month is 0-indexed in JS)
+				const birthdate = new Date(year, month - 1, day)
+
 				const thisYearBirthday = new Date(
 					today.getFullYear(),
 					birthdate.getMonth(),
