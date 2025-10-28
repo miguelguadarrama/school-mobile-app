@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons"
 import React, { useContext } from "react"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import AppContext from "../contexts/AppContext"
@@ -127,7 +128,18 @@ export default function ClassroomStudentsList({
 
 				return (
 					<SchoolCard key={classroom.id} style={styles.classroomCard}>
-						<Text style={styles.classroomName}>{classroom.name}</Text>
+						<View style={styles.classroomHeader}>
+							<View style={styles.classroomIcon}>
+								<Ionicons
+									name="school"
+									size={24}
+									color={theme.colors.primary}
+								/>
+							</View>
+							<View style={styles.classroomInfo}>
+								<Text style={styles.classroomName}>{classroom.name}</Text>
+							</View>
+						</View>
 						<View style={styles.studentsContainer}>
 							{sortedStudents.length > 0 ? (
 								sortedStudents.map((student, index) => {
@@ -183,11 +195,28 @@ const styles = StyleSheet.create({
 	classroomCard: {
 		marginBottom: theme.spacing.md,
 	},
-	classroomName: {
-		fontSize: theme.typography.size.lg,
-		fontFamily: theme.typography.family.bold,
-		color: theme.colors.text,
+	classroomHeader: {
+		flexDirection: "row",
+		alignItems: "center",
 		marginBottom: theme.spacing.sm,
+	},
+	classroomIcon: {
+		width: 40,
+		height: 40,
+		borderRadius: theme.radius.sm,
+		backgroundColor: `${theme.colors.primary}15`,
+		justifyContent: "center",
+		alignItems: "center",
+		marginRight: theme.spacing.sm,
+	},
+	classroomInfo: {
+		flex: 1,
+	},
+	classroomName: {
+		fontSize: theme.typography.size.md,
+		fontFamily: theme.typography.family.bold,
+		fontWeight: "700",
+		color: theme.colors.text,
 	},
 	studentsContainer: {
 		paddingLeft: 0,

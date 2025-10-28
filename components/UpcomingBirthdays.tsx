@@ -75,12 +75,14 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 
 	if (upcomingBirthdays.length === 0) {
 		return (
-			<SchoolCard>
-				<Text style={styles.title}>🎂 Próximos Cumpleaños</Text>
-				<Text style={styles.emptyMessage}>
-					No hay cumpleaños próximos en los siguientes 30 días
-				</Text>
-			</SchoolCard>
+			<View style={styles.container}>
+				<SchoolCard>
+					<Text style={styles.title}>🎂 Próximos Cumpleaños</Text>
+					<Text style={styles.emptyMessage}>
+						No hay cumpleaños próximos en los siguientes 30 días
+					</Text>
+				</SchoolCard>
+			</View>
 		)
 	}
 
@@ -90,11 +92,12 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 	const hiddenCount = upcomingBirthdays.length - 3
 
 	return (
-		<SchoolCard>
-			<Text style={styles.title}>🎂 Próximos Cumpleaños</Text>
-			<View style={styles.birthdayList}>
-				{displayedBirthdays.map(
-					({ student, daysUntilBirthday, isToday, birthdate }) => {
+		<View style={styles.container}>
+			<SchoolCard>
+				<Text style={styles.title}>🎂 Próximos Cumpleaños</Text>
+				<View style={styles.birthdayList}>
+					{displayedBirthdays.map(
+						({ student, daysUntilBirthday, isToday, birthdate }) => {
 						const formatDate = (date: Date) => {
 							const months = [
 								"Ene",
@@ -158,26 +161,31 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 				)}
 			</View>
 
-			{upcomingBirthdays.length > 3 && (
-				<TouchableOpacity
-					onPress={() => setShowAll(!showAll)}
-					style={styles.showMoreButton}
-					activeOpacity={1}
-				>
-					<Text style={styles.showMoreText}>
-						{showAll
-							? "Ver menos"
-							: `Ver ${hiddenCount} más ${
-									hiddenCount === 1 ? "cumpleaños" : "cumpleaños"
-							  }`}
-					</Text>
-				</TouchableOpacity>
-			)}
-		</SchoolCard>
+				{upcomingBirthdays.length > 3 && (
+					<TouchableOpacity
+						onPress={() => setShowAll(!showAll)}
+						style={styles.showMoreButton}
+						activeOpacity={1}
+					>
+						<Text style={styles.showMoreText}>
+							{showAll
+								? "Ver menos"
+								: `Ver ${hiddenCount} más ${
+										hiddenCount === 1 ? "cumpleaños" : "cumpleaños"
+								  }`}
+						</Text>
+					</TouchableOpacity>
+				)}
+			</SchoolCard>
+		</View>
 	)
 }
 
 const styles = StyleSheet.create({
+	container: {
+		marginTop: theme.spacing.lg,
+		marginBottom: theme.spacing.md,
+	},
 	title: {
 		fontSize: 18,
 		fontWeight: "600",

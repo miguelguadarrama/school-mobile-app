@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
 		fontWeight: "600",
 	},
 	classroomCard: {
-		marginBottom: theme.spacing.sm,
+		marginBottom: theme.spacing.md,
 		paddingVertical: theme.spacing.sm,
 		paddingHorizontal: theme.spacing.md,
 	},
