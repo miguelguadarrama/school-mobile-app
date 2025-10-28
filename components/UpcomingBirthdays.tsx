@@ -31,10 +31,14 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 			.map((student) => {
 				// Parse birthdate in a timezone-safe way
 				// Extract year, month, day from the date string to avoid timezone conversion
-				const birthdateStr = typeof student.birthdate === 'string'
-					? student.birthdate
-					: student.birthdate.toISOString()
-				const [year, month, day] = birthdateStr.split('T')[0].split('-').map(Number)
+				const birthdateStr =
+					typeof student.birthdate === "string"
+						? student.birthdate
+						: student.birthdate.toISOString()
+				const [year, month, day] = birthdateStr
+					.split("T")[0]
+					.split("-")
+					.map(Number)
 
 				// Create date using local timezone (month is 0-indexed in JS)
 				const birthdate = new Date(year, month - 1, day)
@@ -92,12 +96,11 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 	const hiddenCount = upcomingBirthdays.length - 3
 
 	return (
-		<View style={styles.container}>
-			<SchoolCard>
-				<Text style={styles.title}>🎂 Próximos Cumpleaños</Text>
-				<View style={styles.birthdayList}>
-					{displayedBirthdays.map(
-						({ student, daysUntilBirthday, isToday, birthdate }) => {
+		<SchoolCard>
+			<Text style={styles.title}>🎂 Próximos Cumpleaños</Text>
+			<View style={styles.birthdayList}>
+				{displayedBirthdays.map(
+					({ student, daysUntilBirthday, isToday, birthdate }) => {
 						const formatDate = (date: Date) => {
 							const months = [
 								"Ene",
@@ -161,23 +164,22 @@ const UpcomingBirthdays: React.FC<UpcomingBirthdaysProps> = ({
 				)}
 			</View>
 
-				{upcomingBirthdays.length > 3 && (
-					<TouchableOpacity
-						onPress={() => setShowAll(!showAll)}
-						style={styles.showMoreButton}
-						activeOpacity={1}
-					>
-						<Text style={styles.showMoreText}>
-							{showAll
-								? "Ver menos"
-								: `Ver ${hiddenCount} más ${
-										hiddenCount === 1 ? "cumpleaños" : "cumpleaños"
-								  }`}
-						</Text>
-					</TouchableOpacity>
-				)}
-			</SchoolCard>
-		</View>
+			{upcomingBirthdays.length > 3 && (
+				<TouchableOpacity
+					onPress={() => setShowAll(!showAll)}
+					style={styles.showMoreButton}
+					activeOpacity={1}
+				>
+					<Text style={styles.showMoreText}>
+						{showAll
+							? "Ver menos"
+							: `Ver ${hiddenCount} más ${
+									hiddenCount === 1 ? "cumpleaños" : "cumpleaños"
+							  }`}
+					</Text>
+				</TouchableOpacity>
+			)}
+		</SchoolCard>
 	)
 }
 
