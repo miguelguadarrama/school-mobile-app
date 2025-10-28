@@ -12,7 +12,10 @@
       "autoIncrement": true,
       "distribution": "internal",
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "env": {
+          "EXPO_ANDROID_ENABLE_16KB_PAGE_SIZE": "1"
+        }
       },
       "env": {
         "EXPO_PUBLIC_AUTH0_DOMAIN": "dev-xvcsv6d566uh4eqz.us.auth0.com",
@@ -31,7 +34,10 @@
     "production": {
       "autoIncrement": true,
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "env": {
+          "EXPO_ANDROID_ENABLE_16KB_PAGE_SIZE": "1"
+        }
       },
       "env": {
         "EXPO_PUBLIC_AUTH0_DOMAIN": "dev-xvcsv6d566uh4eqz.us.auth0.com",
