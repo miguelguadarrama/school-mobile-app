@@ -8,16 +8,20 @@ import UpcomingBirthdays from "../../components/UpcomingBirthdays"
 import AppContext from "../../contexts/AppContext"
 import { TabContext } from "../../contexts/TabContext"
 import { theme } from "../../helpers/theme"
-import { StudentData } from "../../types/students"
+import { admin_classrooms, StudentData } from "../../types/students"
 import AdminClassroomList from "../admin/classrooms"
+import { ClassroomStudentList } from "../admin/ClassroomStudentList"
 import { StudentProfile } from "./StudentProfile"
 
 export default function HomeTeacherScreen() {
 	const { classrooms, selectedDate } = useContext(AppContext)!
-	const { setIsStudentProfileActive } = useContext(TabContext)
+	const { setIsStudentProfileActive, setIsClassroomStudentListActive } =
+		useContext(TabContext)
 	const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(
 		null
 	)
+	const [selectedClassroom, setSelectedClassroom] =
+		useState<admin_classrooms | null>(null)
 
 	const handleStudentPress = (student: StudentData) => {
 		setSelectedStudent(student)
@@ -27,6 +31,16 @@ export default function HomeTeacherScreen() {
 	const handleCloseStudentProfile = () => {
 		setSelectedStudent(null)
 		setIsStudentProfileActive(false)
+	}
+
+	const handleClassroomPress = (classroom: admin_classrooms) => {
+		setSelectedClassroom(classroom)
+		setIsClassroomStudentListActive(true)
+	}
+
+	const handleCloseClassroomStudentList = () => {
+		setSelectedClassroom(null)
+		setIsClassroomStudentListActive(false)
 	}
 
 	return (
@@ -46,7 +60,7 @@ export default function HomeTeacherScreen() {
 					{/* Upcoming Birthdays */}
 					<UpcomingBirthdays classrooms={classrooms} />
 
-					<AdminClassroomList />
+					<AdminClassroomList onClassroomPress={handleClassroomPress} />
 
 					<ClassroomStudentsList
 						classrooms={classrooms}
@@ -64,6 +78,15 @@ export default function HomeTeacherScreen() {
 				<StudentProfile
 					student={selectedStudent}
 					onBack={handleCloseStudentProfile}
+				/>
+			)}
+
+			{/* Classroom Student List Modal - Rendered outside ScrollView */}
+			{selectedClassroom && (
+				<ClassroomStudentList
+					classroomId={selectedClassroom.id}
+					classroomName={selectedClassroom.name}
+					onBack={handleCloseClassroomStudentList}
 				/>
 			)}
 		</>

@@ -19,6 +19,8 @@ interface TabContextType {
 	setIsSocialPostModalActive: (active: boolean) => void
 	isAttendanceModalActive: boolean
 	setIsAttendanceModalActive: (active: boolean) => void
+	isClassroomStudentListActive: boolean
+	setIsClassroomStudentListActive: (active: boolean) => void
 	appScreens: TabScreen[]
 }
 
@@ -35,5 +37,7 @@ export const TabContext = createContext<TabContextType>({
 	setIsSocialPostModalActive: () => {},
 	isAttendanceModalActive: false,
 	setIsAttendanceModalActive: () => {},
+	isClassroomStudentListActive: false,
+	setIsClassroomStudentListActive: () => {},
 	appScreens: [],
 })

@@ -14,13 +14,23 @@ import AppContext from "../../contexts/AppContext"
 import { theme } from "../../helpers/theme"
 import { admin_classrooms } from "../../types/students"
 
-const AdminClassroomList = () => {
+interface AdminClassroomListProps {
+	onClassroomPress?: (classroom: admin_classrooms) => void
+}
+
+const AdminClassroomList: React.FC<AdminClassroomListProps> = ({
+	onClassroomPress,
+}) => {
 	const { selectedRole } = useContext(AppContext)!
 	const { data, isLoading, mutate } = useSWR<admin_classrooms[]>(
 		selectedRole === "admin" ? `/mobile/admin` : null
 	)
 	const [refreshing, setRefreshing] = useState(false)
 	const [showProgressModal, setShowProgressModal] = useState(false)
+
+	const handleClassroomPress = (classroom: admin_classrooms) => {
+		onClassroomPress?.(classroom)
+	}
 
 	const handleRefresh = async () => {
 		setRefreshing(true)
@@ -91,7 +101,11 @@ const AdminClassroomList = () => {
 						<View style={styles.divider} />
 
 						<View style={styles.statsContainer}>
-							<View style={styles.statItem}>
+							<TouchableOpacity
+								style={styles.statItem}
+								onPress={() => handleClassroomPress(classroom)}
+								activeOpacity={0.7}
+							>
 								<Ionicons
 									name="people"
 									size={20}
@@ -99,7 +113,7 @@ const AdminClassroomList = () => {
 								/>
 								<Text style={styles.statLabel}>Alumnos</Text>
 								<Text style={styles.statValue}>{classroom.student_count}</Text>
-							</View>
+							</TouchableOpacity>
 
 							<View style={styles.statItem}>
 								<Ionicons

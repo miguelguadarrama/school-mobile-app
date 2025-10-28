@@ -123,3 +123,13 @@ export interface admin_classrooms {
   staff_count: number;
   attendance_count: number;
 }
+
+export interface classroom_student {
+  id: string;
+  first_name: string;
+  middle_name: string | null;
+  last_name: string;
+  second_last_name: string | null;
+  birthdate: string;
+  gender_alias: "gender_male" | "gender_female";
+}
