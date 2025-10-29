@@ -181,4 +181,11 @@ dependencies {
     }
 }
 
+configurations.all {
+    resolutionStrategy.dependencySubstitution {
+        substitute(module("com.github.banketree:AndroidLame-kotlin"))
+                .using(module("com.github.kaushik-naik:TAndroidLame:a485052f28"))
+    }
+}
+
 apply plugin: 'com.google.gms.google-services'
