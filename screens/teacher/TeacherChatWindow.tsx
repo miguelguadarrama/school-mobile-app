@@ -1,10 +1,17 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "react"
 import {
 	BackHandler,
 	FlatList,
 	Keyboard,
 	Platform,
 	StyleSheet,
+	Text,
 	View,
 } from "react-native"
 import LoadingScreen from "../../components/Loading"
@@ -120,6 +127,11 @@ export const TeacherChatWindow: React.FC<TeacherChatWindowProps> = ({
 	const studentName = currentChat.userInfo.full_name
 	const studentPhotoUrl = studentPhotoUri(academic_year_id, studentId)
 
+	// Check if any guardians have used the app
+	const hasActiveGuardians =
+		currentChat.student_guardians?.filter((g) => g.users.sso_account).length ??
+		0 > 0
+
 	return (
 		<View style={styles.chatWindowContainer}>
 			<ChatHeader
@@ -130,6 +142,15 @@ export const TeacherChatWindow: React.FC<TeacherChatWindowProps> = ({
 			/>
 
 			<View style={styles.chatContainer}>
+				{currentChat?.student_guardians?.length && !hasActiveGuardians && (
+					<View style={styles.warningContainer}>
+						<Text style={styles.warningText}>
+							⚠️ Ningún representante de este alumno ha usado la aplicación
+							móvil. No recibirán notificaciones de estos mensajes.
+						</Text>
+					</View>
+				)}
+
 				<FlatList
 					ref={flatListRef}
 					style={styles.chatContent}
@@ -190,5 +211,19 @@ const styles = StyleSheet.create({
 	chatContentContainer: {
 		padding: theme.spacing.md,
 		paddingBottom: theme.spacing.lg,
+	},
+	warningContainer: {
+		backgroundColor: "#FFF3CD",
+		borderLeftWidth: 4,
+		borderLeftColor: "#FFC107",
+		padding: theme.spacing.md,
+		marginHorizontal: theme.spacing.md,
+		marginTop: theme.spacing.sm,
+		borderRadius: theme.radius.md,
+	},
+	warningText: {
+		color: "#856404",
+		fontSize: theme.typography.size.sm,
+		lineHeight: 20,
 	},
 })

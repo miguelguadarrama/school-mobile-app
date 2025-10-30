@@ -7,6 +7,13 @@ export interface chats {
     id: string
     full_name: string
   }
+  student_guardians?: {
+    users: {
+      full_name: string
+      id: string
+      sso_account: string | null
+    }
+  }[]
   messages: chat_message[]
 }
 
