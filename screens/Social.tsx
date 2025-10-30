@@ -10,18 +10,19 @@ import { theme } from "../helpers/theme"
 import { SocialPostModal } from "./teacher/SocialPostModal"
 
 export default function SocialScreen() {
-	const { selectedRole, classrooms, selectedStudent } = useContext(AppContext)!
-	const endpoint =
-		selectedRole === "guardian"
-			? `/mobile/posts/classroom/${
-					selectedStudent?.academic_year_classroom_students?.[0]?.classrooms
-						?.id || "test"
-			  }`
-			: `/mobile/posts/classroom`
+	const { selectedRole, selectedStudent } = useContext(AppContext)!
+
 	const { isSocialPostModalActive, setIsSocialPostModalActive } =
 		useContext(TabContext)
 
-	const { data, isLoading, mutate } = useSWR(selectedRole ? endpoint : null)
+	const { data, isLoading, mutate } = useSWR(
+		["admin", "staff"].includes(selectedRole || "")
+			? `/mobile/posts/v2`
+			: `/mobile/posts/v2/classroom/${
+					selectedStudent?.academic_year_classroom_students?.[0]?.classrooms
+						?.id || "test"
+			  }`
+	)
 
 	return (
 		<View style={styles.container}>
