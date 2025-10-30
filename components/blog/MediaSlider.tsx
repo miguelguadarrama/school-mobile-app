@@ -16,12 +16,14 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native"
+import { fetcher } from "../../services/api"
 import { theme } from "../../helpers/theme"
 import { BlogPostMedia } from "../../types/post"
 
 interface MediaSliderProps {
 	media: BlogPostMedia[]
 	postTitle: string
+	postId: string
 	onPhotoPress: () => void
 	onVideoPress?: (videoUrl: string) => void
 }
@@ -75,7 +77,7 @@ const VideoPreview: React.FC<{
 }
 
 const MediaSlider: React.FC<MediaSliderProps> = memo(
-	({ media, onPhotoPress, onVideoPress }) => {
+	({ media, postId, onPhotoPress, onVideoPress }) => {
 		const [currentIndex, setCurrentIndex] = useState(0)
 		const [containerWidth, setContainerWidth] = useState(0)
 		const [isDownloading, setIsDownloading] = useState(false)
@@ -92,8 +94,13 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 		}, [])
 
 		const handleDocumentPress = useCallback(
-			async (url: string, fileName?: string) => {
+			async (docId: string, url: string, fileName?: string) => {
 				try {
+					// Record hit (fire and forget)
+					fetcher(`/mobile/posts/${postId}/${docId}/hit`, {
+						method: "POST",
+					}).catch(() => {})
+
 					setIsDownloading(true)
 
 					// Extract filename from URL if not provided
@@ -150,7 +157,7 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 					])
 				}
 			},
-			[]
+			[postId]
 		)
 
 		const handleVideoPress = useCallback(
@@ -299,7 +306,9 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 							<TouchableOpacity
 								key={doc.id}
 								style={styles.documentItem}
-								onPress={() => handleDocumentPress(doc.file_url, doc.caption)}
+								onPress={() =>
+									handleDocumentPress(doc.id, doc.file_url, doc.caption)
+								}
 								activeOpacity={0.7}
 							>
 								<View style={styles.documentIcon}>

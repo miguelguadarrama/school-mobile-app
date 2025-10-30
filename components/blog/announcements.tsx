@@ -10,8 +10,8 @@ import {
 } from "react-native"
 import { theme } from "../../helpers/theme"
 import { BlogPostMedia } from "../../types/post"
-import MediaSlider from "./MediaSlider"
 import SchoolCard from "../SchoolCard"
+import MediaSlider from "./MediaSlider"
 
 export interface AnnouncementPost {
 	id: string
@@ -124,6 +124,7 @@ const AnnouncementCard: React.FC<{ announcement: AnnouncementPost }> = ({
 			{announcement.post_media && announcement.post_media.length > 0 && (
 				<View style={styles.mediaContainer}>
 					<MediaSlider
+						postId={announcement.id}
 						media={announcement.post_media}
 						postTitle={announcement.title}
 						onPhotoPress={() => {}}

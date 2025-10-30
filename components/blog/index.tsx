@@ -2,9 +2,8 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import React, { memo, useCallback, useState } from "react"
+import React, { memo, useCallback, useContext, useState } from "react"
 import {
-	Dimensions,
 	FlatList,
 	Image,
 	RefreshControl,
@@ -13,9 +12,11 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native"
+import AppContext from "../../contexts/AppContext"
 import { getStaffPhotoUrl } from "../../helpers/staff"
 import { theme } from "../../helpers/theme"
 import dayjs from "../../lib/dayjs"
+import { fetcher } from "../../services/api"
 import { SocialStackParamList } from "../../types/navigation"
 import { BlogPost } from "../../types/post"
 import SchoolCard from "../SchoolCard"
@@ -38,8 +39,15 @@ interface BlogPostListProps {
 	onCardPress?: (post: BlogPost) => void
 }
 
+// Helper function to format numbers in compact form (1.2k, 1.5M, etc.)
+const formatCompactNumber = (num: number): string => {
+	if (num < 1000) return num.toString()
+	if (num < 1000000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + "k"
+	return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M"
+}
+
 //const fallbackImage = "https://placehold.co/600x400/png"
-const { width: screenWidth } = Dimensions.get("window")
+//const { width: screenWidth } = Dimensions.get("window")
 
 // Memoized blog post item component
 const BlogPostItem = memo<{
@@ -47,6 +55,7 @@ const BlogPostItem = memo<{
 	onCardPress?: (post: BlogPost) => void
 	navigation: BlogPostListNavigationProp
 }>(({ item, onCardPress, navigation }) => {
+	const { selectedRole } = useContext(AppContext)!
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [photoError, setPhotoError] = useState(false)
 	const [videoModalVisible, setVideoModalVisible] = useState(false)
@@ -54,11 +63,16 @@ const BlogPostItem = memo<{
 	const hasMedia = item.post_media && item.post_media.length > 0
 	const staffPhotoUrl = item.users?.id ? getStaffPhotoUrl(item.users.id) : null
 
+	const isAdminOrStaff = ["admin", "staff"].includes(selectedRole || "")
+
 	const handlePress = useCallback(() => {
 		onCardPress?.(item)
 	}, [onCardPress, item])
 
 	const handlePhotoPress = useCallback(() => {
+		// Record hit (fire and forget)
+		fetcher(`/mobile/posts/${item.id}/hit`, { method: "POST" }).catch(() => {})
+
 		// Only navigate to photo grid if there are photos
 		const photos =
 			item.post_media?.filter(
@@ -70,12 +84,20 @@ const BlogPostItem = memo<{
 				title: item.title,
 			})
 		}
-	}, [navigation, item.post_media, item.title])
+	}, [navigation, item.post_media, item.title, item.id])
 
-	const handleVideoPress = useCallback((videoUrl: string) => {
-		setSelectedVideoUrl(videoUrl)
-		setVideoModalVisible(true)
-	}, [])
+	const handleVideoPress = useCallback(
+		(videoUrl: string) => {
+			// Record hit (fire and forget)
+			fetcher(`/mobile/posts/${item.id}/hit`, { method: "POST" }).catch(
+				() => {}
+			)
+
+			setSelectedVideoUrl(videoUrl)
+			setVideoModalVisible(true)
+		},
+		[item.id]
+	)
 
 	const handleCloseVideoModal = useCallback(() => {
 		setVideoModalVisible(false)
@@ -155,6 +177,7 @@ const BlogPostItem = memo<{
 						<MediaSlider
 							media={item.post_media || []}
 							postTitle={item.title}
+							postId={item.id}
 							onPhotoPress={handlePhotoPress}
 							onVideoPress={handleVideoPress}
 						/>
@@ -166,6 +189,43 @@ const BlogPostItem = memo<{
 							<Text style={styles.classroomText}>{item.classrooms.name}</Text>
 						</View>
 					)}
+
+					{/* View metrics for admin/staff */}
+					{isAdminOrStaff &&
+						(item.post_views !== undefined ||
+							(item.post_clicks !== undefined && item.post_clicks > 0)) && (
+							<View style={styles.metricsContainer}>
+								{item.post_views !== undefined && (
+									<>
+										<Ionicons
+											name="eye-outline"
+											size={14}
+											color={theme.colors.muted}
+										/>
+										<Text style={styles.metricsText}>
+											{formatCompactNumber(item.post_views)}{" "}
+											{item.post_views === 1 ? "vista" : "vistas"}
+										</Text>
+									</>
+								)}
+								{item.post_clicks !== undefined && item.post_clicks > 0 && (
+									<>
+										{item.post_views !== undefined && (
+											<Text style={styles.metricsSeparator}>•</Text>
+										)}
+										<Ionicons
+											name="download-outline"
+											size={14}
+											color={theme.colors.muted}
+										/>
+										<Text style={styles.metricsText}>
+											{formatCompactNumber(item.post_clicks)}{" "}
+											{item.post_clicks === 1 ? "descarga" : "descargas"}
+										</Text>
+									</>
+								)}
+							</View>
+						)}
 				</View>
 			</SchoolCard>
 
@@ -390,6 +450,26 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 		color: "#007AFF",
 		fontWeight: "500",
+	},
+	metricsContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		marginTop: theme.spacing.xs,
+		paddingTop: theme.spacing.xs,
+		borderTopWidth: 1,
+		borderTopColor: "#f0f0f0",
+		gap: 6,
+	},
+	metricsText: {
+		fontSize: 12,
+		color: theme.colors.muted,
+		fontWeight: "500",
+	},
+	metricsSeparator: {
+		fontSize: 12,
+		color: theme.colors.muted,
+		marginHorizontal: 4,
 	},
 })
 

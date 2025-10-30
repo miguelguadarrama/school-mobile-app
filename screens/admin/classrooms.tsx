@@ -64,6 +64,7 @@ const AdminClassroomList: React.FC<AdminClassroomListProps> = ({
 					style={styles.refreshButton}
 					onPress={handleRefresh}
 					disabled={refreshing}
+					activeOpacity={0.5}
 				>
 					<Ionicons name="refresh" size={20} color={theme.colors.primary} />
 					<Text style={styles.refreshButtonText}>Actualizar</Text>

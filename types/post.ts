@@ -8,6 +8,8 @@ export interface BlogPost {
   created_at: string
   published_at?: string
   post_media?: BlogPostMedia[]
+  post_views?: number
+  post_clicks?: number
   users: {
     id: string
     full_name: string
