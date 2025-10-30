@@ -12,7 +12,6 @@ import AppContext from "../contexts/AppContext"
 import { getStaffPhotoUrl } from "../helpers/staff"
 import { displayName } from "../helpers/students"
 import { theme } from "../helpers/theme"
-import LogoutButton from "./common/LogoutButton"
 import StudentPhoto from "./ui/studentPhoto"
 
 const StatusBar: React.FC = () => {
@@ -196,8 +195,6 @@ const StatusBar: React.FC = () => {
 								</TouchableOpacity>
 							</>
 						)}
-
-						<LogoutButton />
 					</View>
 				</View>
 			</Modal>
