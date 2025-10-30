@@ -64,7 +64,6 @@ const BlogPostItem = memo<{
 	const staffPhotoUrl = item.users?.id ? getStaffPhotoUrl(item.users.id) : null
 
 	const isAdminOrStaff = ["admin", "staff"].includes(selectedRole || "")
-
 	const handlePress = useCallback(() => {
 		onCardPress?.(item)
 	}, [onCardPress, item])
