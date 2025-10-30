@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons"
 import { useContext, useState } from "react"
 import {
 	ActivityIndicator,
-	Modal,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
@@ -16,17 +15,18 @@ import { admin_classrooms } from "../../types/students"
 
 interface AdminClassroomListProps {
 	onClassroomPress?: (classroom: admin_classrooms) => void
+	onProgressPress?: (classroom: admin_classrooms) => void
 }
 
 const AdminClassroomList: React.FC<AdminClassroomListProps> = ({
 	onClassroomPress,
+	onProgressPress,
 }) => {
 	const { selectedRole } = useContext(AppContext)!
 	const { data, isLoading, mutate } = useSWR<admin_classrooms[]>(
 		selectedRole === "admin" ? `/mobile/admin` : null
 	)
 	const [refreshing, setRefreshing] = useState(false)
-	const [showProgressModal, setShowProgressModal] = useState(false)
 
 	const handleClassroomPress = (classroom: admin_classrooms) => {
 		onClassroomPress?.(classroom)
@@ -128,7 +128,7 @@ const AdminClassroomList: React.FC<AdminClassroomListProps> = ({
 
 							<TouchableOpacity
 								style={styles.statItem}
-								onPress={() => setShowProgressModal(true)}
+								onPress={() => onProgressPress?.(classroom)}
 								activeOpacity={0.7}
 							>
 								<Ionicons
@@ -186,41 +186,6 @@ const AdminClassroomList: React.FC<AdminClassroomListProps> = ({
 					</SchoolCard>
 				)
 			})}
-
-			{/* Progress Info Modal */}
-			<Modal
-				visible={showProgressModal}
-				transparent
-				animationType="fade"
-				onRequestClose={() => setShowProgressModal(false)}
-			>
-				<TouchableOpacity
-					style={styles.modalOverlay}
-					activeOpacity={1}
-					onPress={() => setShowProgressModal(false)}
-				>
-					<View style={styles.modalContainer}>
-						<View style={styles.modalHeader}>
-							<Ionicons
-								name="information-circle"
-								size={32}
-								color={theme.colors.primary}
-							/>
-							<Text style={styles.modalTitle}>¿Qué es el Progreso?</Text>
-						</View>
-						<Text style={styles.modalText}>
-							Representa el progreso de reporte de asistencia por parte del
-							personal docente.
-						</Text>
-						<TouchableOpacity
-							style={styles.modalButton}
-							onPress={() => setShowProgressModal(false)}
-						>
-							<Text style={styles.modalButtonText}>Entendido</Text>
-						</TouchableOpacity>
-					</View>
-				</TouchableOpacity>
-			</Modal>
 		</View>
 	)
 }
@@ -362,58 +327,6 @@ const styles = StyleSheet.create({
 	},
 	infoIcon: {
 		marginLeft: 4,
-	},
-	modalOverlay: {
-		flex: 1,
-		backgroundColor: "rgba(0, 0, 0, 0.5)",
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	modalContainer: {
-		backgroundColor: theme.colors.surface,
-		borderRadius: theme.radius.lg,
-		padding: theme.spacing.xl,
-		marginHorizontal: theme.spacing.lg,
-		maxWidth: 400,
-		width: "85%",
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.25,
-		shadowRadius: 4,
-		elevation: 5,
-	},
-	modalHeader: {
-		alignItems: "center",
-		marginBottom: theme.spacing.md,
-	},
-	modalTitle: {
-		fontFamily: theme.typography.family.bold,
-		fontSize: theme.typography.size.lg,
-		fontWeight: "700",
-		color: theme.colors.text,
-		marginTop: theme.spacing.sm,
-		textAlign: "center",
-	},
-	modalText: {
-		fontFamily: theme.typography.family.regular,
-		fontSize: theme.typography.size.md,
-		color: theme.colors.text,
-		textAlign: "center",
-		lineHeight: 22,
-		marginBottom: theme.spacing.lg,
-	},
-	modalButton: {
-		backgroundColor: theme.colors.primary,
-		borderRadius: theme.radius.md,
-		paddingVertical: theme.spacing.sm,
-		paddingHorizontal: theme.spacing.lg,
-		alignItems: "center",
-	},
-	modalButtonText: {
-		fontFamily: theme.typography.family.bold,
-		fontSize: theme.typography.size.md,
-		color: theme.colors.white,
-		fontWeight: "600",
 	},
 })
 

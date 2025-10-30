@@ -10,17 +10,20 @@ import { TabContext } from "../../contexts/TabContext"
 import { theme } from "../../helpers/theme"
 import { admin_classrooms, StudentData } from "../../types/students"
 import AdminClassroomList from "../admin/classrooms"
+import { ClassroomAttendanceModal } from "../admin/ClassroomAttendanceModal"
 import { ClassroomStudentList } from "../admin/ClassroomStudentList"
 import { StudentProfile } from "./StudentProfile"
 
 export default function HomeTeacherScreen() {
 	const { classrooms, selectedDate } = useContext(AppContext)!
-	const { setIsStudentProfileActive, setIsClassroomStudentListActive } =
+	const { setIsStudentProfileActive, setIsClassroomStudentListActive, setIsClassroomAttendanceModalActive } =
 		useContext(TabContext)
 	const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(
 		null
 	)
 	const [selectedClassroom, setSelectedClassroom] =
+		useState<admin_classrooms | null>(null)
+	const [selectedClassroomForAttendance, setSelectedClassroomForAttendance] =
 		useState<admin_classrooms | null>(null)
 
 	const handleStudentPress = (student: StudentData) => {
@@ -43,6 +46,16 @@ export default function HomeTeacherScreen() {
 		setIsClassroomStudentListActive(false)
 	}
 
+	const handleProgressPress = (classroom: admin_classrooms) => {
+		setSelectedClassroomForAttendance(classroom)
+		setIsClassroomAttendanceModalActive(true)
+	}
+
+	const handleCloseClassroomAttendance = () => {
+		setSelectedClassroomForAttendance(null)
+		setIsClassroomAttendanceModalActive(false)
+	}
+
 	return (
 		<>
 			<SafeAreaView style={styles.statusBarContainer} edges={["top"]}>
@@ -60,7 +73,10 @@ export default function HomeTeacherScreen() {
 					{/* Upcoming Birthdays */}
 					<UpcomingBirthdays classrooms={classrooms} />
 
-					<AdminClassroomList onClassroomPress={handleClassroomPress} />
+					<AdminClassroomList
+						onClassroomPress={handleClassroomPress}
+						onProgressPress={handleProgressPress}
+					/>
 
 					<ClassroomStudentsList
 						classrooms={classrooms}
@@ -87,6 +103,15 @@ export default function HomeTeacherScreen() {
 					classroomId={selectedClassroom.id}
 					classroomName={selectedClassroom.name}
 					onBack={handleCloseClassroomStudentList}
+				/>
+			)}
+
+			{/* Classroom Attendance Modal - Rendered outside ScrollView */}
+			{selectedClassroomForAttendance && (
+				<ClassroomAttendanceModal
+					classroomId={selectedClassroomForAttendance.id}
+					classroomName={selectedClassroomForAttendance.name}
+					onBack={handleCloseClassroomAttendance}
 				/>
 			)}
 		</>
