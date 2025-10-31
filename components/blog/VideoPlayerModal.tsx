@@ -31,6 +31,8 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 	const [error, setError] = useState<string | null>(null)
 	const [downloadProgress, setDownloadProgress] = useState(0)
 	const [isSharing, setIsSharing] = useState(false)
+	const abortControllerRef = React.useRef<AbortController | null>(null)
+	const progressIntervalRef = React.useRef<NodeJS.Timeout | null>(null)
 
 	// Create video player instance with the local URI
 	const player = useVideoPlayer(localUri || "", (player) => {
@@ -42,7 +44,26 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 		if (visible && videoUrl) {
 			downloadVideo()
 		} else {
-			// Reset state when modal closes
+			// Clean up when modal closes
+			// Cancel any ongoing download
+			if (abortControllerRef.current) {
+				abortControllerRef.current.abort()
+				abortControllerRef.current = null
+			}
+
+			// Clear progress interval
+			if (progressIntervalRef.current) {
+				clearInterval(progressIntervalRef.current)
+				progressIntervalRef.current = null
+			}
+
+			// Stop and release video player
+			if (player) {
+				player.pause()
+				player.replace("")
+			}
+
+			// Reset state
 			setIsLoading(true)
 			setLocalUri(null)
 			setError(null)
@@ -67,6 +88,9 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 		setError(null)
 		setDownloadProgress(0)
 
+		// Create new AbortController for this download
+		abortControllerRef.current = new AbortController()
+
 		try {
 			// Generate a unique filename based on the URL
 			const filename = videoUrl.split("/").pop()?.split("?")[0] || "video.mp4"
@@ -84,17 +108,23 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 
 			// Simulate progress with interval while downloading
 			let simulatedProgress = 0
-			const progressInterval = setInterval(() => {
+			progressIntervalRef.current = setInterval(() => {
 				simulatedProgress += 5
 				if (simulatedProgress <= 90) {
 					setDownloadProgress(simulatedProgress)
 				}
 			}, 200)
 
-			// Download the video using fetch
-			const response = await fetch(videoUrl)
+			// Download the video using fetch with abort signal
+			const response = await fetch(videoUrl, {
+				signal: abortControllerRef.current.signal,
+			})
+
 			if (!response.ok) {
-				clearInterval(progressInterval)
+				if (progressIntervalRef.current) {
+					clearInterval(progressIntervalRef.current)
+					progressIntervalRef.current = null
+				}
 				throw new Error(`HTTP error! status: ${response.status}`)
 			}
 
@@ -103,7 +133,10 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 			const uint8Array = new Uint8Array(arrayBuffer)
 
 			// Clear progress interval
-			clearInterval(progressInterval)
+			if (progressIntervalRef.current) {
+				clearInterval(progressIntervalRef.current)
+				progressIntervalRef.current = null
+			}
 			setDownloadProgress(100)
 
 			// Write the downloaded content to the file
@@ -111,7 +144,13 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 
 			setLocalUri(videoFile.uri)
 			setIsLoading(false)
-		} catch (err) {
+		} catch (err: any) {
+			// Don't show error if request was aborted (user closed modal)
+			if (err.name === "AbortError") {
+				console.log("Video download cancelled")
+				return
+			}
+
 			console.error("Error downloading video:", err)
 			setError("No se pudo descargar el video")
 			setIsLoading(false)
