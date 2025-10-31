@@ -1,5 +1,10 @@
 import { Ionicons } from "@expo/vector-icons"
 import { Directory, File, Paths } from "expo-file-system/next"
+import {
+	createDownloadResumable,
+	type DownloadProgressData,
+	type DownloadResumable,
+} from "expo-file-system/legacy"
 import * as Sharing from "expo-sharing"
 import { VideoView, useVideoPlayer } from "expo-video"
 import React, { useEffect, useState } from "react"
@@ -18,21 +23,48 @@ import { theme } from "../../helpers/theme"
 interface VideoPlayerModalProps {
 	visible: boolean
 	videoUrl: string | null
+	videoSize?: number | null
 	onClose: () => void
 }
 
 export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 	visible,
 	videoUrl,
+	videoSize,
 	onClose,
 }) => {
 	const [isLoading, setIsLoading] = useState(true)
 	const [localUri, setLocalUri] = useState<string | null>(null)
 	const [error, setError] = useState<string | null>(null)
 	const [downloadProgress, setDownloadProgress] = useState(0)
+	const [downloadedBytes, setDownloadedBytes] = useState(0)
+	const [totalBytes, setTotalBytes] = useState<number | null>(videoSize ?? null)
 	const [isSharing, setIsSharing] = useState(false)
-	const abortControllerRef = React.useRef<AbortController | null>(null)
-	const progressIntervalRef = React.useRef<NodeJS.Timeout | null>(null)
+	const downloadTaskRef = React.useRef<DownloadResumable | null>(null)
+	const totalBytesRef = React.useRef<number | null>(videoSize ?? null)
+	const currentDownloadFileRef = React.useRef<File | null>(null)
+	const downloadCompletedRef = React.useRef(false)
+
+	useEffect(() => {
+		const normalizedSize = videoSize ?? null
+		totalBytesRef.current = normalizedSize
+		setTotalBytes(normalizedSize)
+	}, [videoSize])
+
+	const clearPartialDownload = () => {
+		const activeFile = currentDownloadFileRef.current
+		if (!downloadCompletedRef.current && activeFile) {
+			try {
+				if (activeFile.exists) {
+					activeFile.delete()
+				}
+			} catch (deleteError) {
+				console.warn("Unable to delete partial video download", deleteError)
+			}
+		}
+		currentDownloadFileRef.current = null
+		downloadCompletedRef.current = false
+	}
 
 	// Create video player instance with the local URI
 	const player = useVideoPlayer(localUri || "", (player) => {
@@ -46,21 +78,19 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 		} else {
 			// Clean up when modal closes
 			// Cancel any ongoing download
-			if (abortControllerRef.current) {
-				abortControllerRef.current.abort()
-				abortControllerRef.current = null
+			if (downloadTaskRef.current) {
+				downloadTaskRef.current.cancelAsync().catch(() => {})
+				downloadTaskRef.current = null
 			}
 
-			// Clear progress interval
-			if (progressIntervalRef.current) {
-				clearInterval(progressIntervalRef.current)
-				progressIntervalRef.current = null
-			}
+			clearPartialDownload()
 
 			// Stop and release video player
 			if (player) {
 				player.pause()
-				player.replace("")
+				void player.replaceAsync("").catch((replaceError: unknown) => {
+					console.warn("Unable to clear video source", replaceError)
+				})
 			}
 
 			// Reset state
@@ -68,8 +98,10 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 			setLocalUri(null)
 			setError(null)
 			setDownloadProgress(0)
+			setDownloadedBytes(0)
+			setTotalBytes(videoSize ?? null)
 		}
-	}, [visible, videoUrl])
+	}, [visible, videoUrl, videoSize, player])
 
 	useEffect(() => {
 		// Update player source when localUri changes
@@ -87,9 +119,17 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 		setIsLoading(true)
 		setError(null)
 		setDownloadProgress(0)
+		setDownloadedBytes(0)
+		totalBytesRef.current = videoSize ?? null
+		setTotalBytes(videoSize ?? null)
+		currentDownloadFileRef.current = null
+		downloadCompletedRef.current = false
 
-		// Create new AbortController for this download
-		abortControllerRef.current = new AbortController()
+		// Cancel previous task if any
+		if (downloadTaskRef.current) {
+			await downloadTaskRef.current.cancelAsync().catch(() => {})
+			downloadTaskRef.current = null
+		}
 
 		try {
 			// Generate a unique filename based on the URL
@@ -101,53 +141,90 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 
 			// Check if file already exists (exists is a boolean property, not a function)
 			if (videoFile.exists) {
+				try {
+					const fileInfo = videoFile.info()
+					if (fileInfo?.exists === true && typeof fileInfo.size === "number") {
+						setDownloadedBytes(fileInfo.size)
+						totalBytesRef.current = fileInfo.size
+						setTotalBytes(fileInfo.size)
+					}
+				} catch (infoError) {
+					console.warn("Unable to read cached video info", infoError)
+				}
+				setDownloadProgress(100)
 				setLocalUri(videoFile.uri)
 				setIsLoading(false)
+				downloadCompletedRef.current = true
+				currentDownloadFileRef.current = null
 				return
 			}
 
-			// Simulate progress with interval while downloading
-			let simulatedProgress = 0
-			progressIntervalRef.current = setInterval(() => {
-				simulatedProgress += 5
-				if (simulatedProgress <= 90) {
-					setDownloadProgress(simulatedProgress)
-				}
-			}, 200)
+			const progressCallback = (progress: DownloadProgressData) => {
+				const bytesWritten = progress.totalBytesWritten
+				setDownloadedBytes(bytesWritten)
 
-			// Download the video using fetch with abort signal
-			const response = await fetch(videoUrl, {
-				signal: abortControllerRef.current.signal,
-			})
+				const expectedBytesFromServer =
+					progress.totalBytesExpectedToWrite > 0
+						? progress.totalBytesExpectedToWrite
+						: null
 
-			if (!response.ok) {
-				if (progressIntervalRef.current) {
-					clearInterval(progressIntervalRef.current)
-					progressIntervalRef.current = null
+				const resolvedTotalBytes =
+					expectedBytesFromServer ?? totalBytesRef.current ?? videoSize ?? 0
+
+				if (
+					expectedBytesFromServer &&
+					expectedBytesFromServer !== totalBytesRef.current
+				) {
+					totalBytesRef.current = expectedBytesFromServer
+					setTotalBytes(expectedBytesFromServer)
+				} else if (!totalBytesRef.current && videoSize) {
+					totalBytesRef.current = videoSize
+					setTotalBytes(videoSize)
 				}
-				throw new Error(`HTTP error! status: ${response.status}`)
+
+				if (resolvedTotalBytes > 0) {
+					const percent = Math.min(
+						100,
+						Math.round((bytesWritten / resolvedTotalBytes) * 100)
+					)
+					setDownloadProgress(percent)
+				}
 			}
 
-			// Convert response to ArrayBuffer, then to Uint8Array
-			const arrayBuffer = await response.arrayBuffer()
-			const uint8Array = new Uint8Array(arrayBuffer)
+			const downloadTask = createDownloadResumable(
+				videoUrl,
+				videoFile.uri,
+				undefined,
+				progressCallback
+			)
 
-			// Clear progress interval
-			if (progressIntervalRef.current) {
-				clearInterval(progressIntervalRef.current)
-				progressIntervalRef.current = null
+			currentDownloadFileRef.current = videoFile
+			downloadCompletedRef.current = false
+			downloadTaskRef.current = downloadTask
+
+			const result = await downloadTask.downloadAsync()
+			downloadTaskRef.current = null
+
+			if (!result) {
+				// Download was cancelled
+				clearPartialDownload()
+				return
 			}
+
 			setDownloadProgress(100)
-
-			// Write the downloaded content to the file
-			videoFile.write(uint8Array)
-
-			setLocalUri(videoFile.uri)
+			if (totalBytesRef.current) {
+				setDownloadedBytes(totalBytesRef.current)
+			}
+			setLocalUri(result.uri)
 			setIsLoading(false)
+			downloadCompletedRef.current = true
+			currentDownloadFileRef.current = null
 		} catch (err: any) {
-			// Don't show error if request was aborted (user closed modal)
-			if (err.name === "AbortError") {
+			// Don't show error if request was cancelled (user closed modal)
+			const message = typeof err?.message === "string" ? err.message.toLowerCase() : ""
+			if (message.includes("cancel") || message.includes("aborted")) {
 				console.log("Video download cancelled")
+				clearPartialDownload()
 				return
 			}
 
@@ -155,6 +232,11 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 			setError("No se pudo descargar el video")
 			setIsLoading(false)
 			Alert.alert("Error", "No se pudo descargar el video", [{ text: "OK" }])
+			clearPartialDownload()
+		} finally {
+			if (downloadTaskRef.current) {
+				downloadTaskRef.current = null
+			}
 		}
 	}
 
@@ -204,6 +286,19 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 		}
 	}
 
+	const formatBytes = (bytes: number | null) => {
+		if (!bytes || bytes <= 0) {
+			return "0 B"
+		}
+		const units = ["B", "KB", "MB", "GB", "TB"] as const
+		const exponent = Math.min(
+			units.length - 1,
+			Math.floor(Math.log(bytes) / Math.log(1024))
+		)
+		const value = bytes / Math.pow(1024, exponent)
+		return `${value.toFixed(exponent === 0 ? 0 : 1)} ${units[exponent]}`
+	}
+
 	return (
 		<Modal
 			visible={visible}
@@ -241,7 +336,12 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 								<ActivityIndicator size="large" color={theme.colors.primary} />
 								<Text style={styles.loadingText}>Descargando video...</Text>
 								{downloadProgress > 0 && (
-									<Text style={styles.progressText}>{downloadProgress}%</Text>
+									<Text style={styles.progressText}>
+										{downloadProgress}%
+										{totalBytes
+											? ` (${formatBytes(downloadedBytes)} / ${formatBytes(totalBytes)})`
+										: ""}
+									</Text>
 								)}
 							</View>
 						) : error ? (

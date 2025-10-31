@@ -60,6 +60,7 @@ const BlogPostItem = memo<{
 	const [photoError, setPhotoError] = useState(false)
 	const [videoModalVisible, setVideoModalVisible] = useState(false)
 	const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null)
+	const [selectedVideoSize, setSelectedVideoSize] = useState<number | null>(null)
 	const hasMedia = item.post_media && item.post_media.length > 0
 	const staffPhotoUrl = item.users?.id ? getStaffPhotoUrl(item.users.id) : null
 
@@ -86,13 +87,14 @@ const BlogPostItem = memo<{
 	}, [navigation, item.post_media, item.title, item.id])
 
 	const handleVideoPress = useCallback(
-		(videoUrl: string) => {
+		(videoUrl: string, fileSize?: number | null) => {
 			// Record hit (fire and forget)
 			fetcher(`/mobile/posts/${item.id}/hit`, { method: "POST" }).catch(
 				() => {}
 			)
 
 			setSelectedVideoUrl(videoUrl)
+			setSelectedVideoSize(fileSize ?? null)
 			setVideoModalVisible(true)
 		},
 		[item.id]
@@ -101,6 +103,7 @@ const BlogPostItem = memo<{
 	const handleCloseVideoModal = useCallback(() => {
 		setVideoModalVisible(false)
 		setSelectedVideoUrl(null)
+		setSelectedVideoSize(null)
 	}, [])
 
 	const handleExpandPress = useCallback(
@@ -229,11 +232,12 @@ const BlogPostItem = memo<{
 			</SchoolCard>
 
 			{/* Video Player Modal */}
-			<VideoPlayerModal
-				visible={videoModalVisible}
-				videoUrl={selectedVideoUrl}
-				onClose={handleCloseVideoModal}
-			/>
+		<VideoPlayerModal
+			visible={videoModalVisible}
+			videoUrl={selectedVideoUrl}
+			videoSize={selectedVideoSize}
+			onClose={handleCloseVideoModal}
+		/>
 		</TouchableOpacity>
 	)
 })

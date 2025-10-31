@@ -25,14 +25,14 @@ interface MediaSliderProps {
 	postTitle: string
 	postId: string
 	onPhotoPress: () => void
-	onVideoPress?: (videoUrl: string) => void
+	onVideoPress?: (videoUrl: string, fileSize?: number | null) => void
 }
 
 // Video Preview Component with Thumbnail
 const VideoPreview: React.FC<{
 	video: BlogPostMedia
 	thumbnailUrl?: string
-	onPress: (url: string) => void
+	onPress: (url: string, fileSize?: number | null) => void
 }> = ({ video, thumbnailUrl, onPress }) => {
 	// Use thumbnail from separate media item, fallback to video.thumbnail_url (legacy), then placeholder
 	const displayThumbnail = thumbnailUrl || video.thumbnail_url
@@ -40,7 +40,7 @@ const VideoPreview: React.FC<{
 	return (
 		<TouchableOpacity
 			style={styles.videoContainer}
-			onPress={() => onPress(video.file_url)}
+			onPress={() => onPress(video.file_url, video.file_size)}
 			activeOpacity={0.8}
 		>
 			{displayThumbnail ? (
@@ -161,9 +161,9 @@ const MediaSlider: React.FC<MediaSliderProps> = memo(
 		)
 
 		const handleVideoPress = useCallback(
-			(url: string) => {
+			(url: string, fileSize?: number | null) => {
 				if (onVideoPress) {
-					onVideoPress(url)
+					onVideoPress(url, fileSize ?? null)
 				}
 			},
 			[onVideoPress]
