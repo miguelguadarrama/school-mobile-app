@@ -200,7 +200,7 @@ export const ChatProvider: React.FC<{
 
 					const fullBlobUrl = sasUrl.split("chat/")[0] + blobPath
 
-					console.log("Upload successful, setting blobUrl:", fullBlobUrl)
+					//console.log("Upload successful, setting blobUrl:", fullBlobUrl)
 					attachmentBlobUrl = fullBlobUrl
 				}
 
@@ -214,7 +214,7 @@ export const ChatProvider: React.FC<{
 						: content,
 				}
 
-				console.log("Attachment Blob URL:", attachmentBlobUrl)
+				//console.log("Attachment Blob URL:", attachmentBlobUrl)
 				if (attachment && attachmentBlobUrl) {
 					messagePayload.message_type = "attachment"
 					messagePayload.attachment_url = attachmentBlobUrl

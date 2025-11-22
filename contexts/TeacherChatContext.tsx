@@ -167,8 +167,6 @@ export const TeacherChatProvider: React.FC<{
 						}),
 					})
 
-					console.log("SAS Response (Teacher):", sasResponse)
-
 					const { sasUrl, blobPath } = sasResponse as {
 						sasUrl: string
 						blobPath: string
@@ -183,9 +181,6 @@ export const TeacherChatProvider: React.FC<{
 						)
 					}
 
-					console.log("SAS URL:", sasUrl)
-					console.log("Blob URL:", blobPath)
-
 					// Step 2: Upload file to blob storage
 					const uploadSuccess = await uploadFileToSas(
 						attachment.localUri,
@@ -196,8 +191,10 @@ export const TeacherChatProvider: React.FC<{
 						throw new Error("Failed to upload attachment to blob storage")
 					}
 
-					console.log("Upload successful, setting blobUrl:", blobPath)
-					attachmentBlobUrl = blobPath
+					const fullBlobUrl = sasUrl.split("chat/")[0] + blobPath
+
+					//console.log("Upload successful, setting blobUrl:", fullBlobUrl)
+					attachmentBlobUrl = fullBlobUrl
 				}
 
 				// Step 3: Send message to server - teacher endpoint
