@@ -6,8 +6,9 @@ import React, {
 	useState,
 } from "react"
 import useSWR from "swr"
+import { uploadFileToSas } from "../helpers/fileCompression"
 import { fetcher } from "../services/api"
-import { chat_message, chats } from "../types/chat"
+import { AttachmentData, chat_message, chats } from "../types/chat"
 
 interface ChatContextType {
 	// UI State
@@ -22,7 +23,11 @@ interface ChatContextType {
 	refreshChats: () => void
 
 	// Message Operations
-	sendMessage: (staffId: string, content: string) => Promise<void>
+	sendMessage: (
+		staffId: string,
+		content: string,
+		attachment?: AttachmentData
+	) => Promise<void>
 
 	// Optimistic Updates
 	addOptimisticMessage: (
@@ -120,14 +125,27 @@ export const ChatProvider: React.FC<{
 
 	// Send message operation
 	const sendMessage = useCallback(
-		async (staffId: string, content: string) => {
+		async (staffId: string, content: string, attachment?: AttachmentData) => {
 			if (!selectedStudentId) return
 
 			// Create optimistic message
 			const optimisticMessage: chat_message = {
 				id: `temp-${Date.now()}-${Math.random()}`,
 				sender_alias: "guardian",
-				content,
+				// For attachments, use fallback message for backwards compatibility
+				// For text, use provided content
+				content: attachment
+					? "📎 Archivo adjunto. Actualiza la app para verlo."
+					: content,
+				// Only set message_type if attachment exists (backwards compatibility)
+				...(attachment && {
+					message_type: "attachment" as const,
+					attachment_url: attachment.localUri,
+					attachment_type: attachment.type,
+					attachment_mime_type: attachment.mimeType,
+					attachment_file_name: attachment.fileName,
+					attachment_file_size: attachment.fileSize,
+				}),
 				created_at: new Date().toISOString(),
 			}
 
@@ -135,10 +153,80 @@ export const ChatProvider: React.FC<{
 			addOptimisticMessage(staffId, selectedStudentId, optimisticMessage)
 
 			try {
-				// Send message to server
+				let attachmentBlobUrl: string | undefined
+
+				// If there's an attachment, upload it first
+				if (attachment) {
+					// Step 1: Request SAS URL
+					const sasResponse = await fetcher(
+						`/mobile/chat/${selectedStudentId}/sas`,
+						{
+							method: "POST",
+							body: JSON.stringify({
+								staff_id: staffId,
+								attachment_type: attachment.type,
+								attachment_file_name: attachment.fileName,
+								attachment_mime_type: attachment.mimeType,
+								attachment_file_size: attachment.fileSize,
+							}),
+						}
+					)
+
+					const { sasUrl, blobPath } = sasResponse as {
+						sasUrl: string
+						blobPath: string
+					}
+
+					if (!sasUrl || !blobPath) {
+						console.error("Invalid SAS response:", sasResponse)
+						throw new Error(
+							`Missing SAS URL or blob URL in response. Got: ${JSON.stringify(
+								sasResponse
+							)}`
+						)
+					}
+
+					// Step 2: Upload file to blob storage
+					const uploadSuccess = await uploadFileToSas(
+						attachment.localUri,
+						sasUrl
+					)
+
+					//console.log({ uploadSuccess, sasUrl, blobPath })
+
+					if (!uploadSuccess) {
+						throw new Error("Failed to upload attachment to blob storage")
+					}
+
+					const fullBlobUrl = sasUrl.split("chat/")[0] + blobPath
+
+					//console.log("Upload successful, setting blobUrl:", fullBlobUrl)
+					attachmentBlobUrl = fullBlobUrl
+				}
+
+				// Step 3: Send message to server
+				const messagePayload: any = {
+					student_id: selectedStudentId,
+					staff_id: staffId,
+					// Use fallback message for attachments (backwards compatibility)
+					content: attachment
+						? "📎 Archivo adjunto. Actualiza la app para verlo."
+						: content,
+				}
+
+				//console.log("Attachment Blob URL:", attachmentBlobUrl)
+				if (attachment && attachmentBlobUrl) {
+					messagePayload.message_type = "attachment"
+					messagePayload.attachment_url = attachmentBlobUrl
+					messagePayload.attachment_type = attachment.type
+					messagePayload.attachment_mime_type = attachment.mimeType
+					messagePayload.attachment_file_name = attachment.fileName
+					messagePayload.attachment_file_size = attachment.fileSize
+				}
+
 				const res = await fetcher(`/mobile/chat/${selectedStudentId}`, {
 					method: "POST",
-					body: JSON.stringify({ content, staff_id: staffId }),
+					body: JSON.stringify(messagePayload),
 				})
 
 				// Refresh to get real data - SWR will merge the real data seamlessly

@@ -18,10 +18,9 @@ export default function SocialScreen() {
 	const { data, isLoading, mutate } = useSWR(
 		["admin", "staff"].includes(selectedRole || "")
 			? `/mobile/posts/v2`
-			: `/mobile/posts/v2/classroom/${
-					selectedStudent?.academic_year_classroom_students?.[0]?.classrooms
-						?.id || "test"
-			  }`
+			: selectedStudent?.academic_year_classroom_students?.[0]?.classrooms?.id
+			? `/mobile/posts/v2/classroom/${selectedStudent?.academic_year_classroom_students?.[0]?.classrooms?.id}`
+			: null
 	)
 
 	return (

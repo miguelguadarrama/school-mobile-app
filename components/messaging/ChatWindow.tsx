@@ -17,7 +17,7 @@ import AppContext from "../../contexts/AppContext"
 import { useChatContext } from "../../contexts/ChatContext"
 import { theme } from "../../helpers/theme"
 import { fetcher } from "../../services/api"
-import { chat_message } from "../../types/chat"
+import { AttachmentData, chat_message } from "../../types/chat"
 import LoadingScreen from "../Loading"
 import { ChatHeader } from "./ChatHeader"
 import { MessageBubble } from "./MessageBubble"
@@ -26,7 +26,7 @@ import { MessageInput } from "./MessageInput"
 interface ChatWindowProps {
 	staff_id: string
 	onBack: () => void
-	onSendMessage: (content: string) => Promise<void>
+	onSendMessage: (content: string, attachment?: AttachmentData) => Promise<void>
 }
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -108,8 +108,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 		}
 	}, [scrollToBottom])
 
-	const handleSend = async (content: string) => {
-		await onSendMessage(content)
+	const handleSend = async (content: string, attachment?: AttachmentData) => {
+		await onSendMessage(content, attachment)
 		scrollToBottom()
 	}
 

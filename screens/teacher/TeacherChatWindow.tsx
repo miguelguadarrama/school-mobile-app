@@ -25,12 +25,12 @@ import { useTeacherChatContext } from "../../contexts/TeacherChatContext"
 import { studentPhotoUri } from "../../helpers/students"
 import { theme } from "../../helpers/theme"
 import { fetcher } from "../../services/api"
-import { chat_message } from "../../types/chat"
+import { AttachmentData, chat_message } from "../../types/chat"
 
 interface TeacherChatWindowProps {
 	studentId: string
 	onBack: () => void
-	onSendMessage: (content: string) => Promise<void>
+	onSendMessage: (content: string, attachment?: AttachmentData) => Promise<void>
 }
 
 export const TeacherChatWindow: React.FC<TeacherChatWindowProps> = ({
@@ -114,8 +114,8 @@ export const TeacherChatWindow: React.FC<TeacherChatWindowProps> = ({
 		}
 	}, [scrollToBottom])
 
-	const handleSend = async (content: string) => {
-		await onSendMessage(content)
+	const handleSend = async (content: string, attachment?: AttachmentData) => {
+		await onSendMessage(content, attachment)
 		scrollToBottom()
 	}
 

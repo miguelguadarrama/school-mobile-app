@@ -5,7 +5,7 @@
   "scripts": {
     "start": "expo start --tunnel",
     "android": "expo run:android",
-    "ios": "expo run:ios",
+    "ios": "expo run:ios --device \"iPhone 17 Pro\"",
     "web": "expo start --web",
     "expo:update": "npx expo install --check",
     "android:assets": "npx expo prebuild --platform android --clean",
