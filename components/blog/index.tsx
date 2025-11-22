@@ -2,7 +2,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import React, { memo, useCallback, useContext, useState } from "react"
+import React, { memo, useCallback, useContext, useEffect, useState } from "react"
 import {
 	FlatList,
 	Image,
@@ -13,6 +13,7 @@ import {
 	View,
 } from "react-native"
 import AppContext from "../../contexts/AppContext"
+import { TabContext } from "../../contexts/TabContext"
 import { getStaffPhotoUrl } from "../../helpers/staff"
 import { theme } from "../../helpers/theme"
 import dayjs from "../../lib/dayjs"
@@ -21,6 +22,7 @@ import { SocialStackParamList } from "../../types/navigation"
 import { BlogPost } from "../../types/post"
 import SchoolCard from "../SchoolCard"
 import MediaSlider from "./MediaSlider"
+import { PostStatsViewer } from "./PostStatsViewer"
 import { VideoPlayerModal } from "./VideoPlayerModal"
 
 type BlogPostListNavigationProp = NativeStackNavigationProp<
@@ -53,8 +55,9 @@ const formatCompactNumber = (num: number): string => {
 const BlogPostItem = memo<{
 	item: BlogPost
 	onCardPress?: (post: BlogPost) => void
+	onStatsPress?: (postId: string) => void
 	navigation: BlogPostListNavigationProp
-}>(({ item, onCardPress, navigation }) => {
+}>(({ item, onCardPress, onStatsPress, navigation }) => {
 	const { selectedRole } = useContext(AppContext)!
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [photoError, setPhotoError] = useState(false)
@@ -112,6 +115,14 @@ const BlogPostItem = memo<{
 			setIsExpanded(!isExpanded)
 		},
 		[isExpanded]
+	)
+
+	const handleStatsPress = useCallback(
+		(e: any) => {
+			e.stopPropagation()
+			onStatsPress?.(item.id)
+		},
+		[onStatsPress, item.id]
 	)
 
 	// Check if content needs truncation (rough estimate based on character count)
@@ -196,7 +207,11 @@ const BlogPostItem = memo<{
 					{isAdminOrStaff &&
 						(item.post_views !== undefined ||
 							(item.post_clicks !== undefined && item.post_clicks > 0)) && (
-							<View style={styles.metricsContainer}>
+							<TouchableOpacity
+								style={styles.metricsContainer}
+								onPress={handleStatsPress}
+								activeOpacity={0.7}
+							>
 								{item.post_views !== undefined && (
 									<>
 										<Ionicons
@@ -226,18 +241,24 @@ const BlogPostItem = memo<{
 										</Text>
 									</>
 								)}
-							</View>
+								<Ionicons
+									name="chevron-forward"
+									size={14}
+									color={theme.colors.muted}
+									style={{ marginLeft: 4 }}
+								/>
+							</TouchableOpacity>
 						)}
 				</View>
 			</SchoolCard>
 
 			{/* Video Player Modal */}
-		<VideoPlayerModal
-			visible={videoModalVisible}
-			videoUrl={selectedVideoUrl}
-			videoSize={selectedVideoSize}
-			onClose={handleCloseVideoModal}
-		/>
+			<VideoPlayerModal
+				visible={videoModalVisible}
+				videoUrl={selectedVideoUrl}
+				videoSize={selectedVideoSize}
+				onClose={handleCloseVideoModal}
+			/>
 		</TouchableOpacity>
 	)
 })
@@ -251,6 +272,21 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 	onCardPress,
 }) => {
 	const navigation = useNavigation<BlogPostListNavigationProp>()
+	const { setIsPostStatsViewerActive } = useContext(TabContext)
+	const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
+
+	// Update TabContext when stats viewer is opened/closed
+	useEffect(() => {
+		setIsPostStatsViewerActive(selectedPostId !== null)
+	}, [selectedPostId, setIsPostStatsViewerActive])
+
+	const handleStatsPress = useCallback((postId: string) => {
+		setSelectedPostId(postId)
+	}, [])
+
+	const handleCloseStatsViewer = useCallback(() => {
+		setSelectedPostId(null)
+	}, [])
 
 	const EmptyState = memo(() => (
 		<View style={styles.emptyState}>
@@ -267,10 +303,11 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 			<BlogPostItem
 				item={item}
 				onCardPress={onCardPress}
+				onStatsPress={handleStatsPress}
 				navigation={navigation}
 			/>
 		),
-		[onCardPress, navigation]
+		[onCardPress, handleStatsPress, navigation]
 	)
 
 	const keyExtractor = useCallback((item: BlogPost) => item.id, [])
@@ -285,35 +322,45 @@ const BlogPostList: React.FC<BlogPostListProps> = ({
 	)
 
 	return (
-		<FlatList
-			data={posts}
-			renderItem={renderItem}
-			keyExtractor={keyExtractor}
-			getItemLayout={getItemLayout}
-			contentContainerStyle={[
-				styles.container,
-				!posts || posts.length === 0 ? styles.emptyContainer : {},
-			]}
-			refreshControl={
-				<RefreshControl
-					refreshing={isRefreshing}
-					onRefresh={onRefresh}
-					colors={["#007AFF"]}
-					tintColor="#007AFF"
-					title="Pull to refresh"
-					titleColor="#007AFF"
+		<>
+			<FlatList
+				data={posts}
+				renderItem={renderItem}
+				keyExtractor={keyExtractor}
+				getItemLayout={getItemLayout}
+				contentContainerStyle={[
+					styles.container,
+					!posts || posts.length === 0 ? styles.emptyContainer : {},
+				]}
+				refreshControl={
+					<RefreshControl
+						refreshing={isRefreshing}
+						onRefresh={onRefresh}
+						colors={["#007AFF"]}
+						tintColor="#007AFF"
+						title="Pull to refresh"
+						titleColor="#007AFF"
+					/>
+				}
+				showsVerticalScrollIndicator={false}
+				ListEmptyComponent={EmptyState}
+				// Performance optimizations
+				removeClippedSubviews={true}
+				windowSize={10}
+				maxToRenderPerBatch={5}
+				updateCellsBatchingPeriod={100}
+				initialNumToRender={3}
+				scrollEventThrottle={16}
+			/>
+
+			{/* Post Stats Viewer - Rendered at top level */}
+			{selectedPostId && (
+				<PostStatsViewer
+					postId={selectedPostId}
+					onBack={handleCloseStatsViewer}
 				/>
-			}
-			showsVerticalScrollIndicator={false}
-			ListEmptyComponent={EmptyState}
-			// Performance optimizations
-			removeClippedSubviews={true}
-			windowSize={10}
-			maxToRenderPerBatch={5}
-			updateCellsBatchingPeriod={100}
-			initialNumToRender={3}
-			scrollEventThrottle={16}
-		/>
+			)}
+		</>
 	)
 }
 

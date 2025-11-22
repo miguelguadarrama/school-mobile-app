@@ -36,3 +36,13 @@ export interface BlogPostMedia {
   created_at: string
   deleted_at?: string
 }
+
+export interface BlogPostViewStats {
+  post_id: string,
+  user: {
+    id: string,
+    full_name: string,
+    email: string
+  },
+  count: number,
+}
