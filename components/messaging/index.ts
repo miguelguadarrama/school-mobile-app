@@ -1,6 +1,8 @@
 export { Avatar } from "./Avatar"
 export { UnreadBadge } from "./UnreadBadge"
 export { MessageBubble } from "./MessageBubble"
+export { AttachmentBubble } from "./AttachmentBubble"
+export { DocumentCard } from "./DocumentCard"
 export { SectionHeader } from "./SectionHeader"
 export { ChatroomItem } from "./ChatroomItem"
 export { TeacherChatroomItem } from "./TeacherChatroomItem"

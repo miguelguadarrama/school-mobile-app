@@ -2,6 +2,7 @@ import React from "react"
 import { Text, View, StyleSheet } from "react-native"
 import { theme } from "../../helpers/theme"
 import { chat_message } from "../../types/chat"
+import { AttachmentBubble } from "./AttachmentBubble"
 import { Avatar } from "./Avatar"
 
 interface MessageBubbleProps {
@@ -15,6 +16,19 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 	isUser,
 	senderName,
 }) => {
+	// Route attachment messages to AttachmentBubble
+	// Default to "text" if message_type is undefined (backwards compatibility)
+	if (message.message_type === "attachment") {
+		return (
+			<AttachmentBubble
+				message={message}
+				isUser={isUser}
+				senderName={senderName}
+			/>
+		)
+	}
+
+	// Render text message (default for undefined message_type)
 	return (
 		<View
 			style={[
