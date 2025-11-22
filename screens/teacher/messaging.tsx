@@ -21,7 +21,7 @@ import { TeacherChatroomItem } from "../../components/messaging/TeacherChatroomI
 import AppContext from "../../contexts/AppContext"
 import { useTeacherChatContext } from "../../contexts/TeacherChatContext"
 import { theme } from "../../helpers/theme"
-import { chats } from "../../types/chat"
+import { AttachmentData, chats } from "../../types/chat"
 import { TeacherChatWindow } from "./TeacherChatWindow"
 
 type SectionItem = {
@@ -56,9 +56,9 @@ export default function TeacherMessagingScreen() {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [isSearchVisible, setIsSearchVisible] = useState(false)
 
-	const handleSendMessage = async (content: string) => {
+	const handleSendMessage = async (content: string, attachment?: AttachmentData) => {
 		if (!selectedChat) return
-		await sendMessage(selectedChat.student_id, content)
+		await sendMessage(selectedChat.student_id, content, attachment)
 	}
 
 	const handleChatPress = (chat: chats) => {

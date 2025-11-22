@@ -10,7 +10,7 @@ import {
 import AppContext from "../contexts/AppContext"
 import { useChatContext } from "../contexts/ChatContext"
 import { theme } from "../helpers/theme"
-import { chats } from "../types/chat"
+import { AttachmentData, chats } from "../types/chat"
 
 type SectionItem = {
 	type: "section"
@@ -40,9 +40,9 @@ export default function MessagingScreen() {
 		sendMessage,
 	} = useChatContext()
 
-	const handleSendMessage = async (content: string) => {
+	const handleSendMessage = async (content: string, attachment?: AttachmentData) => {
 		if (!selectedChat) return
-		await sendMessage(selectedChat.staff_id, content)
+		await sendMessage(selectedChat.staff_id, content, attachment)
 	}
 
 	const handleChatPress = (chat: chats) => {

@@ -1,10 +1,13 @@
 import { Ionicons } from "@expo/vector-icons"
 import * as FileSystem from "expo-file-system"
-import * as Sharing from "expo-sharing"
+import { getContentUriAsync } from "expo-file-system/legacy"
+import * as IntentLauncher from "expo-intent-launcher"
 import React, { useState } from "react"
 import {
 	ActivityIndicator,
 	Alert,
+	Linking,
+	Platform,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
@@ -36,34 +39,50 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
 
 		setIsDownloading(true)
 		try {
-			// Check if sharing is available
-			const isAvailable = await Sharing.isAvailableAsync()
-			if (!isAvailable) {
-				Alert.alert(
-					"Error",
-					"No se puede compartir archivos en este dispositivo"
-				)
-				return
-			}
+			// Create file destination in cache directory
+			const destination = new FileSystem.File(
+				FileSystem.Paths.cache,
+				fileName
+			)
 
 			// Download file to cache directory
-			const fileUri = `${FileSystem.cacheDirectory}${fileName}`
-			const downloadResult = await FileSystem.downloadAsync(fileUrl, fileUri)
+			const file = await FileSystem.File.downloadFileAsync(
+				fileUrl,
+				destination,
+				{ idempotent: true }
+			)
 
-			if (downloadResult.status === 200) {
-				// Share/Open the downloaded file
-				await Sharing.shareAsync(downloadResult.uri, {
-					UTI: "public.item",
-					mimeType: "application/pdf",
-				})
+			// Open file with default app based on platform
+			if (Platform.OS === "android") {
+				// On Android, use IntentLauncher to open the file
+				const contentUri = await getContentUriAsync(file.uri)
+				await IntentLauncher.startActivityAsync(
+					"android.intent.action.VIEW",
+					{
+						data: contentUri,
+						flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
+						type: "application/pdf",
+					}
+				)
 			} else {
-				Alert.alert("Error", "No se pudo descargar el archivo")
+				// On iOS, use Linking to open the file
+				const canOpen = await Linking.canOpenURL(file.uri)
+				if (canOpen) {
+					await Linking.openURL(file.uri)
+				} else {
+					Alert.alert(
+						"Error",
+						"No se encontró una aplicación para abrir este documento",
+						[{ text: "OK" }]
+					)
+				}
 			}
 		} catch (error) {
 			console.error("Error downloading document:", error)
 			Alert.alert(
 				"Error",
-				"Hubo un problema al descargar el archivo. Inténtalo de nuevo."
+				"Hubo un problema al descargar el archivo. Inténtalo de nuevo.",
+				[{ text: "OK" }]
 			)
 		} finally {
 			setIsDownloading(false)

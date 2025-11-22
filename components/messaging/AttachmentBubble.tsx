@@ -1,14 +1,21 @@
 import { Ionicons } from "@expo/vector-icons"
-import { useNavigation } from "@react-navigation/native"
-import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import React, { useState } from "react"
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import {
+	Dimensions,
+	Image,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native"
 import { theme } from "../../helpers/theme"
-import { SocialStackParamList } from "../../types/navigation"
 import { chat_message } from "../../types/chat"
+import { VideoPlayerModal } from "../blog/VideoPlayerModal"
 import { Avatar } from "./Avatar"
 import { DocumentCard } from "./DocumentCard"
-import { VideoPlayerModal } from "../blog/VideoPlayerModal"
+import { PhotoViewerModal } from "./PhotoViewerModal"
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window")
 
 interface AttachmentBubbleProps {
 	message: chat_message
@@ -16,31 +23,21 @@ interface AttachmentBubbleProps {
 	senderName: string
 }
 
-type NavigationProp = NativeStackNavigationProp<SocialStackParamList>
-
 export const AttachmentBubble: React.FC<AttachmentBubbleProps> = ({
 	message,
 	isUser,
 	senderName,
 }) => {
-	const navigation = useNavigation<NavigationProp>()
+	const [photoModalVisible, setPhotoModalVisible] = useState(false)
 	const [videoModalVisible, setVideoModalVisible] = useState(false)
 
 	const handlePhotoPress = () => {
 		if (!message.attachment_url) return
+		setPhotoModalVisible(true)
+	}
 
-		// Navigate to PhotoGrid viewer with single photo
-		navigation.navigate("PhotoGrid", {
-			photos: [
-				{
-					id: message.id,
-					file_url: message.attachment_url,
-					media_type: "photo",
-					caption: message.content || "",
-				},
-			],
-			title: "Foto",
-		})
+	const handleClosePhotoModal = () => {
+		setPhotoModalVisible(false)
 	}
 
 	const handleVideoPress = () => {
@@ -57,22 +54,29 @@ export const AttachmentBubble: React.FC<AttachmentBubbleProps> = ({
 		switch (message.attachment_type) {
 			case "photo":
 				return (
-					<TouchableOpacity
-						onPress={handlePhotoPress}
-						activeOpacity={0.9}
-						disabled={message.isOptimistic}
-					>
-						<Image
-							source={{ uri: message.attachment_url }}
-							style={styles.photoImage}
-							resizeMode="cover"
+					<>
+						<TouchableOpacity
+							onPress={handlePhotoPress}
+							activeOpacity={1}
+							disabled={message.isOptimistic}
+						>
+							<Image
+								source={{ uri: message.attachment_url }}
+								style={styles.photoImage}
+								resizeMode="cover"
+							/>
+							{message.isOptimistic && (
+								<View style={styles.uploadingOverlay}>
+									<Text style={styles.uploadingText}>Subiendo...</Text>
+								</View>
+							)}
+						</TouchableOpacity>
+						<PhotoViewerModal
+							visible={photoModalVisible}
+							photoUrl={message.attachment_url}
+							onClose={handleClosePhotoModal}
 						/>
-						{message.isOptimistic && (
-							<View style={styles.uploadingOverlay}>
-								<Text style={styles.uploadingText}>Subiendo...</Text>
-							</View>
-						)}
-					</TouchableOpacity>
+					</>
 				)
 
 			case "video":
@@ -80,7 +84,7 @@ export const AttachmentBubble: React.FC<AttachmentBubbleProps> = ({
 					<>
 						<TouchableOpacity
 							onPress={handleVideoPress}
-							activeOpacity={0.9}
+							activeOpacity={1}
 							disabled={message.isOptimistic}
 							style={styles.videoContainer}
 						>
@@ -190,7 +194,8 @@ const styles = StyleSheet.create({
 		marginTop: 2,
 	},
 	messageBubble: {
-		maxWidth: "70%",
+		maxWidth: "90%",
+		minWidth: Math.max(SCREEN_WIDTH * 0.7, 250),
 		paddingHorizontal: theme.spacing.sm,
 		paddingVertical: theme.spacing.xs,
 		borderRadius: 16,

@@ -1,13 +1,28 @@
-import React, { useState } from "react"
-import { Text, View, TextInput, TouchableOpacity, StyleSheet, Platform, Image, Alert, ActivityIndicator, Modal } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
-import * as ImagePicker from "expo-image-picker"
 import * as DocumentPicker from "expo-document-picker"
+import * as ImagePicker from "expo-image-picker"
+import React, { useState } from "react"
+import {
+	ActivityIndicator,
+	Alert,
+	Image,
+	Modal,
+	Platform,
+	StyleSheet,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
+} from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
+import {
+	formatFileSize,
+	MAX_FILE_SIZES,
+	processImage,
+	processVideo,
+} from "../../helpers/fileCompression"
 import { theme } from "../../helpers/theme"
 import { AttachmentData } from "../../types/chat"
-import { processImage, processVideo, MAX_FILE_SIZES, ALLOWED_MIME_TYPES, formatFileSize } from "../../helpers/fileCompression"
-import { DocumentCard } from "./DocumentCard"
 
 interface MessageInputProps {
 	onSendMessage: (content: string, attachment?: AttachmentData) => Promise<void>
@@ -35,7 +50,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 			if (isSending) return
 			setIsSending(true)
 			try {
-				await onSendMessage("", selectedFile)
+				await onSendMessage("archivo", selectedFile)
 				setMessageText("")
 				setSelectedFile(null)
 			} catch (error) {
@@ -63,9 +78,13 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
 		try {
 			// Request permissions
-			const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
+			const permissionResult =
+				await ImagePicker.requestMediaLibraryPermissionsAsync()
 			if (!permissionResult.granted) {
-				Alert.alert("Permisos Requeridos", "Necesitamos permisos para acceder a la galería")
+				Alert.alert(
+					"Permisos Requeridos",
+					"Necesitamos permisos para acceder a la galería"
+				)
 				return
 			}
 
@@ -84,7 +103,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 				if (asset.fileSize && asset.fileSize > MAX_FILE_SIZES.photo) {
 					Alert.alert(
 						"Archivo muy grande",
-						`El tamaño máximo para fotos es ${formatFileSize(MAX_FILE_SIZES.photo)}`
+						`El tamaño máximo para fotos es ${formatFileSize(
+							MAX_FILE_SIZES.photo
+						)}`
 					)
 					return
 				}
@@ -116,9 +137,13 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
 		try {
 			// Request permissions
-			const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
+			const permissionResult =
+				await ImagePicker.requestMediaLibraryPermissionsAsync()
 			if (!permissionResult.granted) {
-				Alert.alert("Permisos Requeridos", "Necesitamos permisos para acceder a la galería")
+				Alert.alert(
+					"Permisos Requeridos",
+					"Necesitamos permisos para acceder a la galería"
+				)
 				return
 			}
 
@@ -136,7 +161,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 				if (asset.fileSize && asset.fileSize > MAX_FILE_SIZES.video) {
 					Alert.alert(
 						"Archivo muy grande",
-						`El tamaño máximo para videos es ${formatFileSize(MAX_FILE_SIZES.video)}`
+						`El tamaño máximo para videos es ${formatFileSize(
+							MAX_FILE_SIZES.video
+						)}`
 					)
 					return
 				}
@@ -144,9 +171,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 				setIsProcessing(true)
 
 				// Process video (compress + generate thumbnail)
-				const { uri: compressedUri, fileSize, thumbnailUri } = await processVideo(
-					asset.uri,
-					(progress) => setCompressionProgress(progress)
+				const {
+					uri: compressedUri,
+					fileSize,
+					thumbnailUri,
+				} = await processVideo(asset.uri, (progress) =>
+					setCompressionProgress(progress)
 				)
 
 				setSelectedFile({
@@ -186,7 +216,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 				if (asset.size && asset.size > MAX_FILE_SIZES.document) {
 					Alert.alert(
 						"Archivo muy grande",
-						`El tamaño máximo para documentos es ${formatFileSize(MAX_FILE_SIZES.document)}`
+						`El tamaño máximo para documentos es ${formatFileSize(
+							MAX_FILE_SIZES.document
+						)}`
 					)
 					return
 				}
@@ -225,7 +257,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 							style={styles.removePreviewButton}
 							onPress={handleRemoveFile}
 						>
-							<Ionicons name="close-circle" size={24} color={theme.colors.danger} />
+							<Ionicons
+								name="close-circle"
+								size={24}
+								color={theme.colors.danger}
+							/>
 						</TouchableOpacity>
 					</View>
 				)
@@ -234,7 +270,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 				return (
 					<View style={styles.previewContainer}>
 						<Image
-							source={{ uri: selectedFile.thumbnailUri || selectedFile.localUri }}
+							source={{
+								uri: selectedFile.thumbnailUri || selectedFile.localUri,
+							}}
 							style={styles.previewImage}
 							resizeMode="cover"
 						/>
@@ -245,7 +283,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 							style={styles.removePreviewButton}
 							onPress={handleRemoveFile}
 						>
-							<Ionicons name="close-circle" size={24} color={theme.colors.danger} />
+							<Ionicons
+								name="close-circle"
+								size={24}
+								color={theme.colors.danger}
+							/>
 						</TouchableOpacity>
 					</View>
 				)
@@ -254,7 +296,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 				return (
 					<View style={styles.previewContainer}>
 						<View style={styles.documentPreview}>
-							<Ionicons name="document-text" size={32} color={theme.colors.primary} />
+							<Ionicons
+								name="document-text"
+								size={32}
+								color={theme.colors.primary}
+							/>
 							<Text style={styles.documentName} numberOfLines={1}>
 								{selectedFile.fileName}
 							</Text>
@@ -266,7 +312,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 							style={styles.removePreviewButton}
 							onPress={handleRemoveFile}
 						>
-							<Ionicons name="close-circle" size={24} color={theme.colors.danger} />
+							<Ionicons
+								name="close-circle"
+								size={24}
+								color={theme.colors.danger}
+							/>
 						</TouchableOpacity>
 					</View>
 				)
@@ -316,7 +366,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 								onPress={() => setShowAttachmentMenu(true)}
 								disabled={isSending || isProcessing}
 							>
-								<Ionicons name="attach" size={24} color={theme.colors.primary} />
+								<Ionicons
+									name="attach"
+									size={24}
+									color={theme.colors.primary}
+								/>
 							</TouchableOpacity>
 
 							{/* Text Input */}
@@ -376,7 +430,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 							style={styles.attachmentOption}
 							onPress={handlePickVideo}
 						>
-							<Ionicons name="videocam" size={24} color={theme.colors.primary} />
+							<Ionicons
+								name="videocam"
+								size={24}
+								color={theme.colors.primary}
+							/>
 							<Text style={styles.attachmentOptionText}>Video</Text>
 						</TouchableOpacity>
 
@@ -384,7 +442,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 							style={styles.attachmentOption}
 							onPress={handlePickDocument}
 						>
-							<Ionicons name="document-text" size={24} color={theme.colors.primary} />
+							<Ionicons
+								name="document-text"
+								size={24}
+								color={theme.colors.primary}
+							/>
 							<Text style={styles.attachmentOptionText}>Documento</Text>
 						</TouchableOpacity>
 					</View>
@@ -392,11 +454,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 			</Modal>
 
 			{/* Processing/Compression Modal */}
-			<Modal
-				visible={isProcessing}
-				transparent
-				animationType="fade"
-			>
+			<Modal visible={isProcessing} transparent animationType="fade">
 				<View style={styles.processingOverlay}>
 					<View style={styles.processingContent}>
 						<ActivityIndicator size="large" color={theme.colors.primary} />

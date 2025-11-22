@@ -6,9 +6,9 @@ import React, {
 	useState,
 } from "react"
 import useSWR from "swr"
+import { uploadFileToSas } from "../helpers/fileCompression"
 import { fetcher } from "../services/api"
 import { AttachmentData, chat_message, chats } from "../types/chat"
-import { uploadFileToSas } from "../helpers/fileCompression"
 
 interface ChatContextType {
 	// UI State
@@ -164,16 +164,26 @@ export const ChatProvider: React.FC<{
 							method: "POST",
 							body: JSON.stringify({
 								staff_id: staffId,
-								file_type: attachment.type,
-								file_name: attachment.fileName,
-								mime_type: attachment.mimeType,
+								attachment_type: attachment.type,
+								attachment_file_name: attachment.fileName,
+								attachment_mime_type: attachment.mimeType,
+								attachment_file_size: attachment.fileSize,
 							}),
 						}
 					)
 
-					const { sasUrl, blobUrl } = sasResponse as {
+					const { sasUrl, blobPath } = sasResponse as {
 						sasUrl: string
-						blobUrl: string
+						blobPath: string
+					}
+
+					if (!sasUrl || !blobPath) {
+						console.error("Invalid SAS response:", sasResponse)
+						throw new Error(
+							`Missing SAS URL or blob URL in response. Got: ${JSON.stringify(
+								sasResponse
+							)}`
+						)
 					}
 
 					// Step 2: Upload file to blob storage
@@ -182,22 +192,29 @@ export const ChatProvider: React.FC<{
 						sasUrl
 					)
 
+					//console.log({ uploadSuccess, sasUrl, blobPath })
+
 					if (!uploadSuccess) {
-						throw new Error("Failed to upload attachment")
+						throw new Error("Failed to upload attachment to blob storage")
 					}
 
-					attachmentBlobUrl = blobUrl
+					const fullBlobUrl = sasUrl.split("chat/")[0] + blobPath
+
+					console.log("Upload successful, setting blobUrl:", fullBlobUrl)
+					attachmentBlobUrl = fullBlobUrl
 				}
 
 				// Step 3: Send message to server
 				const messagePayload: any = {
+					student_id: selectedStudentId,
+					staff_id: staffId,
 					// Use fallback message for attachments (backwards compatibility)
 					content: attachment
 						? "📎 Archivo adjunto. Actualiza la app para verlo."
 						: content,
-					staff_id: staffId,
 				}
 
+				console.log("Attachment Blob URL:", attachmentBlobUrl)
 				if (attachment && attachmentBlobUrl) {
 					messagePayload.message_type = "attachment"
 					messagePayload.attachment_url = attachmentBlobUrl

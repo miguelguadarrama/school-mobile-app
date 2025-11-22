@@ -1,8 +1,8 @@
 import React, { createContext, useCallback, useContext, useState } from "react"
 import useSWR from "swr"
+import { uploadFileToSas } from "../helpers/fileCompression"
 import { fetcher } from "../services/api"
 import { AttachmentData, chat_message, chats } from "../types/chat"
-import { uploadFileToSas } from "../helpers/fileCompression"
 import AppContext from "./AppContext"
 
 interface TeacherChatContextType {
@@ -160,16 +160,31 @@ export const TeacherChatProvider: React.FC<{
 						method: "POST",
 						body: JSON.stringify({
 							student_id: studentId,
-							file_type: attachment.type,
-							file_name: attachment.fileName,
-							mime_type: attachment.mimeType,
+							attachment_type: attachment.type,
+							attachment_file_name: attachment.fileName,
+							attachment_mime_type: attachment.mimeType,
+							attachment_file_size: attachment.fileSize,
 						}),
 					})
 
-					const { sasUrl, blobUrl } = sasResponse as {
+					console.log("SAS Response (Teacher):", sasResponse)
+
+					const { sasUrl, blobPath } = sasResponse as {
 						sasUrl: string
-						blobUrl: string
+						blobPath: string
 					}
+
+					if (!sasUrl || !blobPath) {
+						console.error("Invalid SAS response:", sasResponse)
+						throw new Error(
+							`Missing SAS URL or blob URL in response. Got: ${JSON.stringify(
+								sasResponse
+							)}`
+						)
+					}
+
+					console.log("SAS URL:", sasUrl)
+					console.log("Blob URL:", blobPath)
 
 					// Step 2: Upload file to blob storage
 					const uploadSuccess = await uploadFileToSas(
@@ -178,10 +193,11 @@ export const TeacherChatProvider: React.FC<{
 					)
 
 					if (!uploadSuccess) {
-						throw new Error("Failed to upload attachment")
+						throw new Error("Failed to upload attachment to blob storage")
 					}
 
-					attachmentBlobUrl = blobUrl
+					console.log("Upload successful, setting blobUrl:", blobPath)
+					attachmentBlobUrl = blobPath
 				}
 
 				// Step 3: Send message to server - teacher endpoint
