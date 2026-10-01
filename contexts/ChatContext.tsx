@@ -21,6 +21,8 @@ interface ChatContextType {
 	chats: chats[] | undefined
 	isLoading: boolean
 	refreshChats: () => void
+	// Chats from a prior academic year can be read but not answered
+	readOnly: boolean
 
 	// Message Operations
 	sendMessage: (
@@ -47,7 +49,14 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined)
 export const ChatProvider: React.FC<{
 	children: React.ReactNode
 	selectedStudentId?: string
-}> = ({ children, selectedStudentId }) => {
+	academicYearQuery?: string
+	readOnly?: boolean
+}> = ({
+	children,
+	selectedStudentId,
+	academicYearQuery = "",
+	readOnly = false,
+}) => {
 	// UI State
 	const [isChatWindowOpen, setIsChatWindowOpen] = useState(false)
 	const [selectedChat, setSelectedChat] = useState<chats | null>(null)
@@ -63,7 +72,9 @@ export const ChatProvider: React.FC<{
 		isLoading,
 		mutate: refreshChats,
 	} = useSWR<chats[]>(
-		selectedStudentId ? `/mobile/chat/${selectedStudentId}` : null,
+		selectedStudentId
+			? `/mobile/chat/${selectedStudentId}${academicYearQuery}`
+			: null,
 		{
 			refreshInterval: 15000,
 			dedupingInterval: 10000,
@@ -126,7 +137,7 @@ export const ChatProvider: React.FC<{
 	// Send message operation
 	const sendMessage = useCallback(
 		async (staffId: string, content: string, attachment?: AttachmentData) => {
-			if (!selectedStudentId) return
+			if (!selectedStudentId || readOnly) return
 
 			// Create optimistic message
 			const optimisticMessage: chat_message = {
@@ -244,6 +255,7 @@ export const ChatProvider: React.FC<{
 		},
 		[
 			selectedStudentId,
+			readOnly,
 			addOptimisticMessage,
 			removeOptimisticMessage,
 			refreshChats,
@@ -253,7 +265,7 @@ export const ChatProvider: React.FC<{
 	// Clean up optimistic messages when selected student changes
 	useEffect(() => {
 		setOptimisticMessages({})
-	}, [selectedStudentId])
+	}, [selectedStudentId, academicYearQuery])
 
 	return (
 		<ChatContext.Provider
@@ -268,6 +280,7 @@ export const ChatProvider: React.FC<{
 				chats,
 				isLoading,
 				refreshChats,
+				readOnly,
 
 				// Message Operations
 				sendMessage,

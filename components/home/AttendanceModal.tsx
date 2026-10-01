@@ -46,10 +46,11 @@ interface WeekItem {
 }
 
 export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
-	const { selectedStudent, academic_year } = useContext(AppContext)!
+	const { selectedStudent, academic_year, academicYearQuery } =
+		useContext(AppContext)!
 	const { data, isLoading } = useSWR<attendanceStatus[]>(
 		selectedStudent?.id
-			? `/mobile/students/${selectedStudent.id}/attendance`
+			? `/mobile/students/${selectedStudent.id}/attendance${academicYearQuery}`
 			: null
 	)
 	const [expandedDay, setExpandedDay] = useState<string | null>(null)
@@ -73,11 +74,20 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 		if (!academic_year?.starts_on) return []
 
 		const startDate = new Date(academic_year.starts_on)
-		const today = new Date()
+		const lastDay = new Date()
 
 		// Set to start of day
 		startDate.setHours(0, 0, 0, 0)
-		today.setHours(0, 0, 0, 0)
+		lastDay.setHours(0, 0, 0, 0)
+
+		// Prior academic years stop at their last day
+		if (academic_year.ends_on) {
+			const endDate = new Date(academic_year.ends_on)
+			endDate.setHours(0, 0, 0, 0)
+			if (endDate < lastDay) {
+				lastDay.setTime(endDate.getTime())
+			}
+		}
 
 		// Find the Sunday before or on the start date
 		const firstSunday = new Date(startDate)
@@ -89,8 +99,8 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 		const allDays: DayItem[] = []
 		let currentDate = new Date(firstSunday)
 
-		// Generate all days from first Sunday to today
-		while (currentDate <= today) {
+		// Generate all days from first Sunday to the last day
+		while (currentDate <= lastDay) {
 			const dateObj = new Date(currentDate)
 			const year = dateObj.getFullYear()
 			const month = String(dateObj.getMonth() + 1).padStart(2, "0")
@@ -179,7 +189,7 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 			// If it's Saturday or the last day, complete the week
 			if (
 				day.dateObj.getDay() === 6 ||
-				day.dateObj.getTime() === today.getTime()
+				day.dateObj.getTime() === lastDay.getTime()
 			) {
 				weekGroups.push({
 					weekNumber,
@@ -199,7 +209,7 @@ export const AttendanceModal: React.FC<AttendanceModalProps> = ({ onBack }) => {
 		})
 
 		return weekGroups
-	}, [academic_year?.starts_on, data])
+	}, [academic_year?.starts_on, academic_year?.ends_on, data])
 
 	// Colors for status states
 	const colors = {

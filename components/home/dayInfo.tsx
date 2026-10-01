@@ -20,7 +20,8 @@ interface DayInfoCardProps {
 
 export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 	// Get current date information
-	const { selectedDate, attendance, selectedStudent } = useContext(AppContext)!
+	const { selectedDate, attendance, selectedEnrollment } =
+		useContext(AppContext)!
 	const now = selectedDate || new Date()
 	const dayName = now.toLocaleDateString(locale, { weekday: "long" })
 	const monthDay = now.toLocaleDateString(locale, {
@@ -184,7 +185,7 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 		(attendance.find(
 			(a) =>
 				a.classroom_student_id ===
-					selectedStudent?.academic_year_classroom_students?.[0]?.id &&
+					selectedEnrollment?.id &&
 				a.status_type === "meal_status" &&
 				a.date === getFormattedDate(selectedDate || new Date())
 		)?.status_value as EatingStatus) || undefined
@@ -193,7 +194,7 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 		(attendance.find(
 			(a) =>
 				a.classroom_student_id ===
-					selectedStudent?.academic_year_classroom_students?.[0]?.id &&
+					selectedEnrollment?.id &&
 				a.status_type === "poop_status" &&
 				a.date === getFormattedDate(selectedDate || new Date())
 		)?.status_value as PoopStatus) || undefined
@@ -202,7 +203,7 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 		(attendance.find(
 			(a) =>
 				a.classroom_student_id ===
-					selectedStudent?.academic_year_classroom_students?.[0]?.id &&
+					selectedEnrollment?.id &&
 				a.status_type === "pee_status" &&
 				a.date === getFormattedDate(selectedDate || new Date())
 		)?.status_value as PeeStatus) || undefined
@@ -211,7 +212,7 @@ export default function DayInfoCard({ locale = "es-VE" }: DayInfoCardProps) {
 		(attendance.find(
 			(a) =>
 				a.classroom_student_id ===
-					selectedStudent?.academic_year_classroom_students?.[0]?.id &&
+					selectedEnrollment?.id &&
 				a.status_type === "mood_status" &&
 				a.date === getFormattedDate(selectedDate || new Date())
 		)?.status_value as MoodStatus) || undefined

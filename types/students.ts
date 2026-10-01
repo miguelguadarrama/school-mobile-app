@@ -4,7 +4,11 @@ export interface academic_year {
   id: string
   name: string
   starts_on: Date
+  ends_on: Date
+  is_active: boolean
 }
+
+export type student_enrollment = student["academic_year_classroom_students"][number]
 
 export interface student {
   id: string

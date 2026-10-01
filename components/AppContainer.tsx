@@ -10,7 +10,7 @@ import {
 	setupNotificationChannels,
 	setupNotificationListeners,
 } from "../services/notifications"
-import { attendanceStatus, student } from "../types/students"
+import { academic_year, attendanceStatus, student } from "../types/students"
 import { ClassroomData } from "../types/teacher"
 import { SessionUser } from "../types/user"
 import LoadingScreen from "./Loading"
@@ -21,6 +21,9 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 	const { loggedIn } = useAuth()
 	const [selectedDate, setSelectedDate] = useState(new Date())
 	const [selectedStudent, setSelectedStudent] = useState<student | null>(null)
+	const [selectedAcademicYearId, setSelectedAcademicYearId] = useState<
+		string | null
+	>(null)
 	const [selectedRole, setSelectedRole] = useState<
 		"admin" | "guardian" | "staff" | null
 	>(null)
@@ -37,11 +40,38 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		attendance: attendanceStatus[]
 		roles: ("admin" | "guardian" | "staff")[]
 		classrooms?: ClassroomData[]
+		academic_year_id: string | null
 	}>(loggedIn ? "/mobile/profile" : null)
 
+	// Enrollments come with the active academic year first, then most recent first
+	const enrollments = selectedStudent?.academic_year_classroom_students || []
+	const academic_years = enrollments
+		.map((e) => e.classrooms?.academic_years)
+		.filter((a): a is academic_year => !!a)
+	// Default to the active academic year, or the most recent one the student
+	// was enrolled in when they are not registered for the active year
+	const selectedEnrollment =
+		enrollments.find(
+			(e) => e.classrooms?.academic_years?.id === selectedAcademicYearId
+		) ||
+		enrollments.find(
+			(e) => e.classrooms?.academic_years?.id === data?.academic_year_id
+		) ||
+		enrollments[0]
+
+	const academic_year = selectedEnrollment?.classrooms?.academic_years
 	const academic_year_id =
-		data?.students?.[0]?.academic_year_classroom_students?.[0]?.classrooms
-			?.academic_years?.id || data?.classrooms?.[0]?.academic_year_id
+		academic_year?.id || data?.classrooms?.[0]?.academic_year_id
+	const isPastAcademicYear =
+		selectedRole === "guardian" && academic_year?.is_active === false
+	const academicYearQuery = isPastAcademicYear
+		? `?academic_year_id=${academic_year!.id}`
+		: ""
+
+	// Each student starts on their default academic year
+	useEffect(() => {
+		setSelectedAcademicYearId(null)
+	}, [selectedStudent?.id])
 
 	// Load saved role when user logs in
 	useEffect(() => {
@@ -118,6 +148,8 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 				if (targetStudent && targetStudent.id !== selectedStudent?.id) {
 					setSelectedStudent(targetStudent)
 				}
+				// Notifications are always about the active academic year
+				setSelectedAcademicYearId(null)
 			}
 
 			// Navigate to messaging tab (index 3) after role and student are set
@@ -143,10 +175,6 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 		if (date > new Date()) return
 		setSelectedDate(date)
 	}
-
-	const academic_year =
-		data?.students?.[0]?.academic_year_classroom_students?.[0]?.classrooms
-			?.academic_years
 
 	// Handler to persist role selection
 	const handleSetSelectedRole = async (
@@ -199,12 +227,21 @@ const AppContainer = ({ children }: { children: ReactNode }) => {
 				user: data?.user,
 				academic_year_id,
 				academic_year,
+				academic_years,
+				setSelectedAcademicYearId,
+				selectedEnrollment,
+				isPastAcademicYear,
+				academicYearQuery,
 				pendingNotification,
 				clearPendingNotification,
 				requestTabNavigation,
 			}}
 		>
-			<ChatProvider selectedStudentId={selectedStudent?.id}>
+			<ChatProvider
+				selectedStudentId={selectedStudent?.id}
+				academicYearQuery={academicYearQuery}
+				readOnly={isPastAcademicYear}
+			>
 				{children}
 			</ChatProvider>
 		</AppContext.Provider>

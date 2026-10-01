@@ -23,6 +23,11 @@ const StatusBar: React.FC = () => {
 		setSelectedStudent,
 		selectedRole,
 		setSelectedRole,
+		academic_year,
+		academic_years,
+		setSelectedAcademicYearId,
+		selectedEnrollment,
+		isPastAcademicYear,
 	} = useContext(AppContext)!
 	const [modalVisible, setModalVisible] = useState(false)
 	const [teacherPhotoError, setTeacherPhotoError] = useState(false)
@@ -72,8 +77,10 @@ const StatusBar: React.FC = () => {
 							<View>
 								<Text style={styles.name}>{displayName(selectedStudent!)}</Text>
 								<Text style={styles.classroom}>
-									{selectedStudent!.academic_year_classroom_students?.[0]
-										?.classrooms?.name || ""}
+									{selectedEnrollment?.classrooms?.name || ""}
+									{isPastAcademicYear && academic_year?.name
+										? ` · ${academic_year.name}`
+										: ""}
 								</Text>
 							</View>
 							<Ionicons
@@ -143,6 +150,30 @@ const StatusBar: React.FC = () => {
 											>
 												<Text style={styles.profileOptionText}>
 													{displayName(s)}
+												</Text>
+											</TouchableOpacity>
+										))}
+									</>
+								)}
+								{academic_years.length > 1 && (
+									<>
+										<Text style={styles.sectionTitle}>Año escolar</Text>
+										{academic_years.map((a) => (
+											<TouchableOpacity
+												style={[
+													styles.profileOption,
+													a.id === academic_year?.id &&
+														styles.profileOptionSelected,
+												]}
+												key={a.id}
+												onPress={() => {
+													setSelectedAcademicYearId(a.id)
+													toggleModal()
+												}}
+											>
+												<Text style={styles.profileOptionText}>
+													{a.name || new Date(a.starts_on).getFullYear()}
+													{a.is_active ? " (actual)" : ""}
 												</Text>
 											</TouchableOpacity>
 										))}
@@ -327,6 +358,10 @@ const styles = StyleSheet.create({
 		minWidth: 200,
 		alignItems: "center",
 		justifyContent: "center",
+	},
+	profileOptionSelected: {
+		borderWidth: 1,
+		borderColor: theme.colors.primary,
 	},
 	profileOptionText: {
 		fontFamily: theme.typography.family.regular,

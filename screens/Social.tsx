@@ -10,7 +10,8 @@ import { theme } from "../helpers/theme"
 import { SocialPostModal } from "./teacher/SocialPostModal"
 
 export default function SocialScreen() {
-	const { selectedRole, selectedStudent } = useContext(AppContext)!
+	const { selectedRole, selectedEnrollment, academicYearQuery } =
+		useContext(AppContext)!
 
 	const { isSocialPostModalActive, setIsSocialPostModalActive } =
 		useContext(TabContext)
@@ -18,8 +19,8 @@ export default function SocialScreen() {
 	const { data, isLoading, mutate } = useSWR(
 		["admin", "staff"].includes(selectedRole || "")
 			? `/mobile/posts/v2`
-			: selectedStudent?.academic_year_classroom_students?.[0]?.classrooms?.id
-			? `/mobile/posts/v2/classroom/${selectedStudent?.academic_year_classroom_students?.[0]?.classrooms?.id}`
+			: selectedEnrollment?.classrooms?.id
+			? `/mobile/posts/v2/classroom/${selectedEnrollment.classrooms.id}${academicYearQuery}`
 			: null
 	)
 

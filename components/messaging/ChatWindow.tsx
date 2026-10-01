@@ -11,6 +11,7 @@ import {
 	Keyboard,
 	Platform,
 	StyleSheet,
+	Text,
 	View,
 } from "react-native"
 import AppContext from "../../contexts/AppContext"
@@ -35,8 +36,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 	onSendMessage,
 }) => {
 	const flatListRef = useRef<FlatList<chat_message>>(null)
-	const { selectedStudent } = useContext(AppContext)!
-	const { chats } = useChatContext()
+	const { selectedStudent, academic_year, isPastAcademicYear } =
+		useContext(AppContext)!
+	const { chats, readOnly } = useChatContext()
 
 	const currentChat = chats?.find((c) => c.staff_id === staff_id)
 	const [keyboardHeight, setKeyboardHeight] = useState(0)
@@ -45,10 +47,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 		if (currentChat && selectedStudent) {
 			fetcher(`/mobile/chat/${selectedStudent?.id}/read`, {
 				method: "PUT",
-				body: JSON.stringify({ staff_id: currentChat.staff_id }),
+				body: JSON.stringify({
+					staff_id: currentChat.staff_id,
+					academic_year_id: isPastAcademicYear ? academic_year?.id : undefined,
+				}),
 			})
 		}
-	}, [currentChat, selectedStudent])
+	}, [currentChat, selectedStudent, isPastAcademicYear, academic_year?.id])
 
 	const scrollToBottom = useCallback(
 		(animated = true) => {
@@ -165,10 +170,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 					showsVerticalScrollIndicator={false}
 				/>
 
-				<MessageInput
-					onSendMessage={handleSend}
-					keyboardHeight={keyboardHeight}
-				/>
+				{readOnly ? (
+					<View style={styles.readOnlyNotice}>
+						<Text style={styles.readOnlyText}>
+							Conversación del año escolar {academic_year?.name || "anterior"}.
+							Solo lectura.
+						</Text>
+					</View>
+				) : (
+					<MessageInput
+						onSendMessage={handleSend}
+						keyboardHeight={keyboardHeight}
+					/>
+				)}
 			</View>
 		</View>
 	)
@@ -194,5 +208,17 @@ const styles = StyleSheet.create({
 	chatContentContainer: {
 		padding: theme.spacing.md,
 		paddingBottom: theme.spacing.lg,
+	},
+	readOnlyNotice: {
+		padding: theme.spacing.md,
+		backgroundColor: theme.colors.surface,
+		borderTopWidth: 1,
+		borderTopColor: theme.colors.border,
+	},
+	readOnlyText: {
+		fontFamily: theme.typography.family.regular,
+		fontSize: theme.typography.size.sm,
+		color: theme.colors.muted,
+		textAlign: "center",
 	},
 })

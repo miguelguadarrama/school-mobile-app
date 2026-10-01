@@ -10,10 +10,12 @@ import { theme } from "../helpers/theme"
 import { SocialPostModal } from "./teacher/SocialPostModal"
 
 export default function AnnouncementsScreen() {
-	const { selectedRole } = useContext(AppContext)!
+	const { selectedRole, academicYearQuery } = useContext(AppContext)!
 	const { isSocialPostModalActive, setIsSocialPostModalActive } =
 		useContext(TabContext)
-	const { data, isLoading, mutate } = useSWR(`/mobile/posts/announcements`)
+	const { data, isLoading, mutate } = useSWR(
+		`/mobile/posts/announcements${academicYearQuery}`
+	)
 
 	// Handle refresh action
 	const handleRefresh = async () => {

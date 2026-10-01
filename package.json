@@ -64,5 +64,8 @@
     "babel-preset-expo": "~54.0.12",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "allowScripts": {
+    "fsevents@2.3.3": true
+  }
 }
