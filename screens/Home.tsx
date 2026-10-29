@@ -9,6 +9,7 @@ import DayInfoCard from "../components/home/dayInfo"
 import JAC_H_Logo from "../components/logo"
 import AppContext from "../contexts/AppContext"
 import { TabContext } from "../contexts/TabContext"
+import { parseDateOnly } from "../helpers/date"
 import { theme } from "../helpers/theme"
 
 export default function HomeScreen() {
@@ -20,7 +21,7 @@ export default function HomeScreen() {
 	const isBirthday = useMemo(() => {
 		if (!selectedStudent?.birthdate) return false
 
-		const birthdate = new Date(selectedStudent.birthdate)
+		const birthdate = parseDateOnly(selectedStudent.birthdate)
 		const normalizedBirthdate = new Date(
 			birthdate.getFullYear(),
 			birthdate.getMonth(),

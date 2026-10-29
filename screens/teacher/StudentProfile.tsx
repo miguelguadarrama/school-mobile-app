@@ -14,6 +14,7 @@ import useSWR from "swr"
 import SchoolCard from "../../components/SchoolCard"
 import AppContext from "../../contexts/AppContext"
 import { useTeacherChatContext } from "../../contexts/TeacherChatContext"
+import { parseDateOnly } from "../../helpers/date"
 import { studentPhotoUri } from "../../helpers/students"
 import { theme } from "../../helpers/theme"
 import { fetcher } from "../../services/api"
@@ -323,8 +324,8 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 				student.second_last_name ? ` ${student.second_last_name}` : ""
 		  }`
 
-	const formatDate = (dateString: string) => {
-		const date = new Date(dateString)
+	const formatDate = (value: string | Date) => {
+		const date = new Date(value)
 		return date.toLocaleDateString("es-ES", {
 			year: "numeric",
 			month: "long",
@@ -801,7 +802,7 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 							<View style={styles.infoItem}>
 								<Text style={styles.infoLabel}>Fecha de Nacimiento</Text>
 								<Text style={styles.infoValueNormal}>
-									{formatDate(studentProfile.birthdate)}
+									{formatDate(parseDateOnly(studentProfile.birthdate))}
 								</Text>
 							</View>
 
