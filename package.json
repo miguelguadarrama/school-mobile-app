@@ -7,6 +7,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios --device \"iPhone 17 Pro\"",
     "web": "expo start --web",
+    "eas:update": "npm install -g eas-cli",
     "expo:update": "npx expo install --check",
     "android:assets": "npx expo prebuild --platform android --clean",
     "android:build": "eas build -p android --profile production --local",
